@@ -1,0 +1,10 @@
+{
+  "version": "1.0.0",
+  "theme": "xbox",
+  "soundsEnabled": true,
+  "downloadPath": "./downloads",
+  "yuzuPath": "./emulators/yuzu",
+  "autoUpdate": true,
+  "gamepadEnabled": true,
+  "lastUpdateCheck": "2025-06-18T20:33:00Z"
+}

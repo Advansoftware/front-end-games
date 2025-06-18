@@ -1,0 +1,251 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
+.grunt
+
+# Bower dependency directory (https://bower.io/)
+bower_components
+
+# node-waf configuration
+.lock-wscript
+
+# Compiled binary addons (https://nodejs.org/api/addons.html)
+build/Release
+
+# Dependency directories
+jspm_packages/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js build output
+.next/
+out/
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+public
+
+# Vuepress build output
+.vuepress/dist
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# yarn v2
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# Electron build output
+dist/
+build/
+release/
+
+# Electron-builder output
+dist_electron/
+
+# Logs
+logs
+*.log
+.DS_Store
+
+# Runtime files
+*.tmp
+*.temp
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# GamepassLauncher specific directories
+# Downloads de ROMs e jogos
+downloads/*.zip
+downloads/*.rar
+downloads/*.7z
+downloads/*.xci
+downloads/*.nsp
+downloads/*.nsz
+
+# ROMs instaladas
+roms/*
+!roms/.gitkeep
+
+# Saves de jogos
+saves/*
+!saves/.gitkeep
+
+# Emuladores baixados
+emulators/*
+!emulators/.gitkeep
+
+# Configurações locais de usuário
+configs/user-*.json
+configs/yuzu/
+configs/ryujinx/
+
+# Chaves de produção e firmware (dados sensíveis)
+*.keys
+prod.keys
+title.keys
+firmware/
+prod_keys/
+
+# Cache e arquivos temporários do emulador
+*.log
+*.tmp
+cache/
+temp/
+
+# Backups
+backup/
+*.bak
+*.backup
+
+# Assets grandes (opcional - descomente se necessário)
+# public/assets/videos/*.mp4
+# public/assets/videos/*.webm
+# public/assets/sounds/*.wav
+# public/assets/sounds/*.mp3
+
+# Arquivos de configuração específicos do desenvolvedor
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# Certificados e chaves privadas
+*.pem
+*.p12
+*.cer
+*.crt
+*.key
+
+# Arquivos de database local
+*.db
+*.sqlite
+*.sqlite3
+
+# Arquivos de monitoramento
+.monitor
+
+# Arquivos de teste
+test-results/
+coverage/

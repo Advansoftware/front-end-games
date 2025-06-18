@@ -1,0 +1,64 @@
+{
+  "name": "gamepass-launcher",
+  "version": "1.0.0",
+  "description": "Lançador de jogos inspirado no Xbox Gamepass com suporte a emulação",
+  "main": "electron/main.js",
+  "homepage": "./",
+  "scripts": {
+    "dev": "concurrently \"npm run next-dev\" \"npm run electron-dev\"",
+    "next-dev": "next dev",
+    "electron-dev": "cross-env NODE_ENV=development electron .",
+    "build": "next build",
+    "export": "next export",
+    "electron-pack": "npm run build && npm run export && electron-builder",
+    "start": "npm run build && npm run export && electron .",
+    "setup": "npm install && npm run build",
+    "install-deps": "npm install"
+  },
+  "keywords": [
+    "gamepass",
+    "launcher",
+    "gaming",
+    "electron",
+    "nextjs",
+    "emulator"
+  ],
+  "author": "GamepassLauncher Team",
+  "license": "MIT",
+  "dependencies": {
+    "next": "^14.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "@mui/material": "^5.0.0",
+    "@emotion/react": "^11.0.0",
+    "@emotion/styled": "^11.0.0",
+    "@mui/icons-material": "^5.0.0",
+    "@mui/x-data-grid": "^6.0.0",
+    "electron": "^27.0.0",
+    "electron-builder": "^24.0.0",
+    "electron-is-dev": "^2.0.0",
+    "axios": "^1.0.0",
+    "framer-motion": "^10.0.0",
+    "react-player": "^2.0.0",
+    "concurrently": "^8.0.0",
+    "cross-env": "^7.0.0"
+  },
+  "build": {
+    "appId": "com.gamepasslauncher.app",
+    "productName": "Gamepass Launcher",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "out/**/*",
+      "electron/**/*",
+      "node_modules/**/*"
+    ],
+    "linux": {
+      "target": "AppImage"
+    },
+    "win": {
+      "target": "nsis"
+    }
+  }
+}
