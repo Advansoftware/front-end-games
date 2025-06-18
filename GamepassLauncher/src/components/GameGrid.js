@@ -1,284 +1,121 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Grid,
-  Card,
-  CardMedia,
-  CardContent,
-  Typography,
-  Chip,
-  IconButton,
-  TextField,
-  InputAdornment,
-  Menu,
-  MenuItem,
-  Skeleton
+  Container,
+  Skeleton,
+  Typography
 } from '@mui/material';
-import {
-  Search as SearchIcon,
-  FilterList as FilterIcon,
-  Star as StarIcon,
-  Download as DownloadIcon,
-  PlayArrow as PlayIcon
-} from '@mui/icons-material';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useGames } from '../contexts/GamesContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useGamepad } from '../hooks/useGamepad';
 
-const GameCard = ({ game, onSelect, isSelected, onPlay, onDownload }) => {
-  const { playSound } = useTheme();
-  const { downloadProgress } = useGames();
+// Importar os componentes
+import HeroSection from './HeroSection';
+import GameSection from './GameSection';
+import GenreFilters from './GenreFilters';
 
-  const isDownloading = downloadProgress[game.id] !== undefined;
-  const progress = downloadProgress[game.id] || 0;
-
-  const handleClick = () => {
-    playSound('navigate');
-    onSelect(game.id);
-  };
-
-  const handlePlay = (e) => {
-    e.stopPropagation();
-    playSound('confirm');
-    onPlay(game.id);
-  };
-
-  const handleDownload = (e) => {
-    e.stopPropagation();
-    playSound('confirm');
-    onDownload(game.id);
-  };
-
-  return (
-    <Card
-      component={motion.div}
-      whileHover={{
-        scale: 1.05,
-        transition: { duration: 0.2 }
-      }}
-      whileTap={{ scale: 0.98 }}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      onClick={handleClick}
-      sx={{
-        position: 'relative',
-        cursor: 'pointer',
-        height: '300px',
-        overflow: 'hidden',
-        border: isSelected ? 2 : 0,
-        borderColor: 'primary.main',
-        '&:hover .game-overlay': {
-          opacity: 1,
-        },
-        '&:hover .game-media': {
-          transform: 'scale(1.1)',
-        }
-      }}
-    >
-      <CardMedia
-        component="img"
-        height="200"
-        image={game.image}
-        alt={game.title}
-        className="game-media"
-        sx={{
-          transition: 'transform 0.3s ease',
-          objectFit: 'cover'
-        }}
-      />
-
-      <CardContent sx={{ position: 'relative', height: '100px' }}>
-        <Typography variant="h6" component="div" noWrap>
-          {game.title}
-        </Typography>
-
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-          <StarIcon sx={{ color: 'warning.main', fontSize: 16 }} />
-          <Typography variant="body2" color="text.secondary">
-            {game.rating}
-          </Typography>
-          <Chip
-            label={game.size}
-            size="small"
-            variant="outlined"
-            sx={{ ml: 'auto' }}
-          />
-        </Box>
-
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          {game.genre.map((g, index) => (
-            <Chip
-              key={index}
-              label={g}
-              size="small"
-              color="primary"
-              variant="outlined"
-            />
-          ))}
-        </Box>
-      </CardContent>
-
-      {/* Overlay com botões */}
-      <Box
-        className="game-overlay"
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.9) 100%)',
-          opacity: 0,
-          transition: 'opacity 0.3s ease',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'flex-end',
-          p: 2
-        }}
-      >
-        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-          {game.installed ? (
-            <IconButton
-              onClick={handlePlay}
-              sx={{
-                bgcolor: 'success.main',
-                color: 'white',
-                '&:hover': { bgcolor: 'success.dark' }
-              }}
-            >
-              <PlayIcon />
-            </IconButton>
-          ) : (
-            <IconButton
-              onClick={handleDownload}
-              disabled={isDownloading}
-              sx={{
-                bgcolor: 'primary.main',
-                color: 'white',
-                '&:hover': { bgcolor: 'primary.dark' }
-              }}
-            >
-              <DownloadIcon />
-            </IconButton>
-          )}
-        </Box>
-
-        {isDownloading && (
-          <Box sx={{ mt: 1 }}>
-            <Typography variant="caption" align="center" display="block">
-              Baixando... {progress}%
-            </Typography>
-            <Box
-              sx={{
-                width: '100%',
-                height: 4,
-                bgcolor: 'grey.700',
-                borderRadius: 2,
-                overflow: 'hidden',
-                mt: 0.5
-              }}
-            >
-              <Box
-                sx={{
-                  width: `${progress}%`,
-                  height: '100%',
-                  bgcolor: 'primary.main',
-                  transition: 'width 0.3s ease'
-                }}
-              />
-            </Box>
-          </Box>
-        )}
-      </Box>
-    </Card>
-  );
-};
-
-const GameGrid = ({ onGameSelect }) => {
-  const { games, loading, downloadGame, launchGame } = useGames();
+const GameGrid = ({ onGameSelect, searchQuery = '' }) => {
+  const { games, downloadGame, launchGame, loading, getFeaturedGame } = useGames();
   const { playSound } = useTheme();
   const gamepad = useGamepad();
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [filterAnchor, setFilterAnchor] = useState(null);
-  const [selectedFilter, setSelectedFilter] = useState('all');
+  const [filteredGames, setFilteredGames] = useState([]);
+  const [recentGames, setRecentGames] = useState([]);
+  const [selectedGenre, setSelectedGenre] = useState('all');
 
-  // Filtrar jogos
-  const filteredGames = games.filter(game => {
-    const matchesSearch = game.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = selectedFilter === 'all' ||
-      (selectedFilter === 'installed' && game.installed) ||
-      (selectedFilter === 'available' && !game.installed);
-    return matchesSearch && matchesFilter;
-  });
+  // Mapear gêneros para filtros
+  const genreMapping = {
+    'independente': ['indie', 'independente'],
+    'familia': ['family', 'kids', 'casual'],
+    'tiro': ['fps', 'shooter', 'tiro'],
+    'acao': ['action', 'adventure', 'acao', 'aventura'],
+    'luta': ['fighting', 'luta'],
+    'estrategia': ['strategy', 'estrategia'],
+    'simulacao': ['simulation', 'simulacao'],
+    'rpg': ['rpg', 'role-playing']
+  };
 
-  // Navegação com gamepad
+  // Filtrar jogos baseado na pesquisa e gênero
   useEffect(() => {
-    const handleGamepadNavigation = () => {
-      const nav = gamepad.getNavigationInput();
-      const gridCols = 4; // Assumindo 4 colunas
-      const maxIndex = filteredGames.length - 1;
+    if (games) {
+      let filtered = games;
 
-      if (nav.left && selectedIndex % gridCols !== 0) {
-        setSelectedIndex(prev => Math.max(0, prev - 1));
-        playSound('navigate');
+      // Filtro de pesquisa
+      if (searchQuery) {
+        filtered = filtered.filter(game =>
+          game.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (game.genre && typeof game.genre === 'string' && game.genre.toLowerCase().includes(searchQuery.toLowerCase()))
+        );
       }
 
-      if (nav.right && selectedIndex % gridCols !== gridCols - 1 && selectedIndex < maxIndex) {
-        setSelectedIndex(prev => Math.min(maxIndex, prev + 1));
-        playSound('navigate');
+      // Filtro de gênero
+      if (selectedGenre !== 'all') {
+        const genreTerms = genreMapping[selectedGenre] || [selectedGenre];
+        filtered = filtered.filter(game => {
+          const gameGenre = (game.genre && typeof game.genre === 'string') ? game.genre.toLowerCase() : '';
+          return genreTerms.some(term => gameGenre.includes(term.toLowerCase()));
+        });
       }
 
-      if (nav.up && selectedIndex >= gridCols) {
-        setSelectedIndex(prev => Math.max(0, prev - gridCols));
-        playSound('navigate');
-      }
-
-      if (nav.down && selectedIndex + gridCols <= maxIndex) {
-        setSelectedIndex(prev => Math.min(maxIndex, prev + gridCols));
-        playSound('navigate');
-      }
-
-      if (nav.confirm && filteredGames[selectedIndex]) {
-        onGameSelect(filteredGames[selectedIndex].id);
-        playSound('confirm');
-      }
-    };
-
-    if (gamepad.gamepadConnected && filteredGames.length > 0) {
-      const interval = setInterval(handleGamepadNavigation, 150);
-      return () => clearInterval(interval);
+      setFilteredGames(filtered);
+      setRecentGames(filtered.slice(0, 6));
     }
-  }, [gamepad, selectedIndex, filteredGames, onGameSelect, playSound]);
+  }, [games, searchQuery, selectedGenre]);
 
-  const handleFilterClick = (event) => {
-    setFilterAnchor(event.currentTarget);
+  // Obter jogo em destaque (último jogado ou aleatório)
+  const featuredGame = getFeaturedGame();
+
+  const handleGameSelect = (gameId) => {
+    onGameSelect(gameId);
+    playSound('confirm');
   };
 
-  const handleFilterClose = () => {
-    setFilterAnchor(null);
+  const handleDownload = (game) => {
+    if (game.installed) {
+      launchGame(game.id);
+    } else {
+      downloadGame(game.id);
+    }
+    playSound('confirm');
   };
 
-  const handleFilterSelect = (filter) => {
-    setSelectedFilter(filter);
-    setFilterAnchor(null);
-    playSound('navigate');
+  const handleGenreChange = (genreId) => {
+    setSelectedGenre(genreId);
+    playSound?.('select');
   };
 
   if (loading) {
     return (
-      <Box sx={{ p: 3 }}>
-        <Grid container spacing={3}>
-          {[...Array(8)].map((_, index) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-              <Skeleton variant="rectangular" height={300} />
-            </Grid>
+      <Container maxWidth={false}>
+        {/* Hero skeleton */}
+        <Skeleton variant="rectangular" height={480} sx={{ borderRadius: 2, mb: 4 }} />
+
+        {/* Genre filters skeleton */}
+        <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
+          {[1, 2, 3, 4, 5, 6].map((item) => (
+            <Skeleton key={item} variant="rounded" width={120} height={36} />
           ))}
-        </Grid>
-      </Box>
+        </Box>
+
+        {/* Horizontal sections skeleton */}
+        {[1, 2, 3].map((section) => (
+          <Box key={section} sx={{ mb: 6 }}>
+            <Skeleton variant="text" width={300} height={40} sx={{ mb: 2 }} />
+            <Box sx={{ display: 'flex', gap: 3 }}>
+              {[1, 2, 3, 4, 5].map((card) => (
+                <Skeleton
+                  key={card}
+                  variant="rectangular"
+                  width={280}
+                  height={380}
+                  sx={{ borderRadius: 2, flexShrink: 0 }}
+                />
+              ))}
+            </Box>
+          </Box>
+        ))}
+      </Container>
     );
   }
 
@@ -287,75 +124,97 @@ const GameGrid = ({ onGameSelect }) => {
       component={motion.div}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5 }}
       sx={{ height: '100%', overflow: 'auto' }}
     >
-      {/* Cabeçalho com busca e filtros */}
-      <Box sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center' }}>
-        <TextField
-          fullWidth
-          variant="outlined"
-          placeholder="Pesquisar jogos..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-          }}
-          sx={{ maxWidth: 400 }}
+      {/* Hero Section - sem sobreposições confusas */}
+      {!searchQuery && (
+        <HeroSection
+          featuredGame={featuredGame}
+          onGameSelect={handleGameSelect}
+          heroGames={filteredGames}
+          onDownload={handleDownload}
+        />
+      )}
+
+      <Container maxWidth={false} sx={{ px: { xs: 2, md: 3 } }}>
+        {/* Filtros de Gênero */}
+        <GenreFilters
+          selectedGenre={selectedGenre}
+          onGenreChange={handleGenreChange}
         />
 
-        <IconButton onClick={handleFilterClick}>
-          <FilterIcon />
-        </IconButton>
+        {/* Game Sections - organizadas com componentes reutilizáveis */}
+        {searchQuery ? (
+          <GameSection
+            title={`Resultados para "${searchQuery}"`}
+            games={filteredGames}
+            onGameSelect={handleGameSelect}
+            variant="grid"
+          />
+        ) : selectedGenre !== 'all' ? (
+          <GameSection
+            title={`Jogos de ${selectedGenre.charAt(0).toUpperCase() + selectedGenre.slice(1)}`}
+            games={filteredGames}
+            onGameSelect={handleGameSelect}
+            variant="grid"
+          />
+        ) : (
+          <>
+            <GameSection
+              title="Voltar a jogar"
+              games={recentGames}
+              isRecent={true}
+              onGameSelect={handleGameSelect}
+              variant="horizontal"
+            />
 
-        <Menu
-          anchorEl={filterAnchor}
-          open={Boolean(filterAnchor)}
-          onClose={handleFilterClose}
-        >
-          <MenuItem onClick={() => handleFilterSelect('all')}>
-            Todos os Jogos
-          </MenuItem>
-          <MenuItem onClick={() => handleFilterSelect('installed')}>
-            Instalados
-          </MenuItem>
-          <MenuItem onClick={() => handleFilterSelect('available')}>
-            Disponíveis
-          </MenuItem>
-        </Menu>
-      </Box>
+            <GameSection
+              title="Biblioteca de jogos"
+              games={filteredGames.slice(6)}
+              onGameSelect={handleGameSelect}
+              variant="horizontal"
+            />
 
-      {/* Grade de jogos */}
-      <Grid container spacing={3}>
-        <AnimatePresence>
-          {filteredGames.map((game, index) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={game.id}>
-              <GameCard
-                game={game}
-                onSelect={onGameSelect}
-                onPlay={launchGame}
-                onDownload={downloadGame}
-                isSelected={gamepad.gamepadConnected && index === selectedIndex}
+            {/* Seção adicional para mostrar todos os jogos em grid quando necessário */}
+            {filteredGames.length > 12 && (
+              <GameSection
+                title="Todos os jogos"
+                games={filteredGames}
+                onGameSelect={handleGameSelect}
+                variant="grid"
               />
-            </Grid>
-          ))}
-        </AnimatePresence>
-      </Grid>
+            )}
+          </>
+        )}
 
-      {filteredGames.length === 0 && (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
-          <Typography variant="h5" color="text.secondary">
-            Nenhum jogo encontrado
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
-            Tente ajustar sua pesquisa ou filtros
-          </Typography>
-        </Box>
-      )}
+        {/* Empty state */}
+        {filteredGames.length === 0 && (
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '50vh',
+              textAlign: 'center'
+            }}
+          >
+            <Typography variant="h6" sx={{ color: 'text.secondary', mb: 1 }}>
+              {selectedGenre !== 'all'
+                ? `Nenhum jogo encontrado nesta categoria`
+                : 'Nenhum jogo encontrado'
+              }
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              {selectedGenre !== 'all'
+                ? 'Tente selecionar outra categoria'
+                : 'Tente ajustar sua pesquisa ou explore nossa biblioteca'
+              }
+            </Typography>
+          </Box>
+        )}
+      </Container>
     </Box>
   );
 };

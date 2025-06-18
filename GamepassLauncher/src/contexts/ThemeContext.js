@@ -4,25 +4,25 @@ import { CssBaseline } from '@mui/material';
 
 const ThemeContext = createContext();
 
-// Temas inspirados nos consoles
+// Temas inspirados nos consoles com cores mais fiéis
 const themes = {
   xbox: createTheme({
     palette: {
       mode: 'dark',
       primary: {
-        main: '#107C10', // Verde Xbox
-        light: '#3E8E3E',
+        main: '#107C10', // Verde Xbox oficial
+        light: '#16AA16',
         dark: '#0D5D0D',
         contrastText: '#ffffff',
       },
       secondary: {
-        main: '#FFB900', // Amarelo Xbox
-        light: '#FFD633',
-        dark: '#CC9400',
-        contrastText: '#000000',
+        main: '#00BCF2', // Azul Xbox
+        light: '#33C9F5',
+        dark: '#0096C2',
+        contrastText: '#ffffff',
       },
       background: {
-        default: '#0E1E25',
+        default: '#0C1618', // Fundo escuro como no Gamepass
         paper: '#1A2B32',
       },
       text: {
@@ -32,20 +32,45 @@ const themes = {
       success: {
         main: '#107C10',
       },
+      info: {
+        main: '#00BCF2',
+      },
     },
     typography: {
-      fontFamily: '"Segoe UI", "Roboto", "Arial", sans-serif',
+      fontFamily: '"Segoe UI", "Helvetica Neue", Arial, sans-serif',
       h1: {
         fontWeight: 700,
-        fontSize: '3rem',
+        fontSize: '3.5rem',
+        letterSpacing: '-0.02em',
       },
       h2: {
         fontWeight: 600,
-        fontSize: '2.5rem',
+        fontSize: '3rem',
+        letterSpacing: '-0.01em',
       },
       h3: {
         fontWeight: 600,
+        fontSize: '2.5rem',
+      },
+      h4: {
+        fontWeight: 700,
         fontSize: '2rem',
+      },
+      h5: {
+        fontWeight: 600,
+        fontSize: '1.5rem',
+      },
+      h6: {
+        fontWeight: 600,
+        fontSize: '1.25rem',
+      },
+      body1: {
+        fontSize: '1rem',
+        lineHeight: 1.5,
+      },
+      body2: {
+        fontSize: '0.875rem',
+        lineHeight: 1.4,
       },
     },
     shape: {
@@ -55,13 +80,38 @@ const themes = {
       MuiCard: {
         styleOverrides: {
           root: {
-            background: 'linear-gradient(145deg, #1A2B32 0%, #0E1E25 100%)',
-            border: '1px solid #2C3E45',
+            background: 'rgba(26, 43, 50, 0.8)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: 4, // Reduzido de 8 para aparência mais de capa
             transition: 'all 0.3s ease',
             '&:hover': {
-              transform: 'translateY(-4px)',
-              boxShadow: '0 8px 24px rgba(16, 124, 16, 0.3)',
+              // Removido transform para não aumentar o card
+              boxShadow: '0 8px 20px rgba(16, 124, 16, 0.2)',
+              border: '1px solid rgba(16, 124, 16, 0.4)',
             },
+          },
+        },
+      },
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            textTransform: 'none',
+            fontWeight: 600,
+            borderRadius: 6,
+          },
+          contained: {
+            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+            '&:hover': {
+              boxShadow: '0 6px 16px rgba(0,0,0,0.4)',
+            },
+          },
+        },
+      },
+      MuiChip: {
+        styleOverrides: {
+          root: {
+            fontWeight: 500,
           },
         },
       },
@@ -72,7 +122,7 @@ const themes = {
     palette: {
       mode: 'dark',
       primary: {
-        main: '#0070F3', // Azul PS5
+        main: '#0070F3', // Azul PS5 oficial
         light: '#3391FF',
         dark: '#0056CC',
         contrastText: '#ffffff',
@@ -80,11 +130,11 @@ const themes = {
       secondary: {
         main: '#FFFFFF',
         light: '#FFFFFF',
-        dark: '#CCCCCC',
+        dark: '#E8E8E8',
         contrastText: '#000000',
       },
       background: {
-        default: '#000000',
+        default: '#000000', // Preto puro PS5
         paper: '#1A1A1A',
       },
       text: {
@@ -94,33 +144,43 @@ const themes = {
       info: {
         main: '#00D4FF',
       },
+      success: {
+        main: '#00C851',
+      },
     },
     typography: {
-      fontFamily: '"Inter", "Roboto", "Arial", sans-serif',
+      fontFamily: '"Inter", "Roboto", "Helvetica", Arial, sans-serif',
       h1: {
         fontWeight: 800,
-        fontSize: '3rem',
+        fontSize: '3.5rem',
         letterSpacing: '-0.02em',
       },
       h2: {
         fontWeight: 700,
-        fontSize: '2.5rem',
+        fontSize: '3rem',
+        letterSpacing: '-0.02em',
+      },
+      h4: {
+        fontWeight: 700,
+        fontSize: '2rem',
         letterSpacing: '-0.01em',
       },
     },
     shape: {
-      borderRadius: 12,
+      borderRadius: 16,
     },
     components: {
       MuiCard: {
         styleOverrides: {
           root: {
-            background: 'linear-gradient(145deg, #1A1A1A 0%, #000000 100%)',
+            background: 'linear-gradient(145deg, #1A1A1A 0%, #0D0D0D 100%)',
             border: '1px solid #333333',
+            borderRadius: 4, // Reduzido para aparência de capa
             transition: 'all 0.3s ease',
             '&:hover': {
-              transform: 'translateY(-4px)',
-              boxShadow: '0 8px 24px rgba(0, 112, 243, 0.3)',
+              // Removido transform para não aumentar o card
+              boxShadow: '0 8px 20px rgba(0, 112, 243, 0.2)',
+              border: '1px solid rgba(0, 112, 243, 0.4)',
             },
           },
         },
@@ -132,13 +192,13 @@ const themes = {
     palette: {
       mode: 'dark',
       primary: {
-        main: '#E60012', // Vermelho Nintendo
+        main: '#E60012', // Vermelho Nintendo oficial
         light: '#FF3345',
         dark: '#B3000E',
         contrastText: '#ffffff',
       },
       secondary: {
-        main: '#0066CC', // Azul Nintendo
+        main: '#0066CC', // Azul Nintendo oficial
         light: '#3388FF',
         dark: '#0052A3',
         contrastText: '#ffffff',
@@ -159,17 +219,17 @@ const themes = {
       fontFamily: '"Nintendo DS BIOS", "Roboto", "Arial", sans-serif',
       h1: {
         fontWeight: 700,
-        fontSize: '3rem',
+        fontSize: '3.5rem',
         textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
       },
       h2: {
         fontWeight: 600,
-        fontSize: '2.5rem',
+        fontSize: '3rem',
         textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
       },
     },
     shape: {
-      borderRadius: 16,
+      borderRadius: 20,
     },
     components: {
       MuiCard: {
@@ -177,11 +237,12 @@ const themes = {
           root: {
             background: 'linear-gradient(145deg, #3A3A3A 0%, #2D2D2D 100%)',
             border: '2px solid #4A4A4A',
-            borderRadius: '16px',
+            borderRadius: 8, // Reduzido de 20px para aparência mais de capa, mas mantendo estilo Nintendo
             transition: 'all 0.3s ease',
             '&:hover': {
-              transform: 'translateY(-4px)',
-              boxShadow: '0 8px 24px rgba(230, 0, 18, 0.3)',
+              // Removido transform para não aumentar o card
+              boxShadow: '0 8px 20px rgba(230, 0, 18, 0.2)',
+              border: '2px solid rgba(230, 0, 18, 0.4)',
             },
           },
         },

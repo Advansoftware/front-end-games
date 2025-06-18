@@ -16,7 +16,12 @@ import {
   InputLabel,
   Chip,
   Alert,
-  LinearProgress
+  LinearProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions
 } from '@mui/material';
 import {
   VolumeUp as SoundIcon,
@@ -24,12 +29,15 @@ import {
   Update as UpdateIcon,
   Folder as FolderIcon,
   Games as GamesIcon,
-  Security as SecurityIcon
+  Security as SecurityIcon,
+  Storage as CacheIcon,
+  Delete as DeleteIcon
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
 import { useGames } from '../contexts/GamesContext';
 import { useGamepad } from '../hooks/useGamepad';
+import CacheService from '../services/CacheService';
 
 const SettingsPanel = () => {
   const { soundsEnabled, toggleSounds, currentTheme, playSound } = useTheme();
@@ -42,13 +50,16 @@ const SettingsPanel = () => {
   const [autoUpdate, setAutoUpdate] = useState(true);
   const [checkingUpdates, setCheckingUpdates] = useState(false);
   const [lastUpdateCheck, setLastUpdateCheck] = useState(new Date().toLocaleString());
+  const [cacheSize, setCacheSize] = useState(0);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const sections = [
     { id: 'audio', label: 'Áudio', icon: SoundIcon },
     { id: 'downloads', label: 'Downloads', icon: DownloadIcon },
     { id: 'emulator', label: 'Emulador', icon: GamesIcon },
     { id: 'updates', label: 'Atualizações', icon: UpdateIcon },
-    { id: 'advanced', label: 'Avançado', icon: SecurityIcon }
+    { id: 'advanced', label: 'Avançado', icon: SecurityIcon },
+    { id: 'cache', label: 'Cache', icon: CacheIcon }
   ];
 
   // Navegação com gamepad
@@ -130,6 +141,19 @@ const SettingsPanel = () => {
       }
     } catch (error) {
       console.error('Erro ao baixar Yuzu:', error);
+    }
+  };
+
+  const handleClearCache = async () => {
+    playSound('confirm');
+    setDialogOpen(false);
+
+    try {
+      await CacheService.clearCache();
+      setCacheSize(0);
+      window.electronAPI.showNotification('Cache Limpo', 'O cache foi limpo com sucesso!');
+    } catch (error) {
+      console.error('Erro ao limpar o cache:', error);
     }
   };
 
@@ -415,6 +439,69 @@ const SettingsPanel = () => {
                 </Button>
               </CardContent>
             </Card>
+          </Box>
+        );
+
+      case 'cache':
+        return (
+          <Box>
+            <Typography variant="h6" gutterBottom>
+              Configurações de Cache
+            </Typography>
+
+            <Card sx={{ mb: 2 }}>
+              <CardContent>
+                <Typography variant="subtitle1" gutterBottom>
+                  Tamanho do Cache
+                </Typography>
+                <Chip
+                  label={`${cacheSize} MB`}
+                  color="primary"
+                  size="small"
+                />
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  O cache é usado para armazenar dados temporários e acelerar o carregamento
+                </Typography>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent>
+                <Button
+                  variant="contained"
+                  color="error"
+                  startIcon={<DeleteIcon />}
+                  onClick={() => setDialogOpen(true)}
+                  fullWidth
+                >
+                  Limpar Cache
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Dialog
+              open={dialogOpen}
+              onClose={() => setDialogOpen(false)}
+              aria-labelledby="alert-dialog-title"
+              aria-describedby="alert-dialog-description"
+            >
+              <DialogTitle id="alert-dialog-title">
+                {"Limpar Cache"}
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText id="alert-dialog-description">
+                  Tem certeza de que deseja limpar o cache? Isso pode liberar até {cacheSize} MB de espaço.
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setDialogOpen(false)} color="primary">
+                  Cancelar
+                </Button>
+                <Button onClick={handleClearCache} color="secondary" autoFocus>
+                  Limpar Cache
+                </Button>
+              </DialogActions>
+            </Dialog>
           </Box>
         );
 

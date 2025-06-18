@@ -149,6 +149,9 @@ const Sidebar = ({ open, onClose, currentView, onViewChange }) => {
           background: 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
           backdropFilter: 'blur(20px)',
           borderRight: '1px solid rgba(255,255,255,0.1)',
+          zIndex: 1300, // Abaixo do header (1400)
+          marginTop: '56px', // Altura do header para não sobrepor
+          height: 'calc(100vh - 56px)', // Altura ajustada
         },
       }}
     >

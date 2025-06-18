@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import GamesAPIService from '../services/GamesAPIService';
+import CacheService from '../services/CacheService';
 
 const GamesContext = createContext();
 
@@ -13,224 +14,323 @@ export const useGames = () => {
 
 export const GamesProvider = ({ children }) => {
   const [games, setGames] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedGame, setSelectedGame] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [downloadProgress, setDownloadProgress] = useState({});
-  const [installedGames, setInstalledGames] = useState([]);
+  const [updateProgress, setUpdateProgress] = useState({});
+  const [lastPlayedGame, setLastPlayedGame] = useState(null);
+  const [apiGames, setApiGames] = useState([]);
+  const [useLocalData, setUseLocalData] = useState(false);
+  const [apiStatus, setApiStatus] = useState({ online: false, lastCheck: null });
+  const [selectedGame, setSelectedGame] = useState(null);
 
-  // API Mock URLs - configuráveis
-  const API_CONFIG = {
-    gamesApi: 'http://localhost:3001/api/games',
-    yuzuDownload: 'https://github.com/yuzu-emu/yuzu-mainline/releases/latest/download/yuzu-windows-msvc.zip',
-    firmwareDownload: 'https://github.com/THZoria/NX_Firmware/releases/latest/download/Firmware_15.0.1.zip',
-    prodKeysDownload: 'https://github.com/Ryujinx/Ryujinx/wiki/Ryujinx-Setup-&-Configuration-Guide'
-  };
-
-  // Carregar jogos do banco local e sincronizar com API
+  // Carregar jogos locais do games.json na inicialização
   useEffect(() => {
+    const loadLocalGames = async () => {
+      try {
+        setLoading(true);
+        console.log('🎮 Carregando jogos do arquivo local...');
+
+        // Sempre carregar do games.json para a tela inicial
+        const gamesData = await GamesAPIService.loadGames();
+
+        if (gamesData?.length > 0) {
+          setGames(gamesData);
+          console.log(`📋 ${gamesData.length} jogos carregados do games.json`);
+
+          // Determinar último jogo jogado
+          const savedLastPlayed = localStorage.getItem('gamepass-last-played');
+          if (savedLastPlayed) {
+            const lastGame = gamesData.find(game => game.id.toString() === savedLastPlayed);
+            if (lastGame) {
+              setLastPlayedGame(lastGame);
+            }
+          }
+
+          // Se não há último jogo, usar o primeiro da lista
+          if (!savedLastPlayed && gamesData.length > 0) {
+            const recentGame = gamesData.find(game => game.installed) || gamesData[0];
+            if (recentGame) {
+              setLastPlayedGame(recentGame);
+              localStorage.setItem('gamepass-last-played', recentGame.id.toString());
+            }
+          }
+        }
+
+      } catch (error) {
+        console.error('❌ Erro ao carregar jogos locais:', error);
+        setError('Erro ao carregar a biblioteca de jogos');
+        setGames([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadLocalGames();
-    syncWithRemoteAPI();
   }, []);
 
-  const loadLocalGames = async () => {
+  // Carregar jogos com sistema de cache melhorado
+  const loadGames = useCallback(async () => {
     try {
-      const localData = localStorage.getItem('gamepass-games');
-      if (localData) {
-        const parsedGames = JSON.parse(localData);
-        setGames(parsedGames);
+      setLoading(true);
+      console.log('🎮 Recarregando jogos...');
+
+      // Sempre carregar dados básicos primeiro
+      const gamesData = await GamesAPIService.loadGames();
+
+      if (gamesData?.length > 0) {
+        setGames(gamesData);
+        console.log(`📋 ${gamesData.length} jogos recarregados`);
       }
-    } catch (error) {
-      console.error('Erro ao carregar jogos locais:', error);
-    }
-  };
 
-  const syncWithRemoteAPI = async () => {
-    setLoading(true);
-    try {
-      // Tentar conectar com API mock
-      const response = await axios.get(API_CONFIG.gamesApi, { timeout: 5000 });
-      const remoteGames = response.data;
-
-      // Atualizar jogos locais com dados remotos
-      setGames(remoteGames);
-      localStorage.setItem('gamepass-games', JSON.stringify(remoteGames));
     } catch (error) {
-      console.warn('API remota indisponível, usando dados locais:', error.message);
-      // Usar dados mock se API não estiver disponível
-      useMockData();
+      console.error('Erro ao carregar jogos:', error);
+      setError('Erro ao carregar a biblioteca de jogos');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const useMockData = () => {
-    const mockGames = [
-      {
-        id: 1,
-        title: "The Legend of Zelda: Breath of the Wild",
-        description: "Explore um vasto mundo aberto em uma aventura épica.",
-        image: "/assets/images/games/zelda-botw.jpg",
-        video: "/assets/videos/zelda-botw-preview.mp4",
-        size: "13.4 GB",
-        platform: "Nintendo Switch",
-        genre: ["Aventura", "Ação"],
-        rating: 9.7,
-        installed: false,
-        downloadUrl: "https://example.com/zelda-botw.zip",
-        configFile: "zelda-botw-config.json"
-      },
-      {
-        id: 2,
-        title: "Super Mario Odyssey",
-        description: "Junte-se ao Mario em uma aventura 3D sandbox.",
-        image: "/assets/images/games/mario-odyssey.jpg",
-        video: "/assets/videos/mario-odyssey-preview.mp4",
-        size: "5.7 GB",
-        platform: "Nintendo Switch",
-        genre: ["Plataforma", "Aventura"],
-        rating: 9.5,
-        installed: false,
-        downloadUrl: "https://example.com/mario-odyssey.zip",
-        configFile: "mario-odyssey-config.json"
-      },
-      {
-        id: 3,
-        title: "Pokémon Sword",
-        description: "Capture, treine e batalhe com Pokémon na região de Galar.",
-        image: "/assets/images/games/pokemon-sword.jpg",
-        video: "/assets/videos/pokemon-sword-preview.mp4",
-        size: "10.3 GB",
-        platform: "Nintendo Switch",
-        genre: ["RPG", "Aventura"],
-        rating: 8.9,
-        installed: true,
-        downloadUrl: "https://example.com/pokemon-sword.zip",
-        configFile: "pokemon-sword-config.json"
-      },
-      {
-        id: 4,
-        title: "Animal Crossing: New Horizons",
-        description: "Crie sua ilha perfeita em um mundo relaxante.",
-        image: "/assets/images/games/animal-crossing.jpg",
-        video: "/assets/videos/animal-crossing-preview.mp4",
-        size: "6.2 GB",
-        platform: "Nintendo Switch",
-        genre: ["Simulação", "Social"],
-        rating: 9.1,
-        installed: false,
-        downloadUrl: "https://example.com/animal-crossing.zip",
-        configFile: "animal-crossing-config.json"
+  // Método atualizado para enriquecer jogos individuais
+  const enrichGameWithAPI = useCallback(async (gameId) => {
+    try {
+      const game = games.find(g => g.id === gameId);
+      if (!game) return;
+
+      console.log(`🌐 Enriquecendo ${game.title} via contexto...`);
+
+      // Usar o novo método do CacheService
+      const enrichedData = await CacheService.enrichAndCacheGameData(
+        gameId,
+        game.title,
+        game.platform,
+        game
+      );
+
+      // Atualizar o jogo na lista
+      setGames(prevGames =>
+        prevGames.map(g =>
+          g.id === gameId ? enrichedData : g
+        )
+      );
+
+      return enrichedData;
+
+    } catch (error) {
+      console.error(`❌ Erro ao enriquecer jogo ${gameId}:`, error);
+      return game;
+    }
+  }, [games]);
+
+  // Método para cache em lote com progresso
+  const cacheAllGamesData = useCallback(async () => {
+    try {
+      if (!CacheService.isElectronMode()) {
+        console.warn('⚠️ Cache em lote só funciona no modo Electron');
+        return false;
       }
-    ];
 
-    setGames(mockGames);
-    localStorage.setItem('gamepass-games', JSON.stringify(mockGames));
-  };
+      console.log('🚀 Iniciando cache em lote de todos os jogos...');
 
-  const downloadGame = async (gameId) => {
+      const results = await CacheService.cacheGamesBatch(games);
+
+      if (results) {
+        console.log('✅ Cache em lote concluído');
+        return true;
+      }
+
+      return false;
+
+    } catch (error) {
+      console.error('❌ Erro no cache em lote:', error);
+      return false;
+    }
+  }, [games]);
+
+  // Método para obter estatísticas do cache
+  const getCacheStats = useCallback(async () => {
+    try {
+      return await CacheService.getSimpleStats();
+    } catch (error) {
+      console.error('❌ Erro ao obter estatísticas do cache:', error);
+      return null;
+    }
+  }, []);
+
+  // Método para limpar cache
+  const clearCache = useCallback(async (type = 'all') => {
+    try {
+      const success = await CacheService.clearCache(type);
+
+      if (success) {
+        console.log(`🧹 Cache ${type} limpo com sucesso`);
+
+        // Se limpou tudo, recarregar dados básicos
+        if (type === 'all') {
+          await loadGames();
+        }
+      }
+
+      return success;
+    } catch (error) {
+      console.error('❌ Erro ao limpar cache:', error);
+      return false;
+    }
+  }, [loadGames]);
+
+  // Função para baixar um jogo
+  const downloadGame = useCallback((gameId) => {
+    console.log(`📥 Iniciando download do jogo ${gameId}`);
+
+    // Simular progresso de download
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.random() * 10;
+      if (progress >= 100) {
+        progress = 100;
+        clearInterval(interval);
+
+        // Marcar jogo como instalado
+        setGames(prevGames =>
+          prevGames.map(game =>
+            game.id === gameId
+              ? { ...game, installed: true, downloadProgress: undefined }
+              : game
+          )
+        );
+
+        // Remover progresso
+        setDownloadProgress(prev => {
+          const newProgress = { ...prev };
+          delete newProgress[gameId];
+          return newProgress;
+        });
+
+        console.log(`✅ Download do jogo ${gameId} concluído`);
+      }
+
+      setDownloadProgress(prev => ({
+        ...prev,
+        [gameId]: Math.min(progress, 100)
+      }));
+    }, 1000);
+  }, []);
+
+  // Função para atualizar um jogo
+  const updateGame = useCallback((gameId) => {
+    console.log(`🔄 Iniciando atualização do jogo ${gameId}`);
+
+    // Simular progresso de atualização
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.random() * 15;
+      if (progress >= 100) {
+        progress = 100;
+        clearInterval(interval);
+
+        // Remover progresso
+        setUpdateProgress(prev => {
+          const newProgress = { ...prev };
+          delete newProgress[gameId];
+          return newProgress;
+        });
+
+        console.log(`✅ Atualização do jogo ${gameId} concluída`);
+      }
+
+      setUpdateProgress(prev => ({
+        ...prev,
+        [gameId]: Math.min(progress, 100)
+      }));
+    }, 800);
+  }, []);
+
+  // Função para executar um jogo
+  const launchGame = useCallback((gameId) => {
     const game = games.find(g => g.id === gameId);
     if (!game) return;
 
-    setDownloadProgress(prev => ({ ...prev, [gameId]: 0 }));
+    console.log(`🚀 Executando jogo: ${game.title}`);
 
-    try {
-      // Simular download com progresso
-      for (let progress = 0; progress <= 100; progress += 10) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        setDownloadProgress(prev => ({ ...prev, [gameId]: progress }));
-      }
+    // Atualizar último jogo jogado
+    const updatedGame = {
+      ...game,
+      lastPlayed: new Date().toISOString()
+    };
 
-      // Marcar como instalado
-      const updatedGames = games.map(g =>
-        g.id === gameId ? { ...g, installed: true } : g
-      );
-      setGames(updatedGames);
-      localStorage.setItem('gamepass-games', JSON.stringify(updatedGames));
+    setGames(prevGames =>
+      prevGames.map(g =>
+        g.id === gameId ? updatedGame : g
+      )
+    );
 
-      // Aplicar configurações do jogo
-      await applyGameConfig(game);
+    setLastPlayedGame(updatedGame);
+    localStorage.setItem('gamepass-last-played', gameId.toString());
 
-      setDownloadProgress(prev => {
-        const { [gameId]: removed, ...rest } = prev;
-        return rest;
-      });
-
-    } catch (error) {
-      console.error('Erro no download:', error);
-      setDownloadProgress(prev => {
-        const { [gameId]: removed, ...rest } = prev;
-        return rest;
-      });
+    // Se estiver no Electron, tentar executar o jogo
+    if (window.electronAPI) {
+      // Simular execução - você pode implementar a lógica real aqui
+      console.log(`🎮 Executando ${game.title} via Electron`);
     }
-  };
+  }, [games]);
 
-  const applyGameConfig = async (game) => {
-    try {
-      const configPath = `/configs/${game.configFile}`;
-      // Aqui seria aplicada a configuração específica do jogo no Yuzu
-      console.log(`Aplicando configuração para ${game.title}:`, configPath);
-    } catch (error) {
-      console.error('Erro ao aplicar configuração:', error);
+  // Função para buscar jogos
+  const searchGames = useCallback((query) => {
+    if (!query || query.trim() === '') {
+      return games;
     }
-  };
 
-  const launchGame = async (gameId) => {
-    const game = games.find(g => g.id === gameId);
-    if (!game || !game.installed) return;
+    const lowerQuery = query.toLowerCase();
+    return games.filter(game =>
+      game.title.toLowerCase().includes(lowerQuery) ||
+      game.genre?.toLowerCase().includes(lowerQuery) ||
+      game.developer?.toLowerCase().includes(lowerQuery) ||
+      game.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))
+    );
+  }, [games]);
 
-    try {
-      // Verificar se Yuzu está instalado
-      const yuzuInstalled = await checkYuzuInstallation();
-      if (!yuzuInstalled) {
-        await downloadYuzu();
-      }
-
-      // Lançar o jogo via Yuzu
-      if (window.electronAPI) {
-        await window.electronAPI.runProcess('yuzu', [game.romPath]);
-      }
-    } catch (error) {
-      console.error('Erro ao lançar jogo:', error);
-    }
-  };
-
-  const checkYuzuInstallation = async () => {
-    // Verificar se Yuzu está instalado
-    return new Promise(resolve => {
-      // Simular verificação
-      setTimeout(() => resolve(false), 1000);
-    });
-  };
-
-  const downloadYuzu = async () => {
-    try {
-      console.log('Baixando Yuzu...');
-      // Aqui seria feito o download real do Yuzu
-      const savePath = './emulators/yuzu.zip';
-
-      if (window.electronAPI) {
-        await window.electronAPI.downloadFile(API_CONFIG.yuzuDownload, savePath);
-      }
-    } catch (error) {
-      console.error('Erro ao baixar Yuzu:', error);
-    }
-  };
-
-  const value = {
+  const contextValue = {
     games,
     loading,
+    error,
     selectedGame,
     setSelectedGame,
+    refreshGames: loadGames,
+    enrichGameWithAPI,
+    cacheAllGamesData,
+    getCacheStats,
+    clearCache,
     downloadProgress,
-    installedGames,
+    updateProgress,
+    lastPlayedGame,
     downloadGame,
+    updateGame,
     launchGame,
-    syncWithRemoteAPI,
-    API_CONFIG
+    searchGames,
+    toggleDataSource: () => { }, // Manter por compatibilidade
+    useLocalData,
+    apiStatus,
+    apiGames,
+    getGameById: (id) => games.find(game => game.id === id),
+    getFeaturedGame: () => {
+      if (lastPlayedGame) {
+        return lastPlayedGame;
+      }
+
+      if (games.length > 0) {
+        const randomIndex = Math.floor(Math.random() * games.length);
+        return games[randomIndex];
+      }
+
+      return null;
+    },
+
+    // Verificar se está no modo Electron
+    isElectronMode: CacheService.isElectronMode(),
   };
 
   return (
-    <GamesContext.Provider value={value}>
+    <GamesContext.Provider value={contextValue}>
       {children}
     </GamesContext.Provider>
   );
