@@ -37,6 +37,23 @@ export const useButtonStates = (gamepadConnected, gamepadIndex, controllerConfig
           const justPressed = !wasPressed && isPressed && !isInCooldown;
           const justReleased = wasPressed && !isPressed;
 
+          // Debug específico para botão Start no Electron
+          if (buttonName === 'Start' || buttonName === 'Options' || buttonName === 'Plus') {
+            if (isPressed || justPressed) {
+              console.log('🎮 DEBUG Start Button:', {
+                buttonName,
+                index,
+                isPressed,
+                justPressed,
+                wasPressed,
+                isInCooldown,
+                buttonValue: button.value,
+                cooldownTime: currentTime - lastCooldown,
+                environment: typeof window !== 'undefined' && window.electronAPI ? 'Electron' : 'Browser'
+              });
+            }
+          }
+
           newButtonStates[buttonName] = {
             pressed: isPressed,
             value: button.value,
@@ -56,6 +73,37 @@ export const useButtonStates = (gamepadConnected, gamepadIndex, controllerConfig
           }
         }
       });
+
+      // CORREÇÃO ESPECÍFICA PARA ELECTRON: Verificar botões Start em múltiplos índices
+      if (typeof window !== 'undefined' && window.electronAPI) {
+        // Índices alternativos onde o botão Start pode estar no Electron
+        const startButtonIndices = [6, 7, 8, 9, 10, 11];
+        
+        for (const index of startButtonIndices) {
+          const button = gamepad.buttons[index];
+          if (button && button.pressed && button.value > 0.5) {
+            const buttonName = 'Start'; // Forçar como Start
+            const wasPressed = buttonStates[buttonName]?.pressed || false;
+            const lastCooldown = newCooldowns[buttonName] || 0;
+            const isInCooldown = currentTime - lastCooldown < BUTTON_DEBOUNCE_TIME;
+            const justPressed = !wasPressed && !isInCooldown;
+
+            if (justPressed) {
+              // Sobrescrever estado do botão Start
+              newButtonStates['Start'] = {
+                pressed: true,
+                value: button.value,
+                justPressed: true,
+                justReleased: false
+              };
+
+              newCooldowns['Start'] = currentTime;
+              setLastButtonPress({ button: 'Start', timestamp: currentTime });
+              break; // Sair do loop quando encontrar o botão
+            }
+          }
+        }
+      }
 
       // Verificar analógicos com deadzone e debounce
       const deadzone = config.deadzone;
