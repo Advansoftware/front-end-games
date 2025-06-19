@@ -50,12 +50,13 @@ import CustomButton from './CustomButton';
 
 const DownloadsView = () => {
   const {
-    games,
-    downloadProgress,
-    downloadGame,
-    updateGame,
-    updateProgress,
-    isElectronMode
+    getDownloadStats,
+    pauseDownload,
+    resumeDownload,
+    cancelDownload,
+    retryDownload,
+    activeDownloads,
+    downloadHistory
   } = useGames();
   const { currentTheme, playSound } = useTheme();
 
@@ -69,57 +70,9 @@ const DownloadsView = () => {
     diskSpace: '478 GB'
   });
 
-  // Simular downloads ativos para demonstração
-  const [activeDownloads, setActiveDownloads] = useState([
-    {
-      id: 1,
-      name: 'The Legend of Zelda: Breath of the Wild',
-      image: 'https://media.rawg.io/media/games/cc1/cc196a5ad763955d6532cdba236f730c.jpg',
-      progress: 65,
-      speed: '45.2 MB/s',
-      eta: '12m 34s',
-      size: '13.4 GB',
-      downloaded: '8.7 GB',
-      status: 'downloading',
-      priority: 'high'
-    },
-    {
-      id: 3,
-      name: 'Super Smash Bros. Ultimate',
-      image: 'https://media.rawg.io/media/games/9f3/9f3c513b301d8d7250a64dd7e73c62df.jpg',
-      progress: 100,
-      speed: '0 MB/s',
-      eta: 'Concluído',
-      size: '16.8 GB',
-      downloaded: '16.8 GB',
-      status: 'completed',
-      priority: 'normal'
-    },
-    {
-      id: 8,
-      name: 'Mario Kart 8 Deluxe',
-      image: 'https://media.rawg.io/media/games/6f8/6f846e941c78cfbabe53cd67e55ced83.jpg',
-      progress: 23,
-      speed: '0 MB/s',
-      eta: 'Pausado',
-      size: '6.8 GB',
-      downloaded: '1.6 GB',
-      status: 'paused',
-      priority: 'low'
-    },
-    {
-      id: 9,
-      name: 'Hollow Knight',
-      image: 'https://media.rawg.io/media/games/4cf/4cfc6b7f1850590a4634b08bfab308ab.jpg',
-      progress: 0,
-      speed: '0 MB/s',
-      eta: 'Erro na conexão',
-      size: '2.8 GB',
-      downloaded: '0 GB',
-      status: 'failed',
-      priority: 'normal'
-    }
-  ]);
+  // Obter estatísticas em tempo real
+  const downloadStats = getDownloadStats();
+  const activeDownloadsArray = Array.from(activeDownloads.values());
 
   // Cores por tema
   const themeColors = {
@@ -145,23 +98,11 @@ const DownloadsView = () => {
 
   const currentColors = themeColors[currentTheme];
 
-  // Filtrar downloads
-  const filteredDownloads = activeDownloads.filter(download => {
+  // Filtrar downloads baseado no filtro atual
+  const filteredDownloads = activeDownloadsArray.filter(download => {
     if (filter === 'all') return true;
     return download.status === filter;
   });
-
-  // Estatísticas dos downloads
-  const downloadStats = {
-    total: activeDownloads.length,
-    downloading: activeDownloads.filter(d => d.status === 'downloading').length,
-    completed: activeDownloads.filter(d => d.status === 'completed').length,
-    paused: activeDownloads.filter(d => d.status === 'paused').length,
-    failed: activeDownloads.filter(d => d.status === 'failed').length,
-    totalSpeed: activeDownloads
-      .filter(d => d.status === 'downloading')
-      .reduce((sum, d) => sum + parseFloat(d.speed.replace(' MB/s', '')), 0)
-  };
 
   // Ícone e cor por status
   const getStatusConfig = (status) => {
@@ -173,33 +114,33 @@ const DownloadsView = () => {
       case 'paused':
         return { icon: PauseIcon, color: '#FF9800', label: 'Pausado' };
       case 'failed':
+      case 'cancelled':
         return { icon: ErrorIcon, color: '#F44336', label: 'Erro' };
       default:
         return { icon: InfoIcon, color: '#757575', label: 'Desconhecido' };
     }
   };
 
-  // Ações por status
+  // Ações por status usando as funções do contexto
   const handleAction = (download, action) => {
     playSound('confirm');
 
-    setActiveDownloads(prev => prev.map(d => {
-      if (d.id === download.id) {
-        switch (action) {
-          case 'pause':
-            return { ...d, status: 'paused', speed: '0 MB/s', eta: 'Pausado' };
-          case 'resume':
-            return { ...d, status: 'downloading', speed: '42.1 MB/s', eta: '8m 15s' };
-          case 'cancel':
-            return { ...d, status: 'failed', speed: '0 MB/s', eta: 'Cancelado' };
-          case 'retry':
-            return { ...d, status: 'downloading', speed: '38.7 MB/s', eta: '15m 42s' };
-          default:
-            return d;
-        }
-      }
-      return d;
-    }));
+    switch (action) {
+      case 'pause':
+        pauseDownload(download.id);
+        break;
+      case 'resume':
+        resumeDownload(download.id);
+        break;
+      case 'cancel':
+        cancelDownload(download.id);
+        break;
+      case 'retry':
+        retryDownload(download.id);
+        break;
+      default:
+        console.warn(`Ação desconhecida: ${action}`);
+    }
   };
 
   return (
