@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { Box, Container, AppBar, Toolbar, IconButton, Typography } from '@mui/material';
+import { Box, Container, AppBar, Toolbar, IconButton, Typography, Chip } from '@mui/material';
 import {
   ArrowBack as BackIcon,
   Minimize as MinimizeIcon,
   CropSquare as MaximizeIcon,
-  Close as CloseIcon
+  Close as CloseIcon,
+  SportsEsports as GamepadIcon
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 
 import SettingsNavigation from '../components/settings/SettingsNavigation';
 import SettingsContent from '../components/settings/SettingsContent';
+import { useSettingsNavigation } from '../hooks/useSettingsNavigation';
 
 const ConfiguracoesPage = () => {
   const router = useRouter();
@@ -26,6 +28,12 @@ const ConfiguracoesPage = () => {
   const handleBack = () => {
     router.push('/');
   };
+
+  // Hook de navegação para configurações (apenas B para voltar)
+  const { navigationInfo } = useSettingsNavigation({
+    onBack: handleBack,
+    router
+  });
 
   // Mostrar loading durante hidratação
   if (!mounted) {
@@ -81,6 +89,21 @@ const ConfiguracoesPage = () => {
             Configurações
           </Typography>
 
+          {/* Indicador de gamepad conectado */}
+          {navigationInfo.gamepadConnected && (
+            <Chip
+              icon={<GamepadIcon />}
+              label="Controle conectado"
+              size="small"
+              color="success"
+              variant="outlined"
+              sx={{
+                mr: 2,
+                borderColor: 'success.main'
+              }}
+            />
+          )}
+
           {/* Controles de janela */}
           {typeof window !== 'undefined' && window.electronAPI && (
             <Box sx={{ display: 'flex' }}>
@@ -131,6 +154,30 @@ const ConfiguracoesPage = () => {
           />
         </Box>
       </Container>
+
+      {/* Dica de controles (apenas quando gamepad conectado) */}
+      {navigationInfo.gamepadConnected && (
+        <Box
+          sx={{
+            position: 'fixed',
+            bottom: 20,
+            right: 20,
+            bgcolor: 'rgba(0, 0, 0, 0.8)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: 2,
+            p: 2,
+            border: '1px solid rgba(255,255,255,0.1)',
+            zIndex: 1000
+          }}
+        >
+          <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 1 }}>
+            Controles do Gamepad:
+          </Typography>
+          <Typography variant="caption" sx={{ color: 'text.primary', display: 'block' }}>
+            B Voltar • Start Voltar
+          </Typography>
+        </Box>
+      )}
     </Box>
   );
 };

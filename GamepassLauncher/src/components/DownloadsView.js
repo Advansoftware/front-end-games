@@ -48,7 +48,16 @@ import { useDownloads } from '../hooks/useDownloads';
 import { useTheme } from '../contexts/ThemeContext';
 import CustomButton from './CustomButton';
 
-const DownloadsView = () => {
+const DownloadsView = ({
+  filters = [],
+  currentFilter = 'all',
+  onFilterChange = () => { },
+  getFilterProps = () => ({}),
+  getDownloadProps = () => ({}),
+  getActionProps = () => ({}),
+  showDetails = false,
+  onShowDetails = () => { }
+}) => {
   const {
     getDownloadStats,
     pauseDownload,
@@ -60,9 +69,7 @@ const DownloadsView = () => {
   } = useDownloads();
   const { currentTheme, playSound } = useTheme();
 
-  const [filter, setFilter] = useState('all'); // all, downloading, completed, paused, failed
   const [selectedDownload, setSelectedDownload] = useState(null);
-  const [showDetails, setShowDetails] = useState(false);
   const [systemStats, setSystemStats] = useState({
     totalBandwidth: '125.6 MB/s',
     activeCores: 8,
@@ -100,9 +107,15 @@ const DownloadsView = () => {
 
   // Filtrar downloads baseado no filtro atual
   const filteredDownloads = activeDownloadsArray.filter(download => {
-    if (filter === 'all') return true;
-    return download.status === filter;
+    if (currentFilter === 'all') return true;
+    return download.status === currentFilter;
   });
+
+  // Preparar dados dos filtros com contadores
+  const filtersWithCount = filters.map(filter => ({
+    ...filter,
+    count: filter.id === 'all' ? downloadStats.total : downloadStats[filter.id] || 0
+  }));
 
   // Ícone e cor por status
   const getStatusConfig = (status) => {
@@ -139,6 +152,10 @@ const DownloadsView = () => {
         break;
       case 'retry':
         retryDownload(download.id);
+        break;
+      case 'details':
+        setSelectedDownload(download);
+        onShowDetails(true);
         break;
       default:
         console.warn(`Ação desconhecida: ${action}`);
@@ -375,27 +392,23 @@ const DownloadsView = () => {
               transition={{ duration: 0.6, delay: 0.4 }}
             >
               <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
-                {[
-                  { id: 'all', label: 'Todos', count: downloadStats.total },
-                  { id: 'downloading', label: 'Baixando', count: downloadStats.downloading },
-                  { id: 'completed', label: 'Concluídos', count: downloadStats.completed },
-                  { id: 'paused', label: 'Pausados', count: downloadStats.paused },
-                  { id: 'failed', label: 'Com Erro', count: downloadStats.failed }
-                ].map((filterItem) => (
+                {filtersWithCount.map((filterItem, index) => (
                   <CustomButton
                     key={filterItem.id}
-                    variant={filter === filterItem.id ? 'contained' : 'outlined'}
-                    onClick={() => setFilter(filterItem.id)}
+                    variant={currentFilter === filterItem.id ? 'contained' : 'outlined'}
+                    onClick={() => onFilterChange(filterItem.id)}
+                    {...getFilterProps(index)}
                     sx={{
                       borderRadius: 25,
                       px: 3,
                       py: 1,
                       position: 'relative',
                       overflow: 'hidden',
-                      ...(filter === filterItem.id && {
+                      ...(currentFilter === filterItem.id && {
                         background: `linear-gradient(45deg, ${currentColors.primary}, ${currentColors.accent})`,
                         boxShadow: `0 8px 25px ${currentColors.primary}40`
-                      })
+                      }),
+                      ...getFilterProps(index).sx
                     }}
                   >
                     {filterItem.label}
@@ -406,7 +419,7 @@ const DownloadsView = () => {
                         sx={{
                           ml: 1,
                           height: 20,
-                          bgcolor: filter === filterItem.id ? 'rgba(255,255,255,0.2)' : currentColors.primary,
+                          bgcolor: currentFilter === filterItem.id ? 'rgba(255,255,255,0.2)' : currentColors.primary,
                           color: 'white',
                           fontSize: '0.7rem'
                         }}
@@ -435,6 +448,7 @@ const DownloadsView = () => {
                     style={{ marginBottom: 16 }}
                   >
                     <Card
+                      {...getDownloadProps(index)}
                       sx={{
                         bgcolor: 'rgba(255,255,255,0.05)',
                         backdropFilter: 'blur(15px)',
@@ -448,7 +462,8 @@ const DownloadsView = () => {
                           transform: 'translateY(-2px)',
                           boxShadow: `0 12px 35px ${statusConfig.color}25`,
                           border: `1px solid ${statusConfig.color}50`
-                        }
+                        },
+                        ...getDownloadProps(index).sx
                       }}
                     >
                       {/* Barra de progresso animada no topo */}
@@ -574,99 +589,124 @@ const DownloadsView = () => {
                             </Grid>
                           </Grid>
 
-                          {/* Ações */}
+                          {/* Ações com navegação gamepad */}
                           <Grid item xs={12} md={3}>
                             <Stack direction="row" spacing={1} justifyContent="flex-end">
-                              {download.status === 'downloading' && (
-                                <Tooltip title="Pausar">
-                                  <IconButton
-                                    onClick={() => handleAction(download, 'pause')}
-                                    sx={{
-                                      color: '#FF9800',
-                                      bgcolor: 'rgba(255, 152, 0, 0.1)',
-                                      '&:hover': {
-                                        bgcolor: 'rgba(255, 152, 0, 0.2)',
-                                        transform: 'scale(1.1)'
-                                      }
-                                    }}
-                                  >
-                                    <PauseIcon />
-                                  </IconButton>
-                                </Tooltip>
-                              )}
+                              {(() => {
+                                const availableActions = [];
+                                let actionIndex = 0;
 
-                              {download.status === 'paused' && (
-                                <Tooltip title="Retomar">
-                                  <IconButton
-                                    onClick={() => handleAction(download, 'resume')}
-                                    sx={{
-                                      color: currentColors.primary,
-                                      bgcolor: `${currentColors.primary}10`,
-                                      '&:hover': {
-                                        bgcolor: `${currentColors.primary}20`,
-                                        transform: 'scale(1.1)'
-                                      }
-                                    }}
-                                  >
-                                    <ResumeIcon />
-                                  </IconButton>
-                                </Tooltip>
-                              )}
+                                if (download.status === 'downloading') {
+                                  availableActions.push(
+                                    <Tooltip key="pause" title="Pausar">
+                                      <IconButton
+                                        onClick={() => handleAction(download, 'pause')}
+                                        {...getActionProps(index, actionIndex++)}
+                                        sx={{
+                                          color: '#FF9800',
+                                          bgcolor: 'rgba(255, 152, 0, 0.1)',
+                                          '&:hover': {
+                                            bgcolor: 'rgba(255, 152, 0, 0.2)',
+                                            transform: 'scale(1.1)'
+                                          },
+                                          ...getActionProps(index, actionIndex - 1).sx
+                                        }}
+                                      >
+                                        <PauseIcon />
+                                      </IconButton>
+                                    </Tooltip>
+                                  );
+                                }
 
-                              {download.status === 'failed' && (
-                                <Tooltip title="Tentar Novamente">
-                                  <IconButton
-                                    onClick={() => handleAction(download, 'retry')}
-                                    sx={{
-                                      color: '#4CAF50',
-                                      bgcolor: 'rgba(76, 175, 80, 0.1)',
-                                      '&:hover': {
-                                        bgcolor: 'rgba(76, 175, 80, 0.2)',
-                                        transform: 'scale(1.1)'
-                                      }
-                                    }}
-                                  >
-                                    <RefreshIcon />
-                                  </IconButton>
-                                </Tooltip>
-                              )}
+                                if (download.status === 'paused') {
+                                  availableActions.push(
+                                    <Tooltip key="resume" title="Retomar">
+                                      <IconButton
+                                        onClick={() => handleAction(download, 'resume')}
+                                        {...getActionProps(index, actionIndex++)}
+                                        sx={{
+                                          color: currentColors.primary,
+                                          bgcolor: `${currentColors.primary}10`,
+                                          '&:hover': {
+                                            bgcolor: `${currentColors.primary}20`,
+                                            transform: 'scale(1.1)'
+                                          },
+                                          ...getActionProps(index, actionIndex - 1).sx
+                                        }}
+                                      >
+                                        <ResumeIcon />
+                                      </IconButton>
+                                    </Tooltip>
+                                  );
+                                }
 
-                              {(download.status === 'downloading' || download.status === 'paused') && (
-                                <Tooltip title="Cancelar">
-                                  <IconButton
-                                    onClick={() => handleAction(download, 'cancel')}
-                                    sx={{
-                                      color: '#F44336',
-                                      bgcolor: 'rgba(244, 67, 54, 0.1)',
-                                      '&:hover': {
-                                        bgcolor: 'rgba(244, 67, 54, 0.2)',
-                                        transform: 'scale(1.1)'
-                                      }
-                                    }}
-                                  >
-                                    <CancelIcon />
-                                  </IconButton>
-                                </Tooltip>
-                              )}
+                                if (download.status === 'failed') {
+                                  availableActions.push(
+                                    <Tooltip key="retry" title="Tentar Novamente">
+                                      <IconButton
+                                        onClick={() => handleAction(download, 'retry')}
+                                        {...getActionProps(index, actionIndex++)}
+                                        sx={{
+                                          color: '#4CAF50',
+                                          bgcolor: 'rgba(76, 175, 80, 0.1)',
+                                          '&:hover': {
+                                            bgcolor: 'rgba(76, 175, 80, 0.2)',
+                                            transform: 'scale(1.1)'
+                                          },
+                                          ...getActionProps(index, actionIndex - 1).sx
+                                        }}
+                                      >
+                                        <RefreshIcon />
+                                      </IconButton>
+                                    </Tooltip>
+                                  );
+                                }
 
-                              <Tooltip title="Detalhes">
-                                <IconButton
-                                  onClick={() => {
-                                    setSelectedDownload(download);
-                                    setShowDetails(true);
-                                  }}
-                                  sx={{
-                                    color: 'text.secondary',
-                                    bgcolor: 'rgba(255,255,255,0.05)',
-                                    '&:hover': {
-                                      bgcolor: 'rgba(255,255,255,0.1)',
-                                      transform: 'scale(1.1)'
-                                    }
-                                  }}
-                                >
-                                  <InfoIcon />
-                                </IconButton>
-                              </Tooltip>
+                                if (['downloading', 'paused'].includes(download.status)) {
+                                  availableActions.push(
+                                    <Tooltip key="cancel" title="Cancelar">
+                                      <IconButton
+                                        onClick={() => handleAction(download, 'cancel')}
+                                        {...getActionProps(index, actionIndex++)}
+                                        sx={{
+                                          color: '#F44336',
+                                          bgcolor: 'rgba(244, 67, 54, 0.1)',
+                                          '&:hover': {
+                                            bgcolor: 'rgba(244, 67, 54, 0.2)',
+                                            transform: 'scale(1.1)'
+                                          },
+                                          ...getActionProps(index, actionIndex - 1).sx
+                                        }}
+                                      >
+                                        <CancelIcon />
+                                      </IconButton>
+                                    </Tooltip>
+                                  );
+                                }
+
+                                // Ação "detalhes" sempre disponível
+                                availableActions.push(
+                                  <Tooltip key="details" title="Detalhes">
+                                    <IconButton
+                                      onClick={() => handleAction(download, 'details')}
+                                      {...getActionProps(index, actionIndex++)}
+                                      sx={{
+                                        color: 'text.secondary',
+                                        bgcolor: 'rgba(255,255,255,0.05)',
+                                        '&:hover': {
+                                          bgcolor: 'rgba(255,255,255,0.1)',
+                                          transform: 'scale(1.1)'
+                                        },
+                                        ...getActionProps(index, actionIndex - 1).sx
+                                      }}
+                                    >
+                                      <InfoIcon />
+                                    </IconButton>
+                                  </Tooltip>
+                                );
+
+                                return availableActions;
+                              })()}
                             </Stack>
                           </Grid>
                         </Grid>
@@ -707,9 +747,9 @@ const DownloadsView = () => {
                       Nenhum download encontrado
                     </Typography>
                     <Typography variant="body1" sx={{ color: 'text.secondary' }}>
-                      {filter === 'all'
+                      {currentFilter === 'all'
                         ? 'Você ainda não iniciou nenhum download'
-                        : `Nenhum download com status "${filter}"`
+                        : `Nenhum download com status "${currentFilter}"`
                       }
                     </Typography>
                   </CardContent>

@@ -329,7 +329,11 @@ export const useHomeConsoleNavigation = ({
 
   // Efeito principal para escutar inputs do gamepad - APENAS SE ENABLED
   useEffect(() => {
-    if (!gamepad.gamepadConnected || !enabled) return; // ✅ VERIFICAR SE ESTÁ ENABLED
+    if (!gamepad.gamepadConnected || !enabled) return;
+
+    // Se sidebar está aberta, NÃO processar navegação aqui
+    // Deixar a sidebar controlar a navegação
+    if (sidebarOpen) return;
 
     // Navegação direcional
     if (navigation.up) {

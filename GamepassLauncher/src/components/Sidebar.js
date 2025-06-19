@@ -24,6 +24,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useGames } from '../contexts/GamesContext';
 import { useDownloads } from '../hooks/useDownloads';
 import { useGamepad } from '../hooks/useGamepad';
+import { useGamepadDebounce } from '../hooks/gamepad/useGamepadDebounce';
 
 const Sidebar = ({ open, onClose, currentView, onViewChange }) => {
   const { playSound } = useTheme();
@@ -32,6 +33,10 @@ const Sidebar = ({ open, onClose, currentView, onViewChange }) => {
   const gamepad = useGamepad();
 
   const [selectedIndex, setSelectedIndex] = useState(0);
+
+  // Debounce para navegação na sidebar
+  const { debounce: debounceNavigation } = useGamepadDebounce(180);
+  const { debounce: debounceAction } = useGamepadDebounce(400);
 
   // Usar o hook useDownloads para obter estatísticas
   const downloadStats = getDownloadStats();
@@ -58,41 +63,49 @@ const Sidebar = ({ open, onClose, currentView, onViewChange }) => {
     }
   ];
 
-  // Navegação com gamepad
+  // Navegação com gamepad - MELHORADA COM DEBOUNCE
   useEffect(() => {
-    const handleGamepadNavigation = () => {
-      if (!open) return;
+    if (!open || !gamepad.gamepadConnected) return;
 
-      const nav = gamepad.getNavigationInput();
+    const nav = gamepad.getNavigationInput();
 
-      if (nav.up && selectedIndex > 0) {
-        setSelectedIndex(prev => prev - 1);
-        playSound('navigate');
-      }
+    if (nav.up) {
+      debounceNavigation(() => {
+        if (selectedIndex > 0) {
+          setSelectedIndex(prev => prev - 1);
+          playSound('navigate');
+          console.log('🎮 Sidebar: Navegando para cima ->', selectedIndex - 1);
+        }
+      });
+    }
 
-      if (nav.down && selectedIndex < menuItems.length - 1) {
-        setSelectedIndex(prev => prev + 1);
-        playSound('navigate');
-      }
+    if (nav.down) {
+      debounceNavigation(() => {
+        if (selectedIndex < menuItems.length - 1) {
+          setSelectedIndex(prev => prev + 1);
+          playSound('navigate');
+          console.log('🎮 Sidebar: Navegando para baixo ->', selectedIndex + 1);
+        }
+      });
+    }
 
-      if (nav.confirm) {
+    if (nav.confirm) {
+      debounceAction(() => {
         const item = menuItems[selectedIndex];
+        console.log('🎮 Sidebar: Selecionando item ->', item.label);
         onViewChange(item.id);
         playSound('confirm');
-      }
+      });
+    }
 
-      if (nav.cancel || nav.back) {
-        // Fechar sidebar com B - não alterar navegação, apenas fechar
+    if (nav.cancel || nav.back) {
+      debounceAction(() => {
+        console.log('🎮 Sidebar: Fechando com botão B');
         onClose();
         playSound('cancel');
-      }
-    };
-
-    if (gamepad.gamepadConnected && open) {
-      const interval = setInterval(handleGamepadNavigation, 150);
-      return () => clearInterval(interval);
+      });
     }
-  }, [gamepad, open, selectedIndex, menuItems, onViewChange, onClose, playSound]);
+  }, [open, gamepad.gamepadConnected, gamepad.getNavigationInput(), selectedIndex, menuItems, onViewChange, onClose, playSound, debounceNavigation, debounceAction]);
 
   const handleMenuItemClick = (itemId) => {
     onViewChange(itemId);
