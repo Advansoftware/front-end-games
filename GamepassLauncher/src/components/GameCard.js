@@ -23,6 +23,7 @@ import { useGames } from '../contexts/GamesContext';
 import { useDownloads } from '../hooks/useDownloads';
 import { useTheme } from '../contexts/ThemeContext';
 import CustomButton from './CustomButton';
+import OverlayActionButton from './OverlayActionButton';
 
 const GameCard = ({
   game,
@@ -223,97 +224,22 @@ const GameCard = ({
 
         {/* Overlay para jogos com atualização disponível */}
         {hasUpdate && !isDownloading && !isUpdating && (
-          <Box
-            className="game-overlay"
-            sx={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              bgcolor: 'rgba(0,0,0,0.7)',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              opacity: 0,
-              transition: 'opacity 0.3s ease'
-            }}
-          >
-            <UpdateIcon sx={{
-              fontSize: 36,
-              color: currentColors.accent,
-              mb: 1.5,
-              filter: `drop-shadow(0 0 8px ${currentColors.glow}60)`
-            }} />
-            <CustomButton
-              variant="warning"
-              size="medium"
-              startIcon={<UpdateIcon />}
-              onClick={handleUpdate}
-              sx={{
-                fontSize: '0.8rem',
-                py: 1,
-                px: 2,
-                boxShadow: `0 0 15px ${currentColors.glow}40`,
-                '&:hover': {
-                  transform: 'scale(1.05)',
-                  boxShadow: `0 0 25px ${currentColors.glow}60`
-                }
-              }}
-            >
-              Atualizar
-            </CustomButton>
-          </Box>
+          <OverlayActionButton
+            icon={UpdateIcon}
+            text="Atualizar"
+            onClick={handleUpdate}
+            currentColors={currentColors}
+          />
         )}
 
         {/* Overlay para jogos não baixados */}
         {!isDownloaded && !isDownloading && (
-          <Box
-            className="game-overlay"
-            sx={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              bgcolor: 'rgba(0,0,0,0.7)',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              opacity: 0,
-              transition: 'opacity 0.3s ease'
-            }}
-          >
-            <CloudIcon sx={{
-              fontSize: 36,
-              color: 'white',
-              mb: 1.5,
-              filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.6))'
-            }} />
-            <CustomButton
-              variant="contained"
-              size="medium"
-              startIcon={<DownloadIcon />}
-              onClick={handleDownload}
-              sx={{
-                bgcolor: currentColors.primary,
-                color: 'white',
-                fontSize: '0.8rem',
-                py: 1,
-                px: 2,
-                boxShadow: `0 0 15px ${currentColors.glow}40`,
-                '&:hover': {
-                  bgcolor: currentColors.secondary,
-                  transform: 'scale(1.05)',
-                  boxShadow: `0 0 25px ${currentColors.glow}60`
-                }
-              }}
-            >
-              Baixar
-            </CustomButton>
-          </Box>
+          <OverlayActionButton
+            icon={DownloadIcon}
+            text="Baixar"
+            onClick={handleDownload}
+            currentColors={currentColors}
+          />
         )}
 
         {/* Overlay durante download */}
