@@ -3,6 +3,25 @@ import { useTheme } from '../contexts/ThemeContext';
 
 // Configurações específicas para cada tipo de controle
 const CONTROLLER_CONFIGS = {
+  // 8BitDo Controllers (MOVIDO PARA O TOPO PARA PRIORIDADE)
+  BITDO: {
+    patterns: [
+      '8bitdo', '8bit', 'sn30', 'sf30', 'm30', 'n30', 'zero', 'lite',
+      'pro 2', 'sn30 pro', 'sf30 pro', 'arcade stick', 'retro receiver',
+      '2dc8-', // ID específico de alguns 8BitDo
+      'pro+', 'ultimate', '8bitdo sn30 pro', '8bitdo sf30 pro'
+    ],
+    buttonMap: {
+      0: 'B', 1: 'A', 2: 'Y', 3: 'X',
+      4: 'L', 5: 'R', 6: 'L2', 7: 'R2',
+      8: 'Select', 9: 'Start', 10: 'LS', 11: 'RS',
+      12: 'Up', 13: 'Down', 14: 'Left', 15: 'Right', 16: 'Home'
+    },
+    axes: { leftX: 0, leftY: 1, rightX: 2, rightY: 3 },
+    deadzone: 0.1,
+    name: '8BitDo Controller'
+  },
+
   // Xbox Controllers
   XBOX: {
     patterns: [
@@ -19,11 +38,12 @@ const CONTROLLER_CONFIGS = {
     name: 'Xbox Controller'
   },
 
-  // PlayStation Controllers (PS4/PS5)
+  // PlayStation Controllers (PS4/PS5) - PADRÕES MAIS ESPECÍFICOS
   PLAYSTATION: {
     patterns: [
-      'playstation', 'dualshock', 'dualsense', 'ps4', 'ps5',
-      'sony', '054c-', 'wireless controller'
+      'dualshock', 'dualsense', 'ps4 controller', 'ps5 controller',
+      'sony computer entertainment', '054c-05c4', '054c-09cc', // IDs específicos PS4/PS5
+      'playstation(r)', 'wireless controller' // Só aceita se tiver esses termos específicos
     ],
     buttonMap: {
       0: 'Cross', 1: 'Circle', 2: 'Square', 3: 'Triangle',
@@ -39,7 +59,7 @@ const CONTROLLER_CONFIGS = {
   // Nintendo Switch Pro Controller
   SWITCH: {
     patterns: [
-      'pro controller', 'nintendo', 'switch', '057e-'
+      'pro controller', 'nintendo switch', 'nintendo co', '057e-'
     ],
     buttonMap: {
       0: 'B', 1: 'A', 2: 'Y', 3: 'X',
@@ -50,22 +70,6 @@ const CONTROLLER_CONFIGS = {
     axes: { leftX: 0, leftY: 1, rightX: 2, rightY: 3 },
     deadzone: 0.12,
     name: 'Nintendo Switch Pro Controller'
-  },
-
-  // 8BitDo Controllers
-  BITDO: {
-    patterns: [
-      '8bitdo', 'sn30', 'sf30', 'm30', 'n30', 'zero', 'lite'
-    ],
-    buttonMap: {
-      0: 'B', 1: 'A', 2: 'Y', 3: 'X',
-      4: 'L', 5: 'R', 6: 'L2', 7: 'R2',
-      8: 'Select', 9: 'Start', 10: 'LS', 11: 'RS',
-      12: 'Up', 13: 'Down', 14: 'Left', 15: 'Right', 16: 'Home'
-    },
-    axes: { leftX: 0, leftY: 1, rightX: 2, rightY: 3 },
-    deadzone: 0.1,
-    name: '8BitDo Controller'
   },
 
   // DirectInput Controllers (Genérico)

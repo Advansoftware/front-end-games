@@ -19,6 +19,7 @@ import { useRouter } from 'next/router';
 
 import { useGames } from '../contexts/GamesContext';
 import { useGamepad } from '../hooks/useGamepad';
+import { useHomePageNavigation } from '../hooks/useHomePageNavigation';
 import GameCard from '../components/GameCard';
 import HeroSection from '../components/HeroSection';
 import Sidebar from '../components/Sidebar';
@@ -77,6 +78,28 @@ const HomePage = () => {
         break;
     }
   };
+
+  // Hook de navegação com gamepad para homepage
+  const {
+    currentSection,
+    currentIndex,
+    isNavigating,
+    gamesBySection,
+    heroRef,
+    searchRef,
+    filtersRef,
+    navigationInfo
+  } = useHomePageNavigation({
+    games,
+    filteredGames,
+    onGameSelect: handleGameSelect,
+    onViewChange: handleViewChange,
+    router,
+    setSidebarOpen,
+    setSearchQuery,
+    selectedGenre,
+    setSelectedGenre
+  });
 
   // Detectar se é Electron apenas após hidratação
   const isElectron = mounted && typeof window !== 'undefined' && window.electronAPI;
@@ -140,6 +163,23 @@ const HomePage = () => {
               color={apiStatus.online ? 'success' : 'warning'}
               sx={{ ml: 1 }}
             />
+
+            {/* Indicador de navegação com gamepad */}
+            {gamepad.gamepadConnected && (
+              <Chip
+                icon={<GamepadIcon />}
+                label={`${currentSection} ${currentIndex + 1}/${navigationInfo.totalInSection}`}
+                size="small"
+                color="primary"
+                variant="outlined"
+                sx={{
+                  ml: 1,
+                  opacity: isNavigating ? 1 : 0.7,
+                  transition: 'opacity 0.3s ease',
+                  borderColor: isNavigating ? 'primary.main' : 'rgba(255,255,255,0.3)'
+                }}
+              />
+            )}
           </Box>
 
           {/* Busca central */}
@@ -147,16 +187,21 @@ const HomePage = () => {
             sx={{
               display: 'flex',
               alignItems: 'center',
-              bgcolor: 'rgba(255,255,255,0.1)',
+              bgcolor: currentSection === 'search' && gamepad.gamepadConnected ?
+                'rgba(25, 118, 210, 0.2)' : 'rgba(255,255,255,0.1)',
               borderRadius: 25,
               px: 2,
               py: 0.5,
               minWidth: 300,
-              backdropFilter: 'blur(10px)'
+              backdropFilter: 'blur(10px)',
+              border: currentSection === 'search' && gamepad.gamepadConnected ?
+                '2px solid rgba(25, 118, 210, 0.5)' : '1px solid transparent',
+              transition: 'all 0.3s ease'
             }}
           >
             <SearchIcon sx={{ color: 'text.secondary', mr: 1 }} />
             <InputBase
+              ref={searchRef}
               placeholder="Buscar jogos..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -246,26 +291,59 @@ const HomePage = () => {
       >
         {/* Hero Section */}
         {featuredGame && (
-          <HeroSection
-            featuredGame={featuredGame}
-            onGameSelect={handleGameSelect}
-            heroGames={games.slice(0, 5)}
-          />
+          <Box
+            ref={heroRef}
+            tabIndex={0}
+            sx={{
+              outline: 'none',
+              borderRadius: 2,
+              border: currentSection === 'hero' && gamepad.gamepadConnected ?
+                '3px solid rgba(25, 118, 210, 0.7)' : '3px solid transparent',
+              transition: 'border-color 0.3s ease',
+              mb: 6
+            }}
+          >
+            <HeroSection
+              featuredGame={featuredGame}
+              onGameSelect={handleGameSelect}
+              heroGames={games.slice(0, 5)}
+            />
+          </Box>
         )}
 
         {/* Filtros de gênero */}
-        <Box sx={{ mb: 6 }}>
+        <Box
+          sx={{
+            mb: 6,
+            p: 2,
+            borderRadius: 2,
+            border: currentSection === 'filters' && gamepad.gamepadConnected ?
+              '3px solid rgba(25, 118, 210, 0.7)' : '3px solid transparent',
+            transition: 'border-color 0.3s ease'
+          }}
+        >
           <GenreFilters
             selectedGenre={selectedGenre}
             onGenreChange={setSelectedGenre}
             games={games}
+            gamepadFocus={currentSection === 'filters' && gamepad.gamepadConnected}
+            focusIndex={currentIndex}
           />
         </Box>
 
         {/* Seções de Jogos */}
         <Box sx={{ mt: 6 }}>
           {/* Jogos em Destaque */}
-          <Box sx={{ mb: 8 }}>
+          <Box
+            sx={{
+              mb: 8,
+              p: 2,
+              borderRadius: 2,
+              border: currentSection === 'featured' && gamepad.gamepadConnected ?
+                '3px solid rgba(25, 118, 210, 0.7)' : '3px solid transparent',
+              transition: 'border-color 0.3s ease'
+            }}
+          >
             <Typography
               variant="h4"
               sx={{
@@ -280,38 +358,43 @@ const HomePage = () => {
               🎮 Jogos em Destaque
             </Typography>
 
-            <Grid container spacing={1} sx={{ mx: '-0.5rem' }}>
-              {games.filter(game => [1, 3, 8, 9].includes(game.id))
-                .filter(game => {
-                  const matchesSearch = game.title.toLowerCase().includes(searchQuery.toLowerCase());
-                  const matchesGenre = selectedGenre === 'all' ||
-                    game.genre?.toLowerCase().includes(selectedGenre.toLowerCase());
-                  return matchesSearch && matchesGenre;
-                })
-                .map((game, index) => (
-                  <Grid item xs={2} key={`featured-${game.id}`} sx={{ px: '0.5rem' }}>
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{
-                        duration: 0.4,
-                        delay: index * 0.1,
-                        ease: 'easeOut'
-                      }}
-                    >
-                      <GameCard
-                        game={game}
-                        onSelect={handleGameSelect}
-                        isSelected={selectedGame?.id === game.id}
-                      />
-                    </motion.div>
-                  </Grid>
-                ))}
+            <Grid container spacing={1} sx={{ mx: '-0.5rem' }} data-game-section="featured">
+              {gamesBySection.featured?.map((game, index) => (
+                <Grid item xs={2} key={`featured-${game.id}`} sx={{ px: '0.5rem' }}>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{
+                      duration: 0.4,
+                      delay: index * 0.1,
+                      ease: 'easeOut'
+                    }}
+                  >
+                    <GameCard
+                      game={game}
+                      onSelect={handleGameSelect}
+                      isSelected={selectedGame?.id === game.id}
+                      gamepadFocus={currentSection === 'featured' && currentIndex === index && gamepad.gamepadConnected}
+                      tabIndex={0}
+                      data-game-card
+                    />
+                  </motion.div>
+                </Grid>
+              ))}
             </Grid>
           </Box>
 
           {/* Jogos Recentes */}
-          <Box sx={{ mb: 8 }}>
+          <Box
+            sx={{
+              mb: 8,
+              p: 2,
+              borderRadius: 2,
+              border: currentSection === 'recent' && gamepad.gamepadConnected ?
+                '3px solid rgba(25, 118, 210, 0.7)' : '3px solid transparent',
+              transition: 'border-color 0.3s ease'
+            }}
+          >
             <Typography
               variant="h4"
               sx={{
@@ -326,38 +409,43 @@ const HomePage = () => {
               🆕 Adicionados Recentemente
             </Typography>
 
-            <Grid container spacing={1} sx={{ mx: '-0.5rem' }}>
-              {games.slice(-6)
-                .filter(game => {
-                  const matchesSearch = game.title.toLowerCase().includes(searchQuery.toLowerCase());
-                  const matchesGenre = selectedGenre === 'all' ||
-                    game.genre?.toLowerCase().includes(selectedGenre.toLowerCase());
-                  return matchesSearch && matchesGenre;
-                })
-                .map((game, index) => (
-                  <Grid item xs={2} key={`recent-${game.id}`} sx={{ px: '0.5rem' }}>
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{
-                        duration: 0.4,
-                        delay: index * 0.1,
-                        ease: 'easeOut'
-                      }}
-                    >
-                      <GameCard
-                        game={game}
-                        onSelect={handleGameSelect}
-                        isSelected={selectedGame?.id === game.id}
-                      />
-                    </motion.div>
-                  </Grid>
-                ))}
+            <Grid container spacing={1} sx={{ mx: '-0.5rem' }} data-game-section="recent">
+              {gamesBySection.recent?.map((game, index) => (
+                <Grid item xs={2} key={`recent-${game.id}`} sx={{ px: '0.5rem' }}>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{
+                      duration: 0.4,
+                      delay: index * 0.1,
+                      ease: 'easeOut'
+                    }}
+                  >
+                    <GameCard
+                      game={game}
+                      onSelect={handleGameSelect}
+                      isSelected={selectedGame?.id === game.id}
+                      gamepadFocus={currentSection === 'recent' && currentIndex === index && gamepad.gamepadConnected}
+                      tabIndex={0}
+                      data-game-card
+                    />
+                  </motion.div>
+                </Grid>
+              ))}
             </Grid>
           </Box>
 
           {/* Jogos de Ação */}
-          <Box sx={{ mb: 8 }}>
+          <Box
+            sx={{
+              mb: 8,
+              p: 2,
+              borderRadius: 2,
+              border: currentSection === 'action' && gamepad.gamepadConnected ?
+                '3px solid rgba(25, 118, 210, 0.7)' : '3px solid transparent',
+              transition: 'border-color 0.3s ease'
+            }}
+          >
             <Typography
               variant="h4"
               sx={{
@@ -372,39 +460,43 @@ const HomePage = () => {
               ⚔️ Jogos de Ação
             </Typography>
 
-            <Grid container spacing={1} sx={{ mx: '-0.5rem' }}>
-              {games.filter(game => game.genre?.toLowerCase().includes('action') ||
-                game.genre?.toLowerCase().includes('ação'))
-                .filter(game => {
-                  const matchesSearch = game.title.toLowerCase().includes(searchQuery.toLowerCase());
-                  const matchesGenre = selectedGenre === 'all' ||
-                    game.genre?.toLowerCase().includes(selectedGenre.toLowerCase());
-                  return matchesSearch && matchesGenre;
-                })
-                .map((game, index) => (
-                  <Grid item xs={2} key={`action-${game.id}`} sx={{ px: '0.5rem' }}>
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{
-                        duration: 0.4,
-                        delay: index * 0.1,
-                        ease: 'easeOut'
-                      }}
-                    >
-                      <GameCard
-                        game={game}
-                        onSelect={handleGameSelect}
-                        isSelected={selectedGame?.id === game.id}
-                      />
-                    </motion.div>
-                  </Grid>
-                ))}
+            <Grid container spacing={1} sx={{ mx: '-0.5rem' }} data-game-section="action">
+              {gamesBySection.action?.map((game, index) => (
+                <Grid item xs={2} key={`action-${game.id}`} sx={{ px: '0.5rem' }}>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{
+                      duration: 0.4,
+                      delay: index * 0.1,
+                      ease: 'easeOut'
+                    }}
+                  >
+                    <GameCard
+                      game={game}
+                      onSelect={handleGameSelect}
+                      isSelected={selectedGame?.id === game.id}
+                      gamepadFocus={currentSection === 'action' && currentIndex === index && gamepad.gamepadConnected}
+                      tabIndex={0}
+                      data-game-card
+                    />
+                  </motion.div>
+                </Grid>
+              ))}
             </Grid>
           </Box>
 
           {/* Todos os Jogos */}
-          <Box sx={{ mb: 8 }}>
+          <Box
+            sx={{
+              mb: 8,
+              p: 2,
+              borderRadius: 2,
+              border: currentSection === 'all' && gamepad.gamepadConnected ?
+                '3px solid rgba(25, 118, 210, 0.7)' : '3px solid transparent',
+              transition: 'border-color 0.3s ease'
+            }}
+          >
             <Typography
               variant="h4"
               sx={{
@@ -419,8 +511,8 @@ const HomePage = () => {
               📚 Todos os Jogos
             </Typography>
 
-            <Grid container spacing={1} sx={{ mx: '-0.5rem' }}>
-              {filteredGames.map((game, index) => (
+            <Grid container spacing={1} sx={{ mx: '-0.5rem' }} data-game-section="all">
+              {gamesBySection.all?.map((game, index) => (
                 <Grid item xs={2} key={`all-${game.id}`} sx={{ px: '0.5rem' }}>
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
@@ -435,6 +527,9 @@ const HomePage = () => {
                       game={game}
                       onSelect={handleGameSelect}
                       isSelected={selectedGame?.id === game.id}
+                      gamepadFocus={currentSection === 'all' && currentIndex === index && gamepad.gamepadConnected}
+                      tabIndex={0}
+                      data-game-card
                     />
                   </motion.div>
                 </Grid>
@@ -466,6 +561,33 @@ const HomePage = () => {
             </Box>
           )}
         </Box>
+
+        {/* Dica de controles (apenas quando gamepad conectado) */}
+        {gamepad.gamepadConnected && (
+          <Box
+            sx={{
+              position: 'fixed',
+              bottom: 20,
+              right: 20,
+              bgcolor: 'rgba(0, 0, 0, 0.8)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: 2,
+              p: 2,
+              border: '1px solid rgba(255,255,255,0.1)',
+              zIndex: 1000
+            }}
+          >
+            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 1 }}>
+              Controles do Gamepad:
+            </Typography>
+            <Typography variant="caption" sx={{ color: 'text.primary', display: 'block' }}>
+              ↕️ Seções • ↔️ Navegação • A Selecionar • B Voltar
+            </Typography>
+            <Typography variant="caption" sx={{ color: 'text.primary', display: 'block' }}>
+              LB/RB Páginas • Menu Sidebar • Start Configurações
+            </Typography>
+          </Box>
+        )}
       </Container>
     </Box>
   );
