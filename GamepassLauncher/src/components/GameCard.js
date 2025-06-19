@@ -28,8 +28,12 @@ import OverlayActionButton from './OverlayActionButton';
 const GameCard = ({
   game,
   isRecent = false,
-  onSelect, // Mudança: usar onSelect em vez de onGameSelect
-  variant = 'horizontal' // 'horizontal' | 'vertical'
+  onSelect,
+  variant = 'horizontal',
+  // Props para navegação console
+  'data-focused': isFocused = false,
+  tabIndex = -1,
+  ...otherProps
 }) => {
   const { downloadGame, updateGame } = useGames();
   const { activeDownloads } = useDownloads();
@@ -110,34 +114,104 @@ const GameCard = ({
     <Card
       component={motion.div}
       whileTap={{ scale: 0.98 }}
+      tabIndex={tabIndex}
+      {...otherProps}
       sx={{
-        width: '100%', // Usar largura completa do grid item
-        height: cardHeight + 120, // Altura fixa + info do jogo
+        width: '100%',
+        height: cardHeight + 120,
         flexShrink: 0,
         bgcolor: 'rgba(255,255,255,0.05)',
         backdropFilter: 'blur(10px)',
-        border: '1px solid rgba(255,255,255,0.1)',
         borderRadius: 1,
         overflow: 'hidden',
         cursor: 'pointer',
-        transition: 'all 0.2s ease',
-        opacity: isDownloaded ? 1 : 0.7,
         position: 'relative',
         display: 'flex',
         flexDirection: 'column',
-        '&:hover': {
+        outline: 'none', // Remove outline padrão do foco
+
+        // Estilo de foco para navegação console
+        border: isFocused
+          ? `3px solid ${currentColors.primary}`
+          : '1px solid rgba(255,255,255,0.1)',
+
+        transform: isFocused ? 'scale(1.05)' : 'scale(1)',
+
+        boxShadow: isFocused
+          ? `0 8px 25px ${currentColors.glow}60, 0 0 0 1px ${currentColors.primary}40`
+          : 'none',
+
+        opacity: isDownloaded ? 1 : (isFocused ? 0.9 : 0.7),
+
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+
+        // Efeito de hover (apenas quando não focado pelo controle)
+        '&:hover': !isFocused ? {
           bgcolor: 'rgba(255,255,255,0.1)',
-          borderColor: 'primary.main',
+          borderColor: `${currentColors.primary}80`,
+          transform: 'scale(1.02)',
           '& .game-overlay': {
             opacity: 1
           },
           '& .game-info': {
             transform: 'translateY(-1px)'
           }
-        }
+        } : {},
+
+        // Efeito adicional quando focado
+        ...(isFocused && {
+          bgcolor: 'rgba(255,255,255,0.08)',
+          '& .game-overlay': {
+            opacity: 1
+          },
+          '& .game-info': {
+            transform: 'translateY(-2px)'
+          },
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: -2,
+            left: -2,
+            right: -2,
+            bottom: -2,
+            background: `linear-gradient(45deg, ${currentColors.primary}, ${currentColors.accent})`,
+            borderRadius: 'inherit',
+            zIndex: -1,
+            opacity: 0.6,
+            filter: 'blur(8px)'
+          }
+        })
       }}
-      onClick={() => onSelect && onSelect(game.id)} // Mudança: usar onSelect com verificação
+      onClick={() => onSelect && onSelect(game.id)}
     >
+      {/* Indicador de foco no canto superior esquerdo */}
+      {isFocused && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 8,
+            left: 8,
+            width: 12,
+            height: 12,
+            borderRadius: '50%',
+            bgcolor: currentColors.primary,
+            zIndex: 20,
+            boxShadow: `0 0 12px ${currentColors.glow}80`,
+            animation: 'pulse-focus 2s infinite',
+            '@keyframes pulse-focus': {
+              '0%, 100%': {
+                transform: 'scale(1)',
+                opacity: 1
+              },
+              '50%': {
+                transform: 'scale(1.2)',
+                opacity: 0.8
+              }
+            }
+          }}
+        />
+      )}
+
       {/* Progress bar no topo do card durante download */}
       {isDownloading && (
         <Box
@@ -168,8 +242,8 @@ const GameCard = ({
       <Box
         sx={{
           position: 'relative',
-          height: cardHeight, // Altura fixa
-          width: '100%', // Largura completa
+          height: cardHeight,
+          width: '100%',
           flexShrink: 0
         }}
       >
@@ -181,7 +255,11 @@ const GameCard = ({
             width: '100%',
             height: '100%',
             objectFit: 'cover',
-            filter: isDownloaded ? 'none' : 'grayscale(0.3) brightness(0.8)'
+            filter: isDownloaded ? 'none' : 'grayscale(0.3) brightness(0.8)',
+            // Melhora visual quando focado
+            ...(isFocused && {
+              filter: isDownloaded ? 'brightness(1.1) saturate(1.1)' : 'grayscale(0.1) brightness(0.9)'
+            })
           }}
         />
 
@@ -386,11 +464,12 @@ const GameCard = ({
             sx={{
               position: 'absolute',
               top: 8,
-              left: 8,
+              left: isFocused ? 28 : 8, // Mover para direita se focado
               bgcolor: 'rgba(0,0,0,0.8)',
               color: 'white',
               fontSize: '0.7rem',
-              height: 24
+              height: 24,
+              transition: 'left 0.3s ease'
             }}
           />
         )}
@@ -423,9 +502,15 @@ const GameCard = ({
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          transition: 'transform 0.2s ease',
+          transition: 'transform 0.3s ease',
           flexGrow: 1,
-          width: '100%' // Garantir largura completa
+          width: '100%',
+          // Melhor destaque do texto quando focado
+          ...(isFocused && {
+            '& .MuiTypography-root': {
+              textShadow: `0 1px 3px rgba(0,0,0,0.5)`
+            }
+          })
         }}
       >
         {/* Informações do jogo - parte superior */}
@@ -434,15 +519,16 @@ const GameCard = ({
             variant="subtitle1"
             sx={{
               fontWeight: 600,
-              color: 'text.primary',
+              color: isFocused ? 'white' : 'text.primary',
               mb: 0.5,
               fontSize: '0.9rem',
               lineHeight: 1.2,
-              height: '2.4em', // Altura fixa para 2 linhas
+              height: '2.4em',
               overflow: 'hidden',
               display: '-webkit-box',
               WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical'
+              WebkitBoxOrient: 'vertical',
+              transition: 'color 0.3s ease'
             }}
           >
             {game.title}
@@ -451,13 +537,14 @@ const GameCard = ({
           <Typography
             variant="body2"
             sx={{
-              color: 'text.secondary',
+              color: isFocused ? 'rgba(255,255,255,0.8)' : 'text.secondary',
               fontSize: '0.75rem',
               mb: 1,
-              height: '1.2em', // Altura fixa para 1 linha
+              height: '1.2em',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap'
+              whiteSpace: 'nowrap',
+              transition: 'color 0.3s ease'
             }}
           >
             {game.genre || 'Aventura'}
@@ -470,11 +557,25 @@ const GameCard = ({
           spacing={1}
           alignItems="center"
           justifyContent="space-between"
-          sx={{ mt: 'auto', height: 20 }} // Altura fixa
+          sx={{ mt: 'auto', height: 20 }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <StarIcon sx={{ color: 'warning.main', fontSize: 12 }} />
-            <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.7rem' }}>
+            <StarIcon sx={{
+              color: 'warning.main',
+              fontSize: 12,
+              ...(isFocused && {
+                filter: 'brightness(1.2) drop-shadow(0 1px 2px rgba(0,0,0,0.5))'
+              })
+            }} />
+            <Typography
+              variant="caption"
+              sx={{
+                fontWeight: 600,
+                fontSize: '0.7rem',
+                color: isFocused ? 'white' : 'inherit',
+                transition: 'color 0.3s ease'
+              }}
+            >
               {game.rating || '9.5'}
             </Typography>
           </Box>
@@ -486,7 +587,12 @@ const GameCard = ({
               sx={{
                 color: isDownloaded ? 'success.main' : 'info.main',
                 fontWeight: 500,
-                fontSize: '0.65rem'
+                fontSize: '0.65rem',
+                ...(isFocused && {
+                  color: isDownloaded ? '#4caf50' : '#40B4FF',
+                  filter: 'brightness(1.2)'
+                }),
+                transition: 'color 0.3s ease'
               }}
             >
               {isDownloaded ? 'Instalado' : 'Nuvem'}
