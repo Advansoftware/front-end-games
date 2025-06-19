@@ -12,211 +12,167 @@ export const useHomePageNavigation = ({
   selectedGenre,
   setSelectedGenre
 }) => {
-  // Estados de navegação
-  const [currentSection, setCurrentSection] = useState('hero'); // hero, search, filters, featured, recent, action, all
-  const [currentIndex, setCurrentIndex] = useState(0);
+  // Estados de navegação - NAVEGAÇÃO FOCADA NOS JOGOS
+  const [currentGameIndex, setCurrentGameIndex] = useState(0);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [currentSection, setCurrentSection] = useState('featured');
 
   // Refs para elementos focáveis
-  const heroRef = useRef(null);
-  const searchRef = useRef(null);
-  const filtersRef = useRef(null);
-  const sectionsRefs = useRef({
-    featured: [],
-    recent: [],
-    action: [],
-    all: []
-  });
+  const gameCardsRef = useRef([]);
+  const containerRef = useRef(null);
 
   const gamepad = useGamepad();
   const navigation = gamepad.getNavigationInput();
 
-  // Seções disponíveis
-  const sections = ['hero', 'search', 'filters', 'featured', 'recent', 'action', 'all'];
+  // Seções de jogos (removendo navegação por categorias)
+  const sections = ['featured', 'recent', 'action', 'all'];
 
-  // Jogos por seção
+  // Jogos por seção com melhor organização
   const gamesBySection = {
     featured: games.filter(game => [1, 3, 8, 9].includes(game.id)).filter(game => {
-      const matchesSearch = true; // Hero não filtra por busca
       const matchesGenre = selectedGenre === 'all' ||
         game.genre?.toLowerCase().includes(selectedGenre.toLowerCase());
-      return matchesSearch && matchesGenre;
+      return matchesGenre;
     }),
     recent: games.slice(-6).filter(game => {
-      const matchesSearch = true; // Hero não filtra por busca
       const matchesGenre = selectedGenre === 'all' ||
         game.genre?.toLowerCase().includes(selectedGenre.toLowerCase());
-      return matchesSearch && matchesGenre;
+      return matchesGenre;
     }),
     action: games.filter(game =>
       game.genre?.toLowerCase().includes('action') ||
       game.genre?.toLowerCase().includes('ação')
     ).filter(game => {
-      const matchesSearch = true; // Hero não filtra por busca
       const matchesGenre = selectedGenre === 'all' ||
         game.genre?.toLowerCase().includes(selectedGenre.toLowerCase());
-      return matchesSearch && matchesGenre;
+      return matchesGenre;
     }),
     all: filteredGames
   };
 
-  // Gêneros disponíveis
-  const genres = ['all', 'action', 'adventure', 'rpg', 'strategy', 'simulation', 'racing'];
+  // Todos os jogos em uma lista linear para navegação sequencial
+  const allGamesLinear = [
+    ...gamesBySection.featured,
+    ...gamesBySection.recent,
+    ...gamesBySection.action,
+    ...gamesBySection.all
+  ].filter((game, index, arr) =>
+    // Remove duplicatas
+    arr.findIndex(g => g.id === game.id) === index
+  );
 
-  // Função para focar elemento atual
-  const focusCurrentElement = useCallback(() => {
+  // Scroll automático para o jogo selecionado
+  const scrollToGame = useCallback((gameIndex) => {
+    const gameElement = document.querySelector(`[data-game-index="${gameIndex}"]`);
+    if (gameElement) {
+      gameElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'center'
+      });
+
+      // Também scroll horizontal se necessário
+      const container = gameElement.closest('[data-game-section]');
+      if (container) {
+        const containerRect = container.getBoundingClientRect();
+        const elementRect = gameElement.getBoundingClientRect();
+
+        if (elementRect.left < containerRect.left || elementRect.right > containerRect.right) {
+          gameElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+            inline: 'center'
+          });
+        }
+      }
+    }
+  }, []);
+
+  // Navegação vertical entre jogos (experiência console)
+  const navigateVertical = useCallback((direction) => {
+    const totalGames = allGamesLinear.length;
+    if (totalGames === 0) return;
+
+    let newIndex;
+    if (direction === 'up') {
+      newIndex = currentGameIndex > 0 ? currentGameIndex - 1 : totalGames - 1;
+    } else {
+      newIndex = currentGameIndex < totalGames - 1 ? currentGameIndex + 1 : 0;
+    }
+
+    setCurrentGameIndex(newIndex);
     setIsNavigating(true);
 
-    switch (currentSection) {
-      case 'hero':
-        if (heroRef.current) {
-          heroRef.current.focus();
-        }
-        break;
-
-      case 'search':
-        if (searchRef.current) {
-          searchRef.current.focus();
-        }
-        break;
-
-      case 'filters':
-        const filterElements = document.querySelectorAll('[data-genre-filter]');
-        if (filterElements[currentIndex]) {
-          filterElements[currentIndex].focus();
-        }
-        break;
-
-      case 'featured':
-      case 'recent':
-      case 'action':
-      case 'all':
-        const sectionElements = document.querySelectorAll(`[data-game-section="${currentSection}"] [data-game-card]`);
-        if (sectionElements[currentIndex]) {
-          sectionElements[currentIndex].focus();
-        }
-        break;
-    }
-
-    // Remover indicador de navegação após um tempo
-    setTimeout(() => setIsNavigating(false), 100);
-  }, [currentSection, currentIndex]);
-
-  // Navegar entre seções (vertical)
-  const navigateSection = useCallback((direction) => {
-    const currentSectionIndex = sections.indexOf(currentSection);
-    let newSectionIndex;
-
-    if (direction === 'up') {
-      newSectionIndex = currentSectionIndex > 0 ? currentSectionIndex - 1 : sections.length - 1;
-    } else {
-      newSectionIndex = currentSectionIndex < sections.length - 1 ? currentSectionIndex + 1 : 0;
-    }
-
-    const newSection = sections[newSectionIndex];
-    setCurrentSection(newSection);
-
-    // Resetar índice para nova seção
-    if (['featured', 'recent', 'action', 'all'].includes(newSection)) {
-      const maxIndex = gamesBySection[newSection]?.length - 1 || 0;
-      setCurrentIndex(Math.min(currentIndex, maxIndex));
-    } else if (newSection === 'filters') {
-      setCurrentIndex(Math.min(currentIndex, genres.length - 1));
-    } else {
-      setCurrentIndex(0);
-    }
+    // Scroll automático
+    scrollToGame(newIndex);
 
     // Vibração suave
     gamepad.vibrate('short', 0.3);
-  }, [currentSection, currentIndex, gamesBySection, gamepad, sections]);
 
-  // Navegar dentro da seção (horizontal)
-  const navigateWithinSection = useCallback((direction) => {
-    let maxIndex = 0;
+    // Remove indicador de navegação
+    setTimeout(() => setIsNavigating(false), 200);
+  }, [currentGameIndex, allGamesLinear.length, scrollToGame, gamepad]);
 
-    switch (currentSection) {
-      case 'filters':
-        maxIndex = genres.length - 1;
+  // Navegação horizontal dentro da seção atual
+  const navigateHorizontal = useCallback((direction) => {
+    const currentGame = allGamesLinear[currentGameIndex];
+    if (!currentGame) return;
+
+    // Encontrar seção atual do jogo
+    let currentSectionName = 'featured';
+    let sectionGames = [];
+    let gameIndexInSection = 0;
+
+    for (const [sectionName, games] of Object.entries(gamesBySection)) {
+      const indexInSection = games.findIndex(g => g.id === currentGame.id);
+      if (indexInSection !== -1) {
+        currentSectionName = sectionName;
+        sectionGames = games;
+        gameIndexInSection = indexInSection;
         break;
-
-      case 'featured':
-      case 'recent':
-      case 'action':
-      case 'all':
-        maxIndex = (gamesBySection[currentSection]?.length - 1) || 0;
-        break;
-
-      default:
-        return; // Hero e search não têm navegação horizontal
+      }
     }
 
+    if (sectionGames.length <= 1) return;
+
+    let newIndexInSection;
     if (direction === 'left') {
-      setCurrentIndex(currentIndex > 0 ? currentIndex - 1 : maxIndex);
+      newIndexInSection = gameIndexInSection > 0 ? gameIndexInSection - 1 : sectionGames.length - 1;
     } else {
-      setCurrentIndex(currentIndex < maxIndex ? currentIndex + 1 : 0);
+      newIndexInSection = gameIndexInSection < sectionGames.length - 1 ? gameIndexInSection + 1 : 0;
     }
 
-    // Vibração suave
-    gamepad.vibrate('short', 0.2);
-  }, [currentSection, currentIndex, gamesBySection]);
+    const newGame = sectionGames[newIndexInSection];
+    const newGlobalIndex = allGamesLinear.findIndex(g => g.id === newGame.id);
 
-  // Confirmar seleção
+    if (newGlobalIndex !== -1) {
+      setCurrentGameIndex(newGlobalIndex);
+      setIsNavigating(true);
+      scrollToGame(newGlobalIndex);
+      gamepad.vibrate('short', 0.2);
+      setTimeout(() => setIsNavigating(false), 200);
+    }
+  }, [currentGameIndex, allGamesLinear, gamesBySection, scrollToGame, gamepad]);
+
+  // Confirmar seleção do jogo
   const confirmSelection = useCallback(() => {
-    switch (currentSection) {
-      case 'hero':
-        // Selecionar jogo em destaque
-        const featuredGame = games.find(game => game.id === 8) || games[0];
-        if (featuredGame) {
-          onGameSelect(featuredGame.id);
-        }
-        break;
-
-      case 'search':
-        // Focar no campo de busca
-        if (searchRef.current) {
-          searchRef.current.focus();
-        }
-        break;
-
-      case 'filters':
-        // Alterar filtro de gênero
-        const selectedGenreValue = genres[currentIndex];
-        setSelectedGenre(selectedGenreValue);
-        break;
-
-      case 'featured':
-      case 'recent':
-      case 'action':
-      case 'all':
-        // Selecionar jogo
-        const selectedGame = gamesBySection[currentSection][currentIndex];
-        if (selectedGame) {
-          onGameSelect(selectedGame.id);
-        }
-        break;
+    const selectedGame = allGamesLinear[currentGameIndex];
+    if (selectedGame) {
+      onGameSelect(selectedGame.id);
+      gamepad.vibrate('medium', 0.5);
     }
-
-    // Vibração de confirmação
-    gamepad.vibrate('medium', 0.5);
-  }, [currentSection, currentIndex, games, gamesBySection, onGameSelect, setSelectedGenre]);
+  }, [currentGameIndex, allGamesLinear, onGameSelect, gamepad]);
 
   // Voltar/Cancelar
   const cancelAction = useCallback(() => {
-    if (currentSection === 'search') {
-      // Limpar busca
-      setSearchQuery('');
-      searchRef.current?.blur();
-    } else {
-      // Voltar para hero
-      setCurrentSection('hero');
-      setCurrentIndex(0);
-    }
-
+    // Voltar para o primeiro jogo
+    setCurrentGameIndex(0);
+    scrollToGame(0);
     gamepad.vibrate('short', 0.3);
-  }, [currentSection, setSearchQuery]);
+  }, [scrollToGame, gamepad]);
 
-  // Abrir menu
-  const openMenu = useCallback(() => {
+  // Abrir sidebar com R3
+  const openSidebar = useCallback(() => {
     setSidebarOpen(true);
     gamepad.vibrate('medium', 0.4);
   }, [setSidebarOpen, gamepad]);
@@ -224,32 +180,49 @@ export const useHomePageNavigation = ({
   // Navegação rápida com bumpers
   const quickNavigation = useCallback((direction) => {
     if (direction === 'left') {
-      // Página anterior ou configurações
       onViewChange('settings');
     } else {
-      // Próxima página ou downloads
       onViewChange('downloads');
     }
-  }, [onViewChange]);
+    gamepad.vibrate('short', 0.4);
+  }, [onViewChange, gamepad]);
+
+  // Trocar seção com triggers
+  const changeSectionFilter = useCallback((direction) => {
+    const genres = ['all', 'action', 'adventure', 'rpg', 'strategy', 'simulation', 'racing'];
+    const currentGenreIndex = genres.indexOf(selectedGenre);
+
+    let newGenreIndex;
+    if (direction === 'left') {
+      newGenreIndex = currentGenreIndex > 0 ? currentGenreIndex - 1 : genres.length - 1;
+    } else {
+      newGenreIndex = currentGenreIndex < genres.length - 1 ? currentGenreIndex + 1 : 0;
+    }
+
+    setSelectedGenre(genres[newGenreIndex]);
+    setCurrentGameIndex(0); // Reset para primeiro jogo
+    gamepad.vibrate('pulse', 0.3);
+  }, [selectedGenre, setSelectedGenre, gamepad]);
 
   // Efeito para escutar inputs do gamepad
   useEffect(() => {
     if (!gamepad.gamepadConnected) return;
 
+    // Navegação principal (experiência console)
     if (navigation.up) {
-      navigateSection('up');
+      navigateVertical('up');
     }
 
     if (navigation.down) {
-      navigateSection('down');
+      navigateVertical('down');
     }
 
     if (navigation.left) {
-      navigateWithinSection('left');
+      navigateHorizontal('left');
     }
 
     if (navigation.right) {
-      navigateWithinSection('right');
+      navigateHorizontal('right');
     }
 
     if (navigation.confirm) {
@@ -261,7 +234,12 @@ export const useHomePageNavigation = ({
     }
 
     if (navigation.menu) {
-      openMenu();
+      openSidebar(); // Menu também abre sidebar
+    }
+
+    // R3 para abrir sidebar (nova funcionalidade)
+    if (navigation.rightStickClick) {
+      openSidebar();
     }
 
     if (navigation.leftBumper) {
@@ -275,59 +253,57 @@ export const useHomePageNavigation = ({
   }, [
     navigation,
     gamepad.gamepadConnected,
-    navigateSection,
-    navigateWithinSection,
+    navigateVertical,
+    navigateHorizontal,
     confirmSelection,
     cancelAction,
-    openMenu,
+    openSidebar,
     quickNavigation
   ]);
 
-  // Focar elemento quando navegação muda
+  // Focar no jogo atual quando a navegação muda
   useEffect(() => {
-    if (gamepad.gamepadConnected && (navigation.up || navigation.down || navigation.left || navigation.right)) {
-      focusCurrentElement();
-    }
-  }, [currentSection, currentIndex, gamepad.gamepadConnected, navigation, focusCurrentElement]);
-
-  // Auto-scroll para elemento focado
-  useEffect(() => {
-    if (isNavigating) {
-      const focusedElement = document.activeElement;
-      if (focusedElement) {
-        focusedElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center',
-          inline: 'nearest'
-        });
+    if (gamepad.gamepadConnected && allGamesLinear.length > 0) {
+      const currentGame = allGamesLinear[currentGameIndex];
+      if (currentGame) {
+        const gameElement = document.querySelector(`[data-game-id="${currentGame.id}"]`);
+        if (gameElement && isNavigating) {
+          gameElement.focus();
+        }
       }
     }
-  }, [isNavigating, currentSection, currentIndex]);
+  }, [currentGameIndex, allGamesLinear, gamepad.gamepadConnected, isNavigating]);
+
+  // Auto-scroll inicial
+  useEffect(() => {
+    if (allGamesLinear.length > 0 && currentGameIndex === 0) {
+      setTimeout(() => scrollToGame(0), 100);
+    }
+  }, [allGamesLinear.length, scrollToGame]);
 
   return {
-    // Estados
-    currentSection,
-    currentIndex,
+    // Estados principais
+    currentGameIndex,
+    currentGame: allGamesLinear[currentGameIndex],
     isNavigating,
     gamesBySection,
+    allGamesLinear,
 
     // Refs
-    heroRef,
-    searchRef,
-    filtersRef,
-    sectionsRefs,
+    containerRef,
+    gameCardsRef,
 
     // Funções
-    focusCurrentElement,
+    scrollToGame,
 
     // Informações de navegação
     navigationInfo: {
-      section: currentSection,
-      index: currentIndex,
-      totalInSection: currentSection === 'filters' ? genres.length :
-        (gamesBySection[currentSection]?.length || 1),
+      gameIndex: currentGameIndex,
+      totalGames: allGamesLinear.length,
+      currentGame: allGamesLinear[currentGameIndex],
       gamepadConnected: gamepad.gamepadConnected,
-      controllerType: gamepad.controllerType
+      controllerType: gamepad.controllerType,
+      canNavigate: allGamesLinear.length > 0
     }
   };
 };

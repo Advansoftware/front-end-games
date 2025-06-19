@@ -267,7 +267,8 @@ export const useGamepad = () => {
         menu: isButtonJustPressed(getMenuButton()),
         back: isButtonJustPressed(getBackButton()),
         leftBumper: isButtonJustPressed(getLeftBumper()),
-        rightBumper: isButtonJustPressed(getRightBumper())
+        rightBumper: isButtonJustPressed(getRightBumper()),
+        rightStickClick: isButtonJustPressed(getRightStickClick()) // R3 para sidebar
       };
 
       return actionMap[action] || false;
@@ -283,7 +284,8 @@ export const useGamepad = () => {
       menu: getUniversalButton('menu'),
       back: getUniversalButton('back'),
       leftBumper: getUniversalButton('leftBumper'),
-      rightBumper: getUniversalButton('rightBumper')
+      rightBumper: getUniversalButton('rightBumper'),
+      rightStickClick: getUniversalButton('rightStickClick') // R3 para sidebar
     };
   }, [isButtonJustPressed, getStickValue, controllerType]);
 
@@ -351,6 +353,18 @@ export const useGamepad = () => {
       case 'BITDO': return 'R';
       case 'DIRECTINPUT': return 'Button6';
       default: return 'RB';
+    }
+  }, [controllerType]);
+
+  // Nova função para R3 (click do analógico direito)
+  const getRightStickClick = useCallback(() => {
+    switch (controllerType) {
+      case 'XBOX': return 'RS';
+      case 'PLAYSTATION': return 'R3';
+      case 'SWITCH': return 'RS';
+      case 'BITDO': return 'RS';
+      case 'DIRECTINPUT': return 'Button12';
+      default: return 'RS';
     }
   }, [controllerType]);
 
@@ -452,6 +466,7 @@ export const useGamepad = () => {
     getBackButton,
     getLeftBumper,
     getRightBumper,
+    getRightStickClick, // Nova função adicionada
 
     // Funcionalidades extras
     vibrate,
