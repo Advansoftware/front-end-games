@@ -81,6 +81,24 @@ export const useGamepadNavigation = (controllerType, isButtonJustPressed, getSti
 
   // Sistema de navegação universal (experiência console)
   const getNavigationInput = useCallback(() => {
+    // Verificação de segurança para getStickValue
+    if (!getStickValue || typeof getStickValue !== 'function') {
+      console.warn('getStickValue não está definido ou não é uma função');
+      return {
+        up: false,
+        down: false,
+        left: false,
+        right: false,
+        confirm: false,
+        cancel: false,
+        menu: false,
+        back: false,
+        leftBumper: false,
+        rightBumper: false,
+        rightStickClick: false
+      };
+    }
+
     const leftStick = getStickValue('leftStick');
     const threshold = 0.7;
 
@@ -88,10 +106,10 @@ export const useGamepadNavigation = (controllerType, isButtonJustPressed, getSti
       if (!controllerType) return false;
 
       const actionMap = {
-        up: isButtonJustPressed('Up') || (leftStick.y < -threshold),
-        down: isButtonJustPressed('Down') || (leftStick.y > threshold),
-        left: isButtonJustPressed('Left') || (leftStick.x < -threshold),
-        right: isButtonJustPressed('Right') || (leftStick.x > threshold),
+        up: isButtonJustPressed('Up') || (leftStick?.y < -threshold),
+        down: isButtonJustPressed('Down') || (leftStick?.y > threshold),
+        left: isButtonJustPressed('Left') || (leftStick?.x < -threshold),
+        right: isButtonJustPressed('Right') || (leftStick?.x > threshold),
         confirm: isButtonJustPressed(getConfirmButton()),
         cancel: isButtonJustPressed(getCancelButton()),
         menu: isButtonJustPressed(getMenuButton()),

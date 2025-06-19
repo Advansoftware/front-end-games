@@ -621,7 +621,7 @@ const GameDetails = ({ gameId, onBack }) => {
           </Box>
         </Box>
 
-        {/* Modal de Informações Completas - CORRIGIDO */}
+        {/* Modal de Informações Completas - LAYOUT CORRIGIDO */}
         <Modal
           open={showInfoModal}
           onClose={() => setShowInfoModal(false)}
@@ -631,11 +631,11 @@ const GameDetails = ({ gameId, onBack }) => {
             timeout: 500,
             sx: {
               backgroundColor: 'rgba(0,0,0,0.9)',
-              zIndex: 15000 // Z-index maior que o GameDetails
+              zIndex: 15000
             }
           }}
           sx={{
-            zIndex: 15000 // Garantir que o modal fique por cima
+            zIndex: 15000
           }}
         >
           <Fade in={showInfoModal}>
@@ -645,7 +645,8 @@ const GameDetails = ({ gameId, onBack }) => {
                 top: '50%',
                 left: '50%',
                 transform: 'translate(-50%, -50%)',
-                width: { xs: '95%', md: '85%', lg: '75%' },
+                width: { xs: '95%', md: '90%', lg: '80%' },
+                maxWidth: '1200px',
                 maxHeight: '90vh',
                 bgcolor: 'rgba(8, 16, 20, 0.98)',
                 backdropFilter: 'blur(30px)',
@@ -653,20 +654,22 @@ const GameDetails = ({ gameId, onBack }) => {
                 borderRadius: 3,
                 boxShadow: '0 30px 60px rgba(0,0,0,0.8)',
                 overflow: 'hidden',
-                zIndex: 15001
+                zIndex: 15001,
+                display: 'flex',
+                flexDirection: 'column'
               }}
             >
               {/* Header do modal com imagem de fundo */}
               <Box
                 sx={{
                   position: 'relative',
-                  height: 180,
+                  height: { xs: 120, md: 160 },
                   backgroundImage: `url(${heroImage})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                   display: 'flex',
                   alignItems: 'center',
-                  px: 4,
+                  px: { xs: 2, md: 4 },
                   '&::before': {
                     content: '""',
                     position: 'absolute',
@@ -686,18 +689,17 @@ const GameDetails = ({ gameId, onBack }) => {
                       fontWeight: 900,
                       textShadow: '3px 3px 6px rgba(0,0,0,0.8)',
                       mb: 1,
-                      fontSize: { xs: '1.8rem', md: '2.5rem' }
+                      fontSize: { xs: '1.5rem', md: '2.2rem' }
                     }}
                   >
                     {gameDetails.title}
                   </Typography>
 
-                  {/* Rating e gênero no modal */}
                   <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
                     {gameDetails.rating && gameDetails.rating > 0 && (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <StarIcon sx={{ color: 'warning.main', fontSize: 18 }} />
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'white' }}>
+                        <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'white' }}>
                           {gameDetails.rating}/10
                         </Typography>
                       </Box>
@@ -718,7 +720,6 @@ const GameDetails = ({ gameId, onBack }) => {
                   </Stack>
                 </Box>
 
-                {/* Botão fechar estilizado */}
                 <IconButton
                   onClick={() => setShowInfoModal(false)}
                   sx={{
@@ -738,22 +739,28 @@ const GameDetails = ({ gameId, onBack }) => {
                 </IconButton>
               </Box>
 
-              {/* Conteúdo principal do modal */}
-              <Box sx={{ p: 4, maxHeight: 'calc(90vh - 180px)', overflow: 'auto' }}>
-                <Grid container spacing={4}>
-                  {/* Lado esquerdo - Descrição e screenshots */}
+              {/* Conteúdo principal do modal - LAYOUT EM GRID RESPONSIVO */}
+              <Box
+                sx={{
+                  flex: 1,
+                  overflow: 'auto',
+                  p: { xs: 2, md: 3 }
+                }}
+              >
+                <Grid container spacing={3}>
+                  {/* Coluna principal - Descrição */}
                   <Grid item xs={12} lg={8}>
-                    {/* Descrição completa */}
                     <Box sx={{ mb: 4 }}>
                       <Typography
                         variant="h5"
                         sx={{
                           color: 'white',
-                          mb: 3,
+                          mb: 2,
                           fontWeight: 'bold',
                           display: 'flex',
                           alignItems: 'center',
-                          gap: 1
+                          gap: 1,
+                          fontSize: { xs: '1.2rem', md: '1.5rem' }
                         }}
                       >
                         <InfoIcon sx={{ color: 'primary.main' }} />
@@ -763,8 +770,8 @@ const GameDetails = ({ gameId, onBack }) => {
                         variant="body1"
                         sx={{
                           color: 'rgba(255,255,255,0.9)',
-                          lineHeight: 1.8,
-                          fontSize: '1.1rem',
+                          lineHeight: 1.7,
+                          fontSize: { xs: '0.95rem', md: '1.1rem' },
                           textAlign: 'justify'
                         }}
                       >
@@ -772,14 +779,14 @@ const GameDetails = ({ gameId, onBack }) => {
                       </Typography>
                     </Box>
 
-                    {/* Screenshots em grid melhorado - APENAS NO MODAL */}
+                    {/* Screenshots em grid melhorado */}
                     {displayImages.length > 1 && (
                       <Box>
                         <Typography
-                          variant="h5"
+                          variant="h6"
                           sx={{
                             color: 'white',
-                            mb: 3,
+                            mb: 2,
                             fontWeight: 'bold',
                             display: 'flex',
                             alignItems: 'center',
@@ -789,9 +796,9 @@ const GameDetails = ({ gameId, onBack }) => {
                           <CardMedia sx={{ color: 'primary.main' }} />
                           Galeria de Imagens
                         </Typography>
-                        <Grid container spacing={2}>
-                          {displayImages.map((image, index) => (
-                            <Grid item xs={6} md={4} key={index}>
+                        <Grid container spacing={1.5}>
+                          {displayImages.slice(0, 6).map((image, index) => (
+                            <Grid item xs={6} sm={4} md={3} key={index}>
                               <Card
                                 sx={{
                                   borderRadius: 2,
@@ -810,7 +817,7 @@ const GameDetails = ({ gameId, onBack }) => {
                                   image={image}
                                   alt={`Screenshot ${index + 1}`}
                                   sx={{
-                                    height: 120,
+                                    height: { xs: 80, md: 100 },
                                     objectFit: 'cover'
                                   }}
                                 />
@@ -822,97 +829,138 @@ const GameDetails = ({ gameId, onBack }) => {
                     )}
                   </Grid>
 
-                  {/* Lado direito - Informações técnicas e ações */}
+                  {/* Sidebar - Ações e informações técnicas */}
                   <Grid item xs={12} lg={4}>
-                    {/* Ações principais no modal */}
-                    <Box sx={{ mb: 4 }}>
+                    {/* Card de ações - LAYOUT CORRIGIDO EM GRID */}
+                    <Card
+                      sx={{
+                        bgcolor: 'rgba(255,255,255,0.05)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: 2,
+                        p: 3,
+                        mb: 3
+                      }}
+                    >
                       <Typography
                         variant="h6"
                         sx={{
                           color: 'white',
-                          mb: 2,
-                          fontWeight: 'bold'
+                          mb: 3,
+                          fontWeight: 'bold',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1
                         }}
                       >
+                        <GamepadIcon sx={{ color: 'primary.main' }} />
                         Ações
                       </Typography>
 
-                      <Stack spacing={2}>
-                        {/* LÓGICA CORRIGIDA NO MODAL: Botão único que se transforma */}
+                      {/* Grid responsivo para os botões - DENTRO DO GRID PRINCIPAL */}
+                      <Grid container spacing={2}>
+                        {/* Botão principal - sempre 2 colunas */}
+                        <Grid item xs={12}>
+                          {(isDownloading || isUpdating) ? (
+                            <CustomButton
+                              variant={isUpdating ? "warning" : "info"}
+                              size="medium"
+                              startIcon={<CloudIcon />}
+                              disabled={true}
+                              downloadProgress={isDownloading ? progressPercent : updateProgressPercent}
+                              sx={{
+                                width: '100%',
+                                py: 1.5,
+                                fontSize: '1rem',
+                                fontWeight: 'bold',
+                                minHeight: 48
+                              }}
+                            >
+                              {operationMessage}
+                            </CustomButton>
+                          ) : (
+                            <>
+                              {gameDetails.installed ? (
+                                <CustomButton
+                                  variant={hasUpdate ? "warning" : "success"}
+                                  size="medium"
+                                  startIcon={hasUpdate ? <UpdateIcon /> : <PlayIcon />}
+                                  onClick={hasUpdate ? handleUpdate : handlePlay}
+                                  sx={{
+                                    width: '100%',
+                                    py: 1.5,
+                                    fontSize: '1rem',
+                                    fontWeight: 'bold',
+                                    minHeight: 48
+                                  }}
+                                >
+                                  {hasUpdate ? 'Atualizar' : 'Jogar Agora'}
+                                </CustomButton>
+                              ) : (
+                                <CustomButton
+                                  variant="primary"
+                                  size="medium"
+                                  startIcon={<DownloadIcon />}
+                                  onClick={handleDownload}
+                                  sx={{
+                                    width: '100%',
+                                    py: 1.5,
+                                    fontSize: '1rem',
+                                    fontWeight: 'bold',
+                                    minHeight: 48
+                                  }}
+                                >
+                                  Baixar Jogo
+                                </CustomButton>
+                              )}
+                            </>
+                          )}
+                        </Grid>
 
-                        {/* Se está baixando/instalando/atualizando - Botão de progresso */}
-                        {(isDownloading || isUpdating) ? (
-                          <CustomButton
-                            variant={isUpdating ? "warning" : "info"}
-                            size="medium"
-                            startIcon={<CloudIcon />}
-                            disabled={true}
-                            downloadProgress={isDownloading ? progressPercent : updateProgressPercent}
-                            sx={{
-                              width: '100%',
-                              py: 1.5,
-                              fontSize: '1rem',
-                              fontWeight: 'bold'
-                            }}
-                          >
-                            {operationMessage}
-                          </CustomButton>
-                        ) : (
-                          /* Se NÃO está processando */
-                          <>
-                            {/* Se está instalado - JOGAR AGORA ou ATUALIZAR (mesmo botão) */}
-                            {gameDetails.installed ? (
-                              <CustomButton
-                                variant={hasUpdate ? "warning" : "success"}
-                                size="medium"
-                                startIcon={hasUpdate ? <UpdateIcon /> : <PlayIcon />}
-                                onClick={hasUpdate ? handleUpdate : handlePlay}
-                                sx={{
-                                  py: 1.5,
-                                  fontSize: '1rem',
-                                  fontWeight: 'bold'
-                                }}
-                              >
-                                {hasUpdate ? 'Atualizar' : 'Jogar Agora'}
-                              </CustomButton>
-                            ) : (
-                              /* Se NÃO está instalado - BAIXAR */
-                              <CustomButton
-                                variant="primary"
-                                size="medium"
-                                startIcon={<DownloadIcon />}
-                                onClick={handleDownload}
-                                sx={{
-                                  width: '100%',
-                                  py: 1.5,
-                                  fontSize: '1rem',
-                                  fontWeight: 'bold'
-                                }}
-                              >
-                                Baixar Jogo
-                              </CustomButton>
-                            )}
-                          </>
-                        )}
-
-                        {/* Outros botões - sempre disponíveis quando não está processando */}
+                        {/* Botões secundários - em colunas responsivas */}
                         {gameDetails.youtubeVideoId && (
-                          <CustomButton
-                            variant="outlined"
-                            size="medium"
-                            startIcon={<YouTubeIcon />}
-                            onClick={handleTrailerToggle}
-                            sx={{
-                              py: 1.2
-                            }}
-                          >
-                            Ver Trailer
-                          </CustomButton>
+                          <Grid item xs={12} sm={6}>
+                            <CustomButton
+                              variant="outlined"
+                              size="medium"
+                              startIcon={<YouTubeIcon />}
+                              onClick={handleTrailerToggle}
+                              sx={{
+                                width: '100%',
+                                py: 1.2,
+                                fontSize: '0.9rem',
+                                fontWeight: 'bold',
+                                minHeight: 44
+                              }}
+                            >
+                              Ver Trailer
+                            </CustomButton>
+                          </Grid>
                         )}
-                      </Stack>
-                    </Box>
 
-                    {/* Informações técnicas estilizadas */}
+                        {gameDetails.officialWebsite && (
+                          <Grid item xs={12} sm={6}>
+                            <CustomButton
+                              variant="outlined"
+                              size="medium"
+                              startIcon={<WebIcon />}
+                              onClick={() => window.open(gameDetails.officialWebsite, '_blank')}
+                              sx={{
+                                width: '100%',
+                                py: 1.2,
+                                fontSize: '0.9rem',
+                                fontWeight: 'bold',
+                                minHeight: 44
+                              }}
+                            >
+                              Site Oficial
+                            </CustomButton>
+                          </Grid>
+                        )}
+                      </Grid>
+                    </Card>
+
+                    {/* Card de especificações */}
                     <Card
                       sx={{
                         bgcolor: 'rgba(255,255,255,0.05)',
@@ -933,24 +981,25 @@ const GameDetails = ({ gameId, onBack }) => {
                         Especificações
                       </Typography>
 
-                      <Stack spacing={2.5}>
+                      <Stack spacing={2}>
+                        {/* Informações em formato mais organizado */}
                         {gameDetails.developer && (
                           <Box>
-                            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', mb: 0.5 }}>
-                              DESENVOLVEDOR
+                            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)', mb: 0.5 }}>
+                              Desenvolvedor
                             </Typography>
-                            <Typography variant="body1" sx={{ color: 'white', fontWeight: 600 }}>
+                            <Typography variant="body1" sx={{ color: 'white', fontWeight: 500 }}>
                               {gameDetails.developer}
                             </Typography>
                           </Box>
                         )}
 
-                        {gameDetails.publisher && gameDetails.publisher !== gameDetails.developer && (
+                        {gameDetails.publisher && (
                           <Box>
-                            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', mb: 0.5 }}>
-                              EDITORA
+                            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)', mb: 0.5 }}>
+                              Editora
                             </Typography>
-                            <Typography variant="body1" sx={{ color: 'white', fontWeight: 600 }}>
+                            <Typography variant="body1" sx={{ color: 'white', fontWeight: 500 }}>
                               {gameDetails.publisher}
                             </Typography>
                           </Box>
@@ -958,76 +1007,38 @@ const GameDetails = ({ gameId, onBack }) => {
 
                         {gameDetails.releaseDate && (
                           <Box>
-                            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', mb: 0.5 }}>
-                              LANÇAMENTO
+                            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)', mb: 0.5 }}>
+                              Data de Lançamento
                             </Typography>
-                            <Typography variant="body1" sx={{ color: 'white', fontWeight: 600 }}>
+                            <Typography variant="body1" sx={{ color: 'white', fontWeight: 500 }}>
                               {gameDetails.releaseDate}
                             </Typography>
                           </Box>
                         )}
 
-                        <Box>
-                          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', mb: 0.5 }}>
-                            TAMANHO
-                          </Typography>
-                          <Typography variant="body1" sx={{ color: 'white', fontWeight: 600 }}>
-                            {gameDetails.size || gameDetails.downloadSize || 'N/A'}
-                          </Typography>
-                        </Box>
+                        {(gameDetails.size || gameDetails.downloadSize) && (
+                          <Box>
+                            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)', mb: 0.5 }}>
+                              Tamanho do Download
+                            </Typography>
+                            <Typography variant="body1" sx={{ color: 'white', fontWeight: 500 }}>
+                              {gameDetails.size || gameDetails.downloadSize}
+                            </Typography>
+                          </Box>
+                        )}
 
-                        {gameDetails.website && (
-                          <CustomButton
-                            variant="outlined"
-                            href={gameDetails.website}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            startIcon={<WebIcon />}
-                            size="small"
-                            sx={{
-                              mt: 1
-                            }}
-                          >
-                            Site Oficial
-                          </CustomButton>
+                        {gameDetails.platform && (
+                          <Box>
+                            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)', mb: 0.5 }}>
+                              Plataforma
+                            </Typography>
+                            <Typography variant="body1" sx={{ color: 'white', fontWeight: 500 }}>
+                              {gameDetails.platform}
+                            </Typography>
+                          </Box>
                         )}
                       </Stack>
                     </Card>
-
-                    {/* Tags melhoradas */}
-                    {gameDetails.tags && gameDetails.tags.length > 0 && (
-                      <Box sx={{ mt: 3 }}>
-                        <Typography
-                          variant="h6"
-                          sx={{
-                            color: 'white',
-                            mb: 2,
-                            fontWeight: 'bold'
-                          }}
-                        >
-                          Tags
-                        </Typography>
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                          {gameDetails.tags.map((tag, index) => (
-                            <Chip
-                              key={index}
-                              label={tag}
-                              size="small"
-                              sx={{
-                                bgcolor: 'rgba(33, 150, 243, 0.2)',
-                                color: 'primary.light',
-                                border: '1px solid rgba(33, 150, 243, 0.3)',
-                                fontSize: '0.8rem',
-                                fontWeight: 500,
-                                '&:hover': {
-                                  bgcolor: 'rgba(33, 150, 243, 0.3)'
-                                }
-                              }}
-                            />
-                          ))}
-                        </Box>
-                      </Box>
-                    )}
                   </Grid>
                 </Grid>
               </Box>

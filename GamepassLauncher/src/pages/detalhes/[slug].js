@@ -12,7 +12,7 @@ import { motion } from 'framer-motion';
 import { useGames } from '../../contexts/GamesContext';
 import { useGameDetailsNavigation } from '../../hooks/useGameDetailsNavigation';
 import GameDetailsHero from '../../components/game-details/GameDetailsHero';
-import GameDetailsInfo from '../../components/game-details/GameDetailsInfo';
+import GameInfoModal from '../../components/GameInfoModal';
 import TrailerModal from '../../components/TrailerModal';
 
 const GameDetailsPage = () => {
@@ -110,19 +110,20 @@ const GameDetailsPage = () => {
   // Controles do Electron
   useEffect(() => {
     if (typeof window !== 'undefined' && window.electronAPI) {
-      // Garantir que a janela esteja maximizada/fullscreen
-      window.electronAPI.setFullscreen && window.electronAPI.setFullscreen(true);
-      window.electronAPI.setTitleBarVisible && window.electronAPI.setTitleBarVisible(false);
+      // Remover controles de fullscreen - agora é uma página normal
+      // window.electronAPI.setFullscreen && window.electronAPI.setFullscreen(true);
+      // window.electronAPI.setTitleBarVisible && window.electronAPI.setTitleBarVisible(false);
 
-      // Prevenir scroll
-      document.body.style.overflow = 'hidden';
-      document.documentElement.style.overflow = 'hidden';
+      // Permitir scroll normal
+      // document.body.style.overflow = 'hidden';
+      // document.documentElement.style.overflow = 'hidden';
 
       return () => {
-        window.electronAPI.setFullscreen && window.electronAPI.setFullscreen(false);
-        window.electronAPI.setTitleBarVisible && window.electronAPI.setTitleBarVisible(true);
-        document.body.style.overflow = 'auto';
-        document.documentElement.style.overflow = 'auto';
+        // Cleanup não é mais necessário
+        // window.electronAPI.setFullscreen && window.electronAPI.setFullscreen(false);
+        // window.electronAPI.setTitleBarVisible && window.electronAPI.setTitleBarVisible(true);
+        // document.body.style.overflow = 'auto';
+        // document.documentElement.style.overflow = 'auto';
       };
     }
   }, []);
@@ -130,13 +131,13 @@ const GameDetailsPage = () => {
   if (!game) {
     return (
       <Box sx={{
-        height: '100vh',
+        minHeight: '100vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        bgcolor: '#000'
+        bgcolor: 'background.default'
       }}>
-        <Typography variant="h4" color="white">Jogo não encontrado</Typography>
+        <Typography variant="h4" color="text.primary">Jogo não encontrado</Typography>
       </Box>
     );
   }
@@ -148,16 +149,19 @@ const GameDetailsPage = () => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       sx={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        width: '100vw',
-        height: '100vh',
-        overflow: 'hidden',
-        bgcolor: '#000',
-        zIndex: 10000
+        minHeight: '100vh',
+        width: '100%',
+        bgcolor: 'background.default',
+        // Remover estilos de modal/overlay
+        // position: 'fixed',
+        // top: 0,
+        // left: 0,
+        // right: 0,
+        // bottom: 0,
+        // width: '100vw',
+        // height: '100vh',
+        // overflow: 'hidden',
+        // zIndex: 10000
       }}
     >
       {/* Botão voltar */}
@@ -256,7 +260,7 @@ const GameDetailsPage = () => {
       />
 
       {/* Modal de informações completas */}
-      <GameDetailsInfo
+      <GameInfoModal
         game={game}
         open={showInfoModal}
         onClose={() => setShowInfoModal(false)}

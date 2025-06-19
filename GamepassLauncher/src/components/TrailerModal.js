@@ -1,28 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import {
   Modal,
+  Backdrop,
+  Fade,
   Box,
   IconButton,
   Typography,
+  useTheme,
+  useMediaQuery,
   Stack
 } from '@mui/material';
 import {
   Close as CloseIcon,
-  PlayArrow as PlayIcon,
-  SportsEsports as GamepadIcon,
-  YouTube as YouTubeIcon
+  YouTube as YouTubeIcon,
+  SportsEsports as GamepadIcon
 } from '@mui/icons-material';
-import { useTheme } from '../contexts/ThemeContext';
 import { useModalNavigation } from '../hooks/useModalNavigation';
+import YouTubePlayer from './YouTubePlayer';
 import CustomButton from './CustomButton';
 
 const TrailerModal = ({
   open,
   onClose,
   videoId,
-  gameTitle
+  gameTitle = 'Trailer'
 }) => {
-  const { currentTheme } = useTheme();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [isPlayerReady, setIsPlayerReady] = useState(false);
 
   // Integração com gamepad
@@ -31,15 +35,6 @@ const TrailerModal = ({
     onClose: onClose,
     disabled: false
   });
-
-  // Cores por tema
-  const themeColors = {
-    xbox: { primary: '#107C10', glow: '#40E040' },
-    ps5: { primary: '#0070F3', glow: '#40B4FF' },
-    switch: { primary: '#E60012', glow: '#FF4040' }
-  };
-
-  const currentColors = themeColors[currentTheme];
 
   // Simular carregamento do player
   useEffect(() => {
@@ -63,189 +58,224 @@ const TrailerModal = ({
     handleClose();
   };
 
+  if (!videoId) return null;
+
   return (
     <Modal
       open={open}
       onClose={handleCloseModal}
+      closeAfterTransition
+      BackdropComponent={Backdrop}
+      BackdropProps={{
+        timeout: 500,
+        sx: {
+          backgroundColor: 'rgba(0,0,0,0.95)',
+          zIndex: 16000
+        }
+      }}
       sx={{
+        zIndex: 16000,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 20000 // Z-index alto para ficar acima de outros modais
+        justifyContent: 'center'
       }}
     >
-      <Box
-        sx={{
-          position: 'relative',
-          width: { xs: '95vw', sm: '90vw', md: '80vw', lg: '70vw' },
-          height: { xs: '60vw', sm: '50vw', md: '45vw', lg: '40vw' },
-          maxWidth: '1200px',
-          maxHeight: '675px',
-          bgcolor: '#000',
-          borderRadius: 3,
-          overflow: 'hidden',
-          outline: 'none',
-          border: '3px solid rgba(255,255,255,0.2)',
-          boxShadow: '0 30px 60px rgba(0,0,0,0.8)',
-          display: 'flex',
-          flexDirection: 'column'
-        }}
-      >
-        {/* Header do modal com título e botão fechar */}
+      <Fade in={open}>
         <Box
           sx={{
+            position: 'relative',
+            width: { xs: '95%', sm: '90%', md: '85%', lg: '80%' },
+            maxWidth: '1200px',
+            height: { xs: '70%', md: '80%' },
+            maxHeight: '800px',
+            bgcolor: 'rgba(8, 16, 20, 0.98)',
+            backdropFilter: 'blur(30px)',
+            border: '2px solid rgba(255,255,255,0.15)',
+            borderRadius: 3,
+            boxShadow: '0 30px 80px rgba(0,0,0,0.9)',
+            overflow: 'hidden',
             display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            p: 2,
-            bgcolor: 'rgba(0,0,0,0.8)',
-            borderBottom: '1px solid rgba(255,255,255,0.1)'
+            flexDirection: 'column',
+            animation: 'modalScale 0.3s ease-out',
+            '@keyframes modalScale': {
+              '0%': {
+                transform: 'scale(0.8)',
+                opacity: 0
+              },
+              '100%': {
+                transform: 'scale(1)',
+                opacity: 1
+              }
+            }
           }}
         >
-          <Typography
-            variant="h6"
+          {/* Header elegante do modal */}
+          <Box
             sx={{
-              color: 'white',
-              fontWeight: 'bold',
               display: 'flex',
               alignItems: 'center',
-              gap: 1
+              justifyContent: 'space-between',
+              p: { xs: 2, md: 3 },
+              background: 'linear-gradient(135deg, rgba(244, 67, 54, 0.8) 0%, rgba(233, 30, 99, 0.8) 100%)',
+              borderBottom: '1px solid rgba(255,255,255,0.1)'
             }}
           >
-            <YouTubeIcon sx={{ color: '#FF0000' }} />
-            Trailer: {gameTitle}
-          </Typography>
-
-          <IconButton
-            onClick={handleCloseModal}
-            sx={{
-              color: 'white',
-              bgcolor: 'rgba(255,255,255,0.1)',
-              '&:hover': {
-                bgcolor: 'rgba(244, 67, 54, 0.8)',
-                transform: 'scale(1.1)'
-              },
-              transition: 'all 0.3s ease'
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </Box>
-
-        {/* Área do vídeo */}
-        <Box
-          sx={{
-            flex: 1,
-            position: 'relative',
-            bgcolor: '#000',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-        >
-          {!isPlayerReady && (
-            <Box
-              sx={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                bgcolor: 'rgba(0,0,0,0.9)',
-                zIndex: 1
-              }}
-            >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Box
                 sx={{
-                  width: 60,
-                  height: 60,
-                  border: `4px solid ${currentColors.primary}`,
-                  borderTop: '4px solid transparent',
+                  p: 1,
                   borderRadius: '50%',
-                  animation: 'spin 1s linear infinite',
-                  mb: 2,
-                  '@keyframes spin': {
-                    '0%': { transform: 'rotate(0deg)' },
-                    '100%': { transform: 'rotate(360deg)' }
-                  }
-                }}
-              />
-              <Typography
-                variant="h6"
-                sx={{
-                  color: 'white',
-                  textAlign: 'center'
+                  bgcolor: 'rgba(255,255,255,0.2)',
+                  backdropFilter: 'blur(10px)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}
               >
-                Carregando trailer...
-              </Typography>
+                <YouTubeIcon sx={{ color: 'white', fontSize: { xs: 24, md: 28 } }} />
+              </Box>
+              <Box>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    color: 'white',
+                    fontWeight: 900,
+                    textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+                    fontSize: { xs: '1.2rem', md: '1.5rem' }
+                  }}
+                >
+                  Trailer
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: 'rgba(255,255,255,0.9)',
+                    fontWeight: 500,
+                    fontSize: { xs: '0.85rem', md: '0.95rem' }
+                  }}
+                >
+                  {gameTitle}
+                </Typography>
+              </Box>
             </Box>
-          )}
 
-          {videoId && (
-            <iframe
-              width="100%"
-              height="100%"
-              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`}
-              title="Game Trailer"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              style={{
-                border: 'none',
-                borderRadius: '0 0 12px 12px'
-              }}
-              onLoad={() => setIsPlayerReady(true)}
-            />
-          )}
-        </Box>
-
-        {/* Footer com botões de ação organizados */}
-        <Box
-          sx={{
-            p: 2,
-            bgcolor: 'rgba(0,0,0,0.8)',
-            borderTop: '1px solid rgba(255,255,255,0.1)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}
-        >
-          {/* Informações do vídeo */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <GamepadIcon sx={{ color: currentColors.primary, fontSize: 20 }} />
-            <Typography
-              variant="body2"
-              sx={{ color: 'rgba(255,255,255,0.7)' }}
-            >
-              Use B/Círculo para fechar
-            </Typography>
-          </Box>
-
-          {/* Botões de ação */}
-          <Stack direction="row" spacing={1}>
-            <CustomButton
-              variant="outlined"
-              size="small"
+            <IconButton
               onClick={handleCloseModal}
               sx={{
-                color: 'rgba(255,255,255,0.8)',
-                borderColor: 'rgba(255,255,255,0.3)',
+                color: 'white',
+                bgcolor: 'rgba(0,0,0,0.3)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255,255,255,0.2)',
                 '&:hover': {
-                  borderColor: 'rgba(255,255,255,0.6)',
-                  bgcolor: 'rgba(255,255,255,0.1)'
-                }
+                  bgcolor: 'rgba(244, 67, 54, 0.8)',
+                  transform: 'scale(1.1)',
+                  border: '1px solid rgba(255,255,255,0.4)'
+                },
+                transition: 'all 0.3s ease',
+                size: { xs: 'small', md: 'medium' }
               }}
             >
-              Fechar
-            </CustomButton>
-          </Stack>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          {/* Container do player com design aprimorado */}
+          <Box
+            sx={{
+              flex: 1,
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              p: { xs: 1, md: 2 },
+              background: 'linear-gradient(135deg, rgba(8, 16, 20, 0.95) 0%, rgba(16, 24, 32, 0.95) 100%)'
+            }}
+          >
+            {/* Frame decorativo ao redor do player */}
+            <Box
+              sx={{
+                position: 'relative',
+                width: '100%',
+                height: '100%',
+                borderRadius: 2,
+                overflow: 'hidden',
+                border: '3px solid transparent',
+                background: 'linear-gradient(135deg, rgba(244, 67, 54, 0.3), rgba(233, 30, 99, 0.3)) border-box',
+                boxShadow: `
+                  0 0 30px rgba(244, 67, 54, 0.3),
+                  inset 0 0 30px rgba(0,0,0,0.2),
+                  0 20px 40px rgba(0,0,0,0.4)
+                `
+              }}
+            >
+              {/* Player do YouTube */}
+              <Box
+                sx={{
+                  position: 'relative',
+                  zIndex: 2,
+                  width: '100%',
+                  height: '100%',
+                  borderRadius: 1,
+                  overflow: 'hidden'
+                }}
+              >
+                <YouTubePlayer
+                  videoId={videoId}
+                  opts={{
+                    width: '100%',
+                    height: '100%',
+                    playerVars: {
+                      autoplay: 1,
+                      controls: 1,
+                      disablekb: 0,
+                      enablejsapi: 1,
+                      fs: 1,
+                      iv_load_policy: 3,
+                      modestbranding: 1,
+                      playsinline: 1,
+                      rel: 0,
+                      showinfo: 0,
+                      origin: window.location.origin
+                    }
+                  }}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: '8px'
+                  }}
+                />
+              </Box>
+            </Box>
+          </Box>
+
+          {/* Footer com informações adicionais */}
+          <Box
+            sx={{
+              p: { xs: 1.5, md: 2 },
+              background: 'linear-gradient(135deg, rgba(16, 24, 32, 0.9) 0%, rgba(8, 16, 20, 0.9) 100%)',
+              borderTop: '1px solid rgba(255,255,255,0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'rgba(255,255,255,0.7)',
+                textAlign: 'center',
+                fontSize: { xs: '0.75rem', md: '0.85rem' },
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1
+              }}
+            >
+              <YouTubeIcon sx={{ fontSize: 16, opacity: 0.7 }} />
+              Pressione ESC para fechar ou clique fora do modal
+            </Typography>
+          </Box>
         </Box>
-      </Box>
+      </Fade>
     </Modal>
   );
 };

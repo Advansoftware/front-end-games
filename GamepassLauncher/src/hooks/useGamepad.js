@@ -57,7 +57,7 @@ export const useGamepad = () => {
     lastButtonPress,
     hapticSupported,
 
-    // Funções de input
+    // Funções de input - EXPOSTAS CORRETAMENTE
     isButtonPressed,
     isButtonJustPressed,
     getStickValue,
