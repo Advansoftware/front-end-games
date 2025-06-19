@@ -290,7 +290,7 @@ const HomePage = () => {
       >
         {/* Hero Section - Ignorar imagem, focar apenas nos botões */}
         {featuredGame && (
-          <Box sx={{ 
+          <Box sx={{
             mb: 6,
             width: '100%',
             maxWidth: '100%'
@@ -308,7 +308,7 @@ const HomePage = () => {
         )}
 
         {/* Filtros de gênero */}
-        <Box sx={{ 
+        <Box sx={{
           mb: 6,
           width: '100%',
           maxWidth: '100%'
@@ -358,8 +358,8 @@ const HomePage = () => {
                       ref={gameCardProps.ref}
                       data-game-card="true"
                       data-game-index={index}
-                      style={{ 
-                        width: '100%', 
+                      style={{
+                        width: '100%',
                         height: '100%'
                       }}
                       onClick={() => handleGameSelect(game.id)}
