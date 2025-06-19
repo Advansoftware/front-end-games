@@ -14,10 +14,14 @@ export const useHomeConsoleNavigation = ({
   const [focusMode, setFocusMode] = useState('hero'); // 'hero', 'games', 'sidebar'
   const [lastGameIndex, setLastGameIndex] = useState(0); // Para voltar após sidebar
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [navigationCooldown, setNavigationCooldown] = useState(0); // Cooldown adicional
 
   // Refs para elementos focáveis
   const heroButtonRefs = useRef([]);
   const gameCardRefs = useRef([]);
+
+  // Constante para cooldown de navegação
+  const NAVIGATION_COOLDOWN = 180; // 180ms entre movimentos de navegação
 
   const gamepad = useGamepad();
   const navigation = gamepad.getNavigationInput();
@@ -100,8 +104,21 @@ export const useHomeConsoleNavigation = ({
     }
   }, [scrollToElement]);
 
-  // Navegação no Hero Section (apenas botões)
+  // Função auxiliar para verificar cooldown
+  const canNavigate = useCallback(() => {
+    const now = Date.now();
+    return now - navigationCooldown > NAVIGATION_COOLDOWN;
+  }, [navigationCooldown]);
+
+  // Função para atualizar cooldown
+  const updateNavigationCooldown = useCallback(() => {
+    setNavigationCooldown(Date.now());
+  }, []);
+
+  // Navegação no Hero Section com cooldown
   const navigateHero = useCallback((direction) => {
+    if (!canNavigate()) return;
+
     if (direction === 'down') {
       // Sair do hero e ir para os games
       setFocusMode('games');
@@ -113,13 +130,14 @@ export const useHomeConsoleNavigation = ({
       setCurrentHeroButton(prev => prev < 1 ? prev + 1 : 0);
     }
 
+    updateNavigationCooldown();
     // Scroll para o botão focado
     setTimeout(() => scrollToElement(heroButtonRefs.current[currentHeroButton]), 50);
-  }, [currentHeroButton, scrollToElement]);
+  }, [currentHeroButton, scrollToElement, canNavigate, updateNavigationCooldown]);
 
-  // Navegação nos Game Cards - USANDO SCROLL MELHORADO
+  // Navegação nos Game Cards com cooldown
   const navigateGames = useCallback((direction) => {
-    if (totalGameCards === 0) return;
+    if (totalGameCards === 0 || !canNavigate()) return;
 
     let newIndex = currentGameIndex;
 
@@ -130,6 +148,7 @@ export const useHomeConsoleNavigation = ({
           setFocusMode('hero');
           setCurrentHeroButton(0);
           setTimeout(() => scrollToElement(heroButtonRefs.current[0]), 100);
+          updateNavigationCooldown();
           return;
         } else {
           // Move para linha acima (6 cards por linha)
@@ -149,8 +168,9 @@ export const useHomeConsoleNavigation = ({
 
     setCurrentGameIndex(newIndex);
     setLastGameIndex(newIndex); // Salvar para voltar do sidebar
+    updateNavigationCooldown();
     setTimeout(() => scrollToGameCard(newIndex), 100); // Usar função melhorada
-  }, [currentGameIndex, totalGameCards, scrollToGameCard]);
+  }, [currentGameIndex, totalGameCards, scrollToGameCard, canNavigate, updateNavigationCooldown]);
 
   // Ação de confirmação (botão A - clique universal)
   const confirmAction = useCallback(() => {
