@@ -21,6 +21,7 @@ import GameGrid from '../components/GameGrid';
 import GameDetails from '../components/GameDetails';
 import Sidebar from '../components/Sidebar';
 import SettingsPanel from '../components/SettingsPanel';
+import DownloadsView from '../components/DownloadsView';
 
 const HomePage = () => {
   const [currentView, setCurrentView] = useState('home');
@@ -243,16 +244,16 @@ const HomePage = () => {
       <Box
         component={motion.div}
         animate={{
-          marginLeft: selectedGameId ? 0 : (sidebarOpen && currentView === 'settings' ? 0 : (sidebarOpen ? 280 : 0)), // Sem margem para Settings mesmo com sidebar aberto
+          marginLeft: selectedGameId ? 0 : (sidebarOpen && (currentView === 'settings' || currentView === 'downloads') ? 0 : (sidebarOpen ? 280 : 0)), // Sem margem para Settings e Downloads
           transition: { duration: 0.3, ease: 'easeInOut' }
         }}
         sx={{
           height: '100vh',
-          paddingTop: selectedGameId ? '0px' : (currentView === 'settings' ? '56px' : '56px'), // Padding correto para Settings
+          paddingTop: selectedGameId ? '0px' : ((currentView === 'settings' || currentView === 'downloads') ? '56px' : '56px'), // Padding correto
           overflow: selectedGameId ? 'auto' : 'hidden',
           background: selectedGameId ? 'transparent' : (currentView === 'home' ? 'transparent' : 'background.default'),
-          // Para tela de configurações, ocupar toda a largura sem margem
-          ...(currentView === 'settings' && {
+          // Para telas fullscreen (settings e downloads), ocupar toda a largura sem margem
+          ...((currentView === 'settings' || currentView === 'downloads') && {
             position: 'fixed',
             top: 0,
             left: 0,
@@ -281,12 +282,12 @@ const HomePage = () => {
         )}
 
         <Container
-          maxWidth={selectedGameId ? false : (currentView === 'settings' ? false : 'false')} // Full width para GameDetails e Settings
+          maxWidth={selectedGameId ? false : ((currentView === 'settings' || currentView === 'downloads') ? false : 'false')} // Full width para GameDetails, Settings e Downloads
           sx={{
             height: '100%',
-            padding: selectedGameId || currentView === 'settings' ? 0 : 3, // Sem padding para GameDetails e Settings
-            maxWidth: selectedGameId || currentView === 'settings' ? 'none' : undefined, // Sem limitação de largura
-            margin: selectedGameId || currentView === 'settings' ? 0 : undefined // Sem margem para GameDetails e Settings
+            padding: selectedGameId || currentView === 'settings' || currentView === 'downloads' ? 0 : 3, // Sem padding para fullscreen views
+            maxWidth: selectedGameId || currentView === 'settings' || currentView === 'downloads' ? 'none' : undefined, // Sem limitação de largura
+            margin: selectedGameId || currentView === 'settings' || currentView === 'downloads' ? 0 : undefined // Sem margem para fullscreen views
           }}
         >
           <AnimatePresence mode="wait">
@@ -298,6 +299,8 @@ const HomePage = () => {
               />
             ) : currentView === 'settings' ? (
               <SettingsPanel key="settings" />
+            ) : currentView === 'downloads' ? (
+              <DownloadsView key="downloads" />
             ) : (
               <GameGrid
                 key="game-grid"
