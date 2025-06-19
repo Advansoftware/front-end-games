@@ -25,10 +25,12 @@ import {
   CropSquare as MaximizeIcon,
   Close as CloseIcon,
   InfoOutlined as InfoIcon,
-  Language as WebIcon
+  Language as WebIcon,
+  Gamepad2 as GamepadIcon
 } from '@mui/icons-material';
 import { useGames } from '../contexts/GamesContext';
 import { useDownloads } from '../hooks/useDownloads';
+import { useModalNavigation } from '../hooks/useModalNavigation';
 import CacheService from '../services/CacheService';
 import CustomButton from './CustomButton';
 import TrailerModal from './TrailerModal';
@@ -50,6 +52,13 @@ const GameDetails = ({ gameId, onBack }) => {
   const [showInfoModal, setShowInfoModal] = useState(false);
 
   const game = getGameById(gameId);
+
+  // Integração do modal de informações com gamepad
+  const { handleClose: handleInfoModalClose } = useModalNavigation({
+    isOpen: showInfoModal,
+    onClose: () => setShowInfoModal(false),
+    disabled: false
+  });
 
   // Usar dados do hook useDownloads
   const downloadData = activeDownloads.get(gameId);
