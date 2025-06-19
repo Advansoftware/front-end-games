@@ -52,11 +52,41 @@ const HomePage = () => {
     return matchesSearch && matchesGenre;
   });
 
-  // Navegação para detalhes do jogo
+  // Navegação para detalhes do jogo - MOUSE (navegação normal)
   const handleGameSelect = (gameId) => {
     const game = games.find(g => g.id === gameId);
     if (game) {
+      console.log('🖱️ Navegação via MOUSE para:', game.title);
       router.push(`/detalhes/${game.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`);
+    }
+  };
+
+  // Navegação para detalhes do jogo - CONTROLE (navegação forçada) - COM LOGS DETALHADOS
+  const handleGameSelectViaController = (gameId) => {
+    console.log('🎮 handleGameSelectViaController chamada com gameId:', gameId);
+    console.log('🎮 Lista de jogos disponíveis:', games.map(g => ({ id: g.id, title: g.title })));
+
+    const game = games.find(g => g.id === gameId);
+    console.log('🎮 Jogo encontrado:', game);
+
+    if (game) {
+      const slug = game.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const newUrl = `/detalhes/${slug}`;
+
+      console.log('🎮 Navegação via CONTROLE:');
+      console.log('  - ID do jogo:', gameId);
+      console.log('  - Título:', game.title);
+      console.log('  - Slug gerado:', slug);
+      console.log('  - URL atual:', window.location.href);
+      console.log('  - URL destino:', newUrl);
+      console.log('  - URL completa:', window.location.origin + newUrl);
+
+      // Forçar navegação limpa - sem cache
+      const fullUrl = window.location.origin + newUrl;
+      console.log('🎮 Executando window.location.href =', fullUrl);
+      window.location.href = fullUrl;
+    } else {
+      console.error('❌ Jogo não encontrado com ID:', gameId);
     }
   };
 
@@ -74,7 +104,7 @@ const HomePage = () => {
     }
   };
 
-  // Hook de navegação console para homepage
+  // Hook de navegação console para homepage - APENAS QUANDO NA HOME
   const {
     focusMode,
     currentGameIndex,
@@ -90,9 +120,14 @@ const HomePage = () => {
     getHeroButtonProps
   } = useHomeConsoleNavigation({
     games: filteredGames,
-    onGameSelect: handleGameSelect,
+    onGameSelect: handleGameSelectViaController,
     onSidebarToggle: setSidebarOpen,
-    router
+    router,
+    enabled: router.pathname === '/', // ✅ APENAS ATIVAR NA HOME
+    // Estados dos modais para navegação gradual
+    modalsOpen: {
+      sidebar: sidebarOpen
+    }
   });
 
   // Sincronizar estado do sidebar
@@ -266,42 +301,49 @@ const HomePage = () => {
 
           {gameCards.length > 0 ? (
             <Grid container spacing={2}>
-              {gameCards.map((game, index) => (
-                <Grid item xs={12} sm={6} md={4} lg={2} key={game.id}>
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{
-                      duration: 0.4,
-                      delay: index * 0.05,
-                      ease: 'easeOut'
-                    }}
-                  >
-                    <GameCard
-                      game={game}
-                      onSelect={() => handleGameSelect(game.id)}
-                      // Props para controle de foco
-                      {...getGameCardProps(index)}
-                      // Atributos para scroll automático
+              {gameCards.map((game, index) => {
+                const gameCardProps = getGameCardProps(index);
+                return (
+                  <Grid item xs={12} sm={6} md={4} lg={2} key={game.id}>
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{
+                        duration: 0.4,
+                        delay: index * 0.05,
+                        ease: 'easeOut'
+                      }}
+                      // Mover ref e atributos para o motion.div
+                      ref={gameCardProps.ref}
                       data-game-card="true"
                       data-game-index={index}
-                      sx={{
-                        // Estilo visual para elemento focado
-                        border: focusMode === 'games' && currentGameIndex === index
-                          ? '3px solid rgba(25, 118, 210, 0.8)'
-                          : '1px solid rgba(255,255,255,0.1)',
-                        transform: focusMode === 'games' && currentGameIndex === index
-                          ? 'scale(1.05)'
-                          : 'scale(1)',
-                        transition: 'all 0.3s ease',
-                        boxShadow: focusMode === 'games' && currentGameIndex === index
-                          ? '0 8px 25px rgba(25, 118, 210, 0.4)'
-                          : 'none'
-                      }}
-                    />
-                  </motion.div>
-                </Grid>
-              ))}
+                      style={{ width: '100%', height: '100%' }}
+                      onClick={() => handleGameSelect(game.id)}
+                    >
+                      <GameCard
+                        game={game}
+                        onSelect={() => handleGameSelect(game.id)}
+                        // Props para controle de foco (sem ref)
+                        data-focused={gameCardProps['data-focused']}
+                        tabIndex={gameCardProps.tabIndex}
+                        sx={{
+                          // Estilo visual para elemento focado
+                          border: focusMode === 'games' && currentGameIndex === index
+                            ? '3px solid rgba(25, 118, 210, 0.8)'
+                            : '1px solid rgba(255,255,255,0.1)',
+                          transform: focusMode === 'games' && currentGameIndex === index
+                            ? 'scale(1.05)'
+                            : 'scale(1)',
+                          transition: 'all 0.3s ease',
+                          boxShadow: focusMode === 'games' && currentGameIndex === index
+                            ? '0 8px 25px rgba(25, 118, 210, 0.4)'
+                            : 'none'
+                        }}
+                      />
+                    </motion.div>
+                  </Grid>
+                );
+              })}
             </Grid>
           ) : (
             // Estado vazio

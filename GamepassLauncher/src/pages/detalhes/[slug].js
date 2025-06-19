@@ -10,6 +10,7 @@ import {
 import { motion } from 'framer-motion';
 
 import { useGames } from '../../contexts/GamesContext';
+import { useGameDetailsNavigation } from '../../hooks/useGameDetailsNavigation';
 import GameDetailsHero from '../../components/game-details/GameDetailsHero';
 import GameDetailsInfo from '../../components/game-details/GameDetailsInfo';
 import TrailerModal from '../../components/TrailerModal';
@@ -30,6 +31,80 @@ const GameDetailsPage = () => {
   // Voltar para home
   const handleBack = () => {
     router.push('/');
+  };
+
+  // Determinar botões disponíveis para navegação
+  const getAvailableButtons = () => {
+    const buttons = [];
+
+    // Sempre tem o botão "Ver mais informações" se há descrição
+    if (game?.description) {
+      buttons.push('info');
+    }
+
+    // Botões de ação (Play/Download/Update)
+    if (game?.installed) {
+      // Se tem atualização disponível
+      if ([1, 3].includes(game.id)) {
+        buttons.push('update');
+      } else {
+        buttons.push('play');
+      }
+    } else {
+      buttons.push('download');
+    }
+
+    // Botão de trailer se disponível
+    if (game?.youtubeVideoId) {
+      buttons.push('trailer');
+    }
+
+    return buttons;
+  };
+
+  // Hook de navegação para detalhes com controle de modais
+  const {
+    currentButtonIndex,
+    navigationInfo,
+    getButtonProps
+  } = useGameDetailsNavigation({
+    onBack: handleBack,
+    router,
+    availableButtons: getAvailableButtons(),
+    // Estados dos modais para navegação gradual
+    modalsOpen: {
+      trailer: showTrailer,
+      info: showInfoModal
+    },
+    // Funções para fechar cada modal
+    onCloseModals: {
+      trailer: () => setShowTrailer(false),
+      info: () => setShowInfoModal(false)
+    }
+  });
+
+  // Função para obter props do botão "Ver mais informações"
+  const getInfoButtonProps = () => {
+    // Se o botão de info for o primeiro na lista de botões disponíveis
+    const availableButtons = getAvailableButtons();
+    const infoButtonIndex = availableButtons.indexOf('info');
+
+    if (infoButtonIndex !== -1) {
+      return getButtonProps(infoButtonIndex);
+    }
+
+    return {};
+  };
+
+  // Função para obter props dos botões de ação (ajustada para o índice correto)
+  const getActionButtonProps = (actionIndex) => {
+    const availableButtons = getAvailableButtons();
+    const hasInfoButton = availableButtons.includes('info');
+
+    // Se há botão de info, os botões de ação começam do índice 1
+    const adjustedIndex = hasInfoButton ? actionIndex + 1 : actionIndex;
+
+    return getButtonProps(adjustedIndex);
   };
 
   // Controles do Electron
@@ -148,11 +223,36 @@ const GameDetailsPage = () => {
         </Box>
       )}
 
+      {/* Indicador de controle (apenas quando gamepad conectado) */}
+      {navigationInfo.gamepadConnected && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 20,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 10,
+            bgcolor: 'rgba(0, 0, 0, 0.8)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: 2,
+            px: 2,
+            py: 1,
+            border: '1px solid rgba(255,255,255,0.1)'
+          }}
+        >
+          <Typography variant="caption" sx={{ color: 'text.primary' }}>
+            🎮 Botão: {currentButtonIndex + 1}/{navigationInfo.totalButtons} | A: Selecionar | B: Voltar
+          </Typography>
+        </Box>
+      )}
+
       {/* Hero Section */}
       <GameDetailsHero
         game={game}
         onShowInfo={() => setShowInfoModal(true)}
         onShowTrailer={() => setShowTrailer(true)}
+        getInfoButtonProps={getInfoButtonProps}
+        getButtonProps={getActionButtonProps}
       />
 
       {/* Modal de informações completas */}

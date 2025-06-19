@@ -12,7 +12,7 @@ import CacheService from '../../services/CacheService';
 import CustomButton from '../CustomButton';
 import GameDetailsActions from './GameDetailsActions';
 
-const GameDetailsHero = ({ game, onShowInfo, onShowTrailer }) => {
+const GameDetailsHero = ({ game, onShowInfo, onShowTrailer, getInfoButtonProps, getButtonProps }) => {
   const [gameDetails, setGameDetails] = useState(null);
   const { getGameById } = useGames();
 
@@ -241,6 +241,7 @@ const GameDetailsHero = ({ game, onShowInfo, onShowTrailer }) => {
                       size="small"
                       startIcon={<InfoIcon />}
                       onClick={onShowInfo}
+                      {...(getInfoButtonProps ? getInfoButtonProps() : {})}
                       sx={{
                         color: 'rgba(255,255,255,0.8)',
                         fontSize: '0.8rem',
@@ -251,7 +252,8 @@ const GameDetailsHero = ({ game, onShowInfo, onShowTrailer }) => {
                         '&:hover': {
                           borderColor: 'rgba(255,255,255,0.6)',
                           bgcolor: 'rgba(255,255,255,0.1)'
-                        }
+                        },
+                        ...(getInfoButtonProps ? getInfoButtonProps().sx : {})
                       }}
                     >
                       Ver mais informações
@@ -263,6 +265,7 @@ const GameDetailsHero = ({ game, onShowInfo, onShowTrailer }) => {
                 <GameDetailsActions
                   game={gameDetails}
                   onShowTrailer={onShowTrailer}
+                  getButtonProps={getButtonProps}
                 />
               </Box>
             </motion.div>

@@ -3,7 +3,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 
 // Configurações específicas para cada tipo de controle
 export const CONTROLLER_CONFIGS = {
-  // 8BitDo Controllers (PRIORIDADE)
+  // 8BitDo Controllers (PRIORIDADE) - MAPEAMENTO CORRIGIDO
   BITDO: {
     patterns: [
       '8bitdo', '8bit', 'sn30', 'sf30', 'm30', 'n30', 'zero', 'lite',
@@ -12,7 +12,7 @@ export const CONTROLLER_CONFIGS = {
       'pro+', 'ultimate', '8bitdo sn30 pro', '8bitdo sf30 pro'
     ],
     buttonMap: {
-      0: 'B', 1: 'A', 2: 'Y', 3: 'X',
+      0: 'A', 1: 'B', 2: 'Y', 3: 'X', // CORRIGIDO: 0=A (confirm), 1=B (cancel)
       4: 'L', 5: 'R', 6: 'L2', 7: 'R2',
       8: 'Select', 9: 'Start', 10: 'LS', 11: 'RS',
       12: 'Up', 13: 'Down', 14: 'Left', 15: 'Right', 16: 'Home'
@@ -56,13 +56,13 @@ export const CONTROLLER_CONFIGS = {
     name: 'PlayStation Controller'
   },
 
-  // Nintendo Switch Pro Controller
+  // Nintendo Switch Pro Controller - MAPEAMENTO CORRIGIDO
   SWITCH: {
     patterns: [
       'pro controller', 'nintendo switch', 'nintendo co', '057e-'
     ],
     buttonMap: {
-      0: 'B', 1: 'A', 2: 'Y', 3: 'X',
+      0: 'A', 1: 'B', 2: 'Y', 3: 'X', // CORRIGIDO: 0=A (confirm), 1=B (cancel)
       4: 'L', 5: 'R', 6: 'ZL', 7: 'ZR',
       8: 'Minus', 9: 'Plus', 10: 'LS', 11: 'RS',
       12: 'Up', 13: 'Down', 14: 'Left', 15: 'Right', 16: 'Home'
