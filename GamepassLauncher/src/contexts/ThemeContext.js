@@ -4,11 +4,11 @@ import { CssBaseline } from '@mui/material';
 
 const ThemeContext = createContext();
 
-// Temas inspirados nos consoles com cores mais fiéis
+// Temas inspirados nos consoles - SEMPRE DARK MODE
 const themes = {
   xbox: createTheme({
     palette: {
-      mode: 'dark',
+      mode: 'dark', // SEMPRE DARK
       primary: {
         main: '#107C10', // Verde Xbox oficial
         light: '#16AA16',
@@ -31,9 +31,23 @@ const themes = {
       },
       success: {
         main: '#107C10',
+        light: '#16AA16',
+        dark: '#0D5D0D',
       },
       info: {
         main: '#00BCF2',
+        light: '#33C9F5',
+        dark: '#0096C2',
+      },
+      warning: {
+        main: '#FF6B00',
+        light: '#FF8533',
+        dark: '#CC5500',
+      },
+      error: {
+        main: '#E60012',
+        light: '#FF3345',
+        dark: '#B3000E',
       },
     },
     typography: {
@@ -42,53 +56,61 @@ const themes = {
         fontWeight: 700,
         fontSize: '3.5rem',
         letterSpacing: '-0.02em',
+        color: '#ffffff',
       },
       h2: {
         fontWeight: 600,
         fontSize: '3rem',
         letterSpacing: '-0.01em',
+        color: '#ffffff',
       },
       h3: {
         fontWeight: 600,
         fontSize: '2.5rem',
+        color: '#ffffff',
       },
       h4: {
         fontWeight: 700,
         fontSize: '2rem',
+        color: '#ffffff',
       },
       h5: {
         fontWeight: 600,
         fontSize: '1.5rem',
+        color: '#ffffff',
       },
       h6: {
         fontWeight: 600,
         fontSize: '1.25rem',
+        color: '#ffffff',
       },
       body1: {
         fontSize: '1rem',
         lineHeight: 1.5,
+        color: '#ffffff',
       },
       body2: {
         fontSize: '0.875rem',
         lineHeight: 1.4,
+        color: '#B0BEC5',
       },
     },
     shape: {
-      borderRadius: 8,
+      borderRadius: 12, // Mais arredondado
     },
     components: {
       MuiCard: {
         styleOverrides: {
           root: {
-            background: 'rgba(26, 43, 50, 0.8)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: 4, // Reduzido de 8 para aparência mais de capa
-            transition: 'all 0.3s ease',
+            background: 'rgba(26, 43, 50, 0.9)',
+            backdropFilter: 'blur(15px)',
+            border: '1px solid rgba(16, 124, 16, 0.2)',
+            borderRadius: 12,
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             '&:hover': {
-              // Removido transform para não aumentar o card
-              boxShadow: '0 8px 20px rgba(16, 124, 16, 0.2)',
-              border: '1px solid rgba(16, 124, 16, 0.4)',
+              boxShadow: '0 12px 30px rgba(16, 124, 16, 0.3)',
+              border: '1px solid rgba(16, 124, 16, 0.5)',
+              transform: 'translateY(-2px)',
             },
           },
         },
@@ -97,13 +119,22 @@ const themes = {
         styleOverrides: {
           root: {
             textTransform: 'none',
-            fontWeight: 600,
-            borderRadius: 6,
+            fontWeight: 700,
+            borderRadius: 12, // Mais arredondado
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           },
           contained: {
-            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+            boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
             '&:hover': {
-              boxShadow: '0 6px 16px rgba(0,0,0,0.4)',
+              boxShadow: '0 12px 28px rgba(0,0,0,0.5)',
+              transform: 'translateY(-2px)',
+            },
+          },
+          outlined: {
+            borderWidth: 1, // Borda mais fina
+            '&:hover': {
+              borderWidth: 1, // Borda mais fina
+              transform: 'translateY(-2px)',
             },
           },
         },
@@ -111,7 +142,9 @@ const themes = {
       MuiChip: {
         styleOverrides: {
           root: {
-            fontWeight: 500,
+            fontWeight: 600,
+            backdropFilter: 'blur(10px)',
+            borderRadius: 10,
           },
         },
       },
@@ -120,7 +153,7 @@ const themes = {
 
   ps5: createTheme({
     palette: {
-      mode: 'dark',
+      mode: 'dark', // SEMPRE DARK
       primary: {
         main: '#0070F3', // Azul PS5 oficial
         light: '#3391FF',
@@ -143,9 +176,23 @@ const themes = {
       },
       info: {
         main: '#00D4FF',
+        light: '#33DDFF',
+        dark: '#00AACC',
       },
       success: {
         main: '#00C851',
+        light: '#33D76B',
+        dark: '#00A041',
+      },
+      warning: {
+        main: '#FF6B00',
+        light: '#FF8533',
+        dark: '#CC5500',
+      },
+      error: {
+        main: '#FF073A',
+        light: '#FF3A5C',
+        dark: '#CC062E',
       },
     },
     typography: {
@@ -154,34 +201,64 @@ const themes = {
         fontWeight: 800,
         fontSize: '3.5rem',
         letterSpacing: '-0.02em',
+        color: '#ffffff',
       },
       h2: {
         fontWeight: 700,
         fontSize: '3rem',
         letterSpacing: '-0.02em',
+        color: '#ffffff',
       },
       h4: {
         fontWeight: 700,
         fontSize: '2rem',
         letterSpacing: '-0.01em',
+        color: '#ffffff',
+      },
+      body1: {
+        color: '#ffffff',
+      },
+      body2: {
+        color: '#CCCCCC',
       },
     },
     shape: {
-      borderRadius: 16,
+      borderRadius: 16, // Mais arredondado
     },
     components: {
       MuiCard: {
         styleOverrides: {
           root: {
             background: 'linear-gradient(145deg, #1A1A1A 0%, #0D0D0D 100%)',
-            border: '1px solid #333333',
-            borderRadius: 4, // Reduzido para aparência de capa
-            transition: 'all 0.3s ease',
+            border: '1px solid rgba(0, 112, 243, 0.2)',
+            borderRadius: 16,
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             '&:hover': {
-              // Removido transform para não aumentar o card
-              boxShadow: '0 8px 20px rgba(0, 112, 243, 0.2)',
-              border: '1px solid rgba(0, 112, 243, 0.4)',
+              boxShadow: '0 12px 30px rgba(0, 112, 243, 0.3)',
+              border: '1px solid rgba(0, 112, 243, 0.5)',
+              transform: 'translateY(-2px)',
             },
+          },
+        },
+      },
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            borderRadius: 16, // Mais arredondado
+            fontWeight: 700,
+          },
+          outlined: {
+            borderWidth: 1, // Borda mais fina
+            '&:hover': {
+              borderWidth: 1, // Borda mais fina
+            },
+          },
+        },
+      },
+      MuiChip: {
+        styleOverrides: {
+          root: {
+            borderRadius: 12,
           },
         },
       },
@@ -190,7 +267,7 @@ const themes = {
 
   switch: createTheme({
     palette: {
-      mode: 'dark',
+      mode: 'dark', // SEMPRE DARK
       primary: {
         main: '#E60012', // Vermelho Nintendo oficial
         light: '#FF3345',
@@ -213,6 +290,23 @@ const themes = {
       },
       warning: {
         main: '#FF6B00',
+        light: '#FF8533',
+        dark: '#CC5500',
+      },
+      success: {
+        main: '#00C851',
+        light: '#33D76B',
+        dark: '#00A041',
+      },
+      info: {
+        main: '#0066CC',
+        light: '#3388FF',
+        dark: '#0052A3',
+      },
+      error: {
+        main: '#E60012',
+        light: '#FF3345',
+        dark: '#B3000E',
       },
     },
     typography: {
@@ -221,29 +315,58 @@ const themes = {
         fontWeight: 700,
         fontSize: '3.5rem',
         textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+        color: '#ffffff',
       },
       h2: {
         fontWeight: 600,
         fontSize: '3rem',
         textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
+        color: '#ffffff',
+      },
+      body1: {
+        color: '#ffffff',
+      },
+      body2: {
+        color: '#DDDDDD',
       },
     },
     shape: {
-      borderRadius: 20,
+      borderRadius: 20, // Mais arredondado
     },
     components: {
       MuiCard: {
         styleOverrides: {
           root: {
             background: 'linear-gradient(145deg, #3A3A3A 0%, #2D2D2D 100%)',
-            border: '2px solid #4A4A4A',
-            borderRadius: 8, // Reduzido de 20px para aparência mais de capa, mas mantendo estilo Nintendo
-            transition: 'all 0.3s ease',
+            border: '1px solid rgba(230, 0, 18, 0.2)', // Borda mais fina
+            borderRadius: 20,
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             '&:hover': {
-              // Removido transform para não aumentar o card
-              boxShadow: '0 8px 20px rgba(230, 0, 18, 0.2)',
-              border: '2px solid rgba(230, 0, 18, 0.4)',
+              boxShadow: '0 12px 30px rgba(230, 0, 18, 0.3)',
+              border: '1px solid rgba(230, 0, 18, 0.5)', // Borda mais fina
+              transform: 'translateY(-2px)',
             },
+          },
+        },
+      },
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            borderRadius: 20, // Mais arredondado
+            fontWeight: 700,
+          },
+          outlined: {
+            borderWidth: 1, // Borda mais fina
+            '&:hover': {
+              borderWidth: 1, // Borda mais fina
+            },
+          },
+        },
+      },
+      MuiChip: {
+        styleOverrides: {
+          root: {
+            borderRadius: 14,
           },
         },
       },

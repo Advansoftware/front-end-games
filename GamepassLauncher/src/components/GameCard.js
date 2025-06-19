@@ -7,7 +7,6 @@ import {
   IconButton,
   Chip,
   Stack,
-  Button,
   LinearProgress
 } from '@mui/material';
 import { motion } from 'framer-motion';
@@ -19,6 +18,7 @@ import {
   CloudDownload as CloudIcon
 } from '@mui/icons-material';
 import { useGames } from '../contexts/GamesContext';
+import CustomButton from './CustomButton';
 
 const GameCard = ({
   game,
@@ -180,7 +180,7 @@ const GameCard = ({
             }}
           >
             <CloudIcon sx={{ fontSize: 36, color: 'white', mb: 1.5 }} />
-            <Button
+            <CustomButton
               variant="contained"
               size="medium"
               startIcon={<DownloadIcon />}
@@ -196,7 +196,7 @@ const GameCard = ({
               }}
             >
               Baixar
-            </Button>
+            </CustomButton>
           </Box>
         )}
 

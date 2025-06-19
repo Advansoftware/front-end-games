@@ -6,7 +6,6 @@ import {
   CardContent,
   Switch,
   FormControlLabel,
-  Button,
   Grid,
   Divider,
   TextField,
@@ -38,6 +37,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useGames } from '../contexts/GamesContext';
 import { useGamepad } from '../hooks/useGamepad';
 import CacheService from '../services/CacheService';
+import CustomButton from './CustomButton';
 
 const SettingsPanel = () => {
   const { soundsEnabled, toggleSounds, currentTheme, playSound } = useTheme();
@@ -224,13 +224,13 @@ const SettingsPanel = () => {
                     variant="outlined"
                     size="small"
                   />
-                  <Button
+                  <CustomButton
                     variant="outlined"
                     startIcon={<FolderIcon />}
                     onClick={() => handleSelectPath('downloads')}
                   >
                     Procurar
-                  </Button>
+                  </CustomButton>
                 </Box>
               </CardContent>
             </Card>
@@ -283,23 +283,23 @@ const SettingsPanel = () => {
                     variant="outlined"
                     size="small"
                   />
-                  <Button
+                  <CustomButton
                     variant="outlined"
                     startIcon={<FolderIcon />}
                     onClick={() => handleSelectPath('yuzu')}
                   >
                     Procurar
-                  </Button>
+                  </CustomButton>
                 </Box>
 
-                <Button
+                <CustomButton
                   variant="contained"
                   startIcon={<DownloadIcon />}
                   onClick={downloadYuzuEmulator}
                   fullWidth
                 >
                   Baixar Yuzu Emulator
-                </Button>
+                </CustomButton>
               </CardContent>
             </Card>
 
@@ -370,7 +370,7 @@ const SettingsPanel = () => {
                   <LinearProgress sx={{ mb: 2 }} />
                 )}
 
-                <Button
+                <CustomButton
                   variant="contained"
                   startIcon={<UpdateIcon />}
                   onClick={handleCheckUpdates}
@@ -378,7 +378,7 @@ const SettingsPanel = () => {
                   fullWidth
                 >
                   {checkingUpdates ? 'Verificando...' : 'Verificar Atualizações'}
-                </Button>
+                </CustomButton>
               </CardContent>
             </Card>
 
@@ -409,13 +409,13 @@ const SettingsPanel = () => {
                   sx={{ mb: 2 }}
                   InputProps={{ readOnly: true }}
                 />
-                <Button
+                <CustomButton
                   variant="outlined"
                   onClick={syncWithRemoteAPI}
                   fullWidth
                 >
                   Sincronizar com Servidor
-                </Button>
+                </CustomButton>
               </CardContent>
             </Card>
 
@@ -427,7 +427,7 @@ const SettingsPanel = () => {
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                   Isso irá resetar todas as configurações para os valores padrão
                 </Typography>
-                <Button
+                <CustomButton
                   variant="outlined"
                   color="error"
                   onClick={() => {
@@ -436,7 +436,7 @@ const SettingsPanel = () => {
                   }}
                 >
                   Resetar Configurações
-                </Button>
+                </CustomButton>
               </CardContent>
             </Card>
           </Box>
@@ -467,7 +467,7 @@ const SettingsPanel = () => {
 
             <Card>
               <CardContent>
-                <Button
+                <CustomButton
                   variant="contained"
                   color="error"
                   startIcon={<DeleteIcon />}
@@ -475,7 +475,7 @@ const SettingsPanel = () => {
                   fullWidth
                 >
                   Limpar Cache
-                </Button>
+                </CustomButton>
               </CardContent>
             </Card>
 
@@ -494,12 +494,12 @@ const SettingsPanel = () => {
                 </DialogContentText>
               </DialogContent>
               <DialogActions>
-                <Button onClick={() => setDialogOpen(false)} color="primary">
+                <CustomButton onClick={() => setDialogOpen(false)} color="primary">
                   Cancelar
-                </Button>
-                <Button onClick={handleClearCache} color="secondary" autoFocus>
+                </CustomButton>
+                <CustomButton onClick={handleClearCache} color="secondary" autoFocus>
                   Limpar Cache
-                </Button>
+                </CustomButton>
               </DialogActions>
             </Dialog>
           </Box>
@@ -533,7 +533,7 @@ const SettingsPanel = () => {
                 const isGamepadSelected = gamepad.gamepadConnected && selectedSection === index;
 
                 return (
-                  <Button
+                  <CustomButton
                     key={section.id}
                     fullWidth
                     variant={isSelected ? "contained" : "text"}
@@ -547,7 +547,7 @@ const SettingsPanel = () => {
                     }}
                   >
                     {section.label}
-                  </Button>
+                  </CustomButton>
                 );
               })}
             </CardContent>

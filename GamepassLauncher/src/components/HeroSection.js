@@ -1,10 +1,11 @@
 import React from 'react';
-import { Box, Typography, Button, Chip, Stack } from '@mui/material';
+import { Box, Typography, Chip, Stack } from '@mui/material';
 import { motion } from 'framer-motion';
 import {
   Download as DownloadIcon,
   Star as StarIcon
 } from '@mui/icons-material';
+import CustomButton from './CustomButton';
 
 const HeroSection = ({
   featuredGame,
@@ -146,7 +147,7 @@ const HeroSection = ({
         </Stack>
 
         <Stack direction="row" spacing={2}>
-          <Button
+          <CustomButton
             variant="contained"
             startIcon={<DownloadIcon />}
             onClick={(e) => {
@@ -171,9 +172,9 @@ const HeroSection = ({
             }}
           >
             Baixar agora
-          </Button>
+          </CustomButton>
 
-          <Button
+          <CustomButton
             variant="outlined"
             onClick={(e) => {
               e.stopPropagation();
@@ -198,7 +199,7 @@ const HeroSection = ({
             }}
           >
             Ver detalhes
-          </Button>
+          </CustomButton>
         </Stack>
       </Box>
 

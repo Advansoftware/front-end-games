@@ -3,7 +3,6 @@ import {
   Box,
   Typography,
   IconButton,
-  Button,
   Chip,
   Stack,
   Card,
@@ -31,6 +30,7 @@ import {
 import { useGames } from '../contexts/GamesContext';
 import CacheService from '../services/CacheService';
 import YouTubePlayer from './YouTubePlayer';
+import CustomButton from './CustomButton';
 
 const GameDetails = ({ gameId, onBack }) => {
   const {
@@ -109,6 +109,29 @@ const GameDetails = ({ gameId, onBack }) => {
     loadGameData();
   }, [gameId, game]);
 
+  // Efeito para garantir fullscreen no Electron
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.electronAPI) {
+      // Garantir que a janela esteja maximizada/fullscreen
+      window.electronAPI.setFullscreen && window.electronAPI.setFullscreen(true);
+
+      // Esconder a barra de título do Electron se disponível
+      window.electronAPI.setTitleBarVisible && window.electronAPI.setTitleBarVisible(false);
+
+      // Prevenir scroll na página principal
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+
+      // Limpar ao sair do componente
+      return () => {
+        window.electronAPI.setFullscreen && window.electronAPI.setFullscreen(false);
+        window.electronAPI.setTitleBarVisible && window.electronAPI.setTitleBarVisible(true);
+        document.body.style.overflow = 'auto';
+        document.documentElement.style.overflow = 'auto';
+      };
+    }
+  }, []);
+
   const handleScreenshotClick = (index) => {
     setSelectedScreenshot(index);
   };
@@ -136,9 +159,9 @@ const GameDetails = ({ gameId, onBack }) => {
         <Typography variant="h6" color="error">
           Jogo não encontrado
         </Typography>
-        <Button onClick={onBack} sx={{ mt: 2 }}>
+        <CustomButton onClick={onBack} sx={{ mt: 2 }}>
           Voltar
-        </Button>
+        </CustomButton>
       </Box>
     );
   }
@@ -158,20 +181,43 @@ const GameDetails = ({ gameId, onBack }) => {
         exit={{ opacity: 0, y: -20 }}
         transition={{ duration: 0.3 }}
         style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100vw',
           height: '100vh',
+          margin: 0,
+          padding: 0,
           overflow: 'hidden',
-          position: 'relative'
+          zIndex: 10000,
+          backgroundColor: '#000',
+          // Garantir que seja realmente fullscreen
+          maxWidth: '100vw',
+          maxHeight: '100vh',
+          minWidth: '100vw',
+          minHeight: '100vh'
         }}
       >
         {/* Hero Section COMPLETA - Layout anterior melhorado */}
         <Box
           sx={{
-            position: 'relative',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100vw',
             height: '100vh',
+            margin: 0,
+            padding: 0,
             overflow: 'hidden',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            // Garantir que não há scroll nem espaçamento
+            boxSizing: 'border-box'
           }}
         >
           {/* Botão voltar flutuante */}
@@ -410,22 +456,23 @@ const GameDetails = ({ gameId, onBack }) => {
                         </Typography>
 
                         {/* Botão Ver Mais */}
-                        <Button
-                          variant="text"
+                        <CustomButton
+                          variant="outlined"
                           startIcon={<InfoIcon />}
                           onClick={() => setShowInfoModal(true)}
                           sx={{
                             color: 'rgba(255,255,255,0.8)',
                             fontSize: '0.9rem',
                             textTransform: 'none',
+                            borderColor: 'rgba(255,255,255,0.3)',
                             '&:hover': {
-                              color: 'white',
+                              borderColor: 'rgba(255,255,255,0.6)',
                               bgcolor: 'rgba(255,255,255,0.1)'
                             }
                           }}
                         >
                           Ver mais informações
-                        </Button>
+                        </CustomButton>
                       </Box>
                     )}
 
@@ -433,185 +480,80 @@ const GameDetails = ({ gameId, onBack }) => {
                     <Stack direction="row" spacing={3} sx={{ mb: 4 }}>
                       {/* Botão principal - Jogar/Baixar */}
                       {gameDetails.installed ? (
-                        <Button
-                          variant="contained"
+                        <CustomButton
+                          variant="success"
                           size="large"
                           startIcon={<PlayIcon sx={{ fontSize: 24 }} />}
                           onClick={handlePlay}
                           disabled={isDownloading || isUpdating}
                           sx={{
-                            bgcolor: 'success.main',
-                            color: 'white',
                             px: 6,
                             py: 2,
                             fontSize: '1.3rem',
                             fontWeight: 'bold',
-                            borderRadius: 6,
-                            boxShadow: '0 10px 30px rgba(76, 175, 80, 0.4)',
-                            minWidth: 200,
-                            '&:hover': {
-                              bgcolor: 'success.dark',
-                              transform: 'translateY(-3px)',
-                              boxShadow: '0 15px 35px rgba(76, 175, 80, 0.6)'
-                            },
-                            transition: 'all 0.3s ease'
+                            minWidth: 200
                           }}
                         >
                           Jogar Agora
-                        </Button>
+                        </CustomButton>
                       ) : (
-                        <Box sx={{ position: 'relative', display: 'inline-block' }}>
-                          <Button
-                            variant="contained"
-                            size="large"
-                            startIcon={isDownloading ? <CloudIcon sx={{ fontSize: 24 }} /> : <DownloadIcon sx={{ fontSize: 24 }} />}
-                            onClick={handleDownload}
-                            disabled={isDownloading || isUpdating}
-                            sx={{
-                              bgcolor: isDownloading ? 'info.main' : 'primary.main',
-                              color: 'white',
-                              px: 6,
-                              py: 2,
-                              fontSize: '1.3rem',
-                              fontWeight: 'bold',
-                              borderRadius: 6,
-                              boxShadow: isDownloading ? '0 10px 30px rgba(33, 150, 243, 0.4)' : '0 10px 30px rgba(25, 118, 210, 0.4)',
-                              minWidth: 220,
-                              position: 'relative',
-                              overflow: 'hidden',
-                              '&:hover': {
-                                bgcolor: isDownloading ? 'info.dark' : 'primary.dark',
-                                transform: !isDownloading ? 'translateY(-3px)' : 'none',
-                                boxShadow: isDownloading ? '0 15px 35px rgba(33, 150, 243, 0.6)' : '0 15px 35px rgba(25, 118, 210, 0.6)'
-                              },
-                              '&:disabled': {
-                                bgcolor: 'info.main',
-                                color: 'white'
-                              },
-                              transition: 'all 0.3s ease'
-                            }}
-                          >
-                            {/* Barra de progresso integrada no botão */}
-                            {isDownloading && (
-                              <Box
-                                sx={{
-                                  position: 'absolute',
-                                  bottom: 0,
-                                  left: 0,
-                                  height: '6px',
-                                  width: `${progressPercent}%`,
-                                  bgcolor: 'rgba(255,255,255,0.6)',
-                                  transition: 'width 0.3s ease',
-                                  borderRadius: '0 0 6px 6px'
-                                }}
-                              />
-                            )}
-
-                            {isDownloading ? `Baixando ${progressPercent}%` : 'Baixar Jogo'}
-                          </Button>
-                        </Box>
+                        <CustomButton
+                          variant={isDownloading ? "info" : "primary"}
+                          size="large"
+                          startIcon={isDownloading ? <CloudIcon sx={{ fontSize: 24 }} /> : <DownloadIcon sx={{ fontSize: 24 }} />}
+                          onClick={handleDownload}
+                          disabled={isDownloading || isUpdating}
+                          downloadProgress={isDownloading ? progressPercent : undefined}
+                          sx={{
+                            px: 6,
+                            py: 2,
+                            fontSize: '1.3rem',
+                            fontWeight: 'bold',
+                            minWidth: 220
+                          }}
+                        >
+                          {isDownloading ? `Baixando` : 'Baixar Jogo'}
+                        </CustomButton>
                       )}
 
                       {/* Botão de trailer */}
                       {gameDetails.youtubeVideoId && (
-                        <Button
+                        <CustomButton
                           variant="outlined"
                           size="large"
                           startIcon={<YouTubeIcon sx={{ fontSize: 24 }} />}
                           onClick={handleTrailerToggle}
                           sx={{
-                            borderColor: 'white',
-                            color: 'white',
                             px: 4,
                             py: 2,
                             fontSize: '1.2rem',
-                            fontWeight: 'bold',
-                            borderRadius: 6,
-                            borderWidth: 2,
-                            '&:hover': {
-                              bgcolor: 'rgba(255,255,255,0.15)',
-                              borderColor: 'rgba(255,255,255,0.8)',
-                              transform: 'translateY(-3px)'
-                            },
-                            transition: 'all 0.3s ease'
+                            fontWeight: 'bold'
                           }}
                         >
                           {showTrailer ? 'Fechar Trailer' : 'Ver Trailer'}
-                        </Button>
+                        </CustomButton>
                       )}
 
                       {/* Botão de atualização */}
                       {hasUpdate && gameDetails.installed && (
-                        <Button
-                          variant="outlined"
+                        <CustomButton
+                          variant="warning"
                           size="large"
                           startIcon={isUpdating ? <CloudIcon sx={{ fontSize: 24 }} /> : <UpdateIcon sx={{ fontSize: 24 }} />}
                           onClick={handleUpdate}
                           disabled={isDownloading || isUpdating}
+                          downloadProgress={isUpdating ? updateProgressPercent : undefined}
                           sx={{
-                            borderColor: 'warning.main',
-                            color: 'warning.main',
                             px: 4,
                             py: 2,
                             fontSize: '1.2rem',
-                            fontWeight: 'bold',
-                            borderRadius: 6,
-                            borderWidth: 2,
-                            '&:hover': {
-                              borderColor: 'warning.dark',
-                              bgcolor: 'rgba(255, 152, 0, 0.15)',
-                              transform: 'translateY(-3px)'
-                            },
-                            transition: 'all 0.3s ease'
+                            fontWeight: 'bold'
                           }}
                         >
-                          {isUpdating ? `Atualizando ${updateProgressPercent}%` : 'Atualizar'}
-                        </Button>
+                          {isUpdating ? `Atualizando` : 'Atualizar'}
+                        </CustomButton>
                       )}
                     </Stack>
-
-                    {/* Screenshots em miniatura horizontal na parte inferior */}
-                    {displayImages.length > 1 && (
-                      <Box sx={{ mt: 2 }}>
-                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, opacity: 0.9 }}>
-                          Screenshots
-                        </Typography>
-                        <Box sx={{ display: 'flex', gap: 2, overflowX: 'auto', pb: 1 }}>
-                          {displayImages.slice(0, 6).map((image, index) => (
-                            <Box
-                              key={index}
-                              onClick={() => handleScreenshotClick(index)}
-                              sx={{
-                                minWidth: 140,
-                                height: 80,
-                                borderRadius: 2,
-                                overflow: 'hidden',
-                                cursor: 'pointer',
-                                border: selectedScreenshot === index ? 3 : 2,
-                                borderColor: selectedScreenshot === index ? 'primary.main' : 'rgba(255,255,255,0.3)',
-                                opacity: selectedScreenshot === index ? 1 : 0.7,
-                                transition: 'all 0.3s ease',
-                                '&:hover': {
-                                  opacity: 1,
-                                  transform: 'scale(1.05)',
-                                  borderColor: 'primary.main'
-                                }
-                              }}
-                            >
-                              <img
-                                src={image}
-                                alt={`Screenshot ${index + 1}`}
-                                style={{
-                                  width: '100%',
-                                  height: '100%',
-                                  objectFit: 'cover'
-                                }}
-                              />
-                            </Box>
-                          ))}
-                        </Box>
-                      </Box>
-                    )}
                   </Box>
                 </motion.div>
               </Grid>
@@ -829,34 +771,24 @@ const GameDetails = ({ gameId, onBack }) => {
                       <Stack spacing={2}>
                         {/* Botão principal no modal - MELHORADO */}
                         {gameDetails.installed ? (
-                          <Button
-                            variant="contained"
+                          <CustomButton
+                            variant="success"
                             size="large"
                             startIcon={<PlayIcon />}
                             onClick={handlePlay}
                             disabled={isDownloading || isUpdating}
                             sx={{
-                              bgcolor: 'success.main',
-                              color: 'white',
                               py: 1.5,
                               fontSize: '1.1rem',
-                              fontWeight: 'bold',
-                              borderRadius: 4,
-                              boxShadow: '0 8px 25px rgba(76, 175, 80, 0.4)',
-                              '&:hover': {
-                                bgcolor: 'success.dark',
-                                transform: 'translateY(-2px)',
-                                boxShadow: '0 12px 30px rgba(76, 175, 80, 0.6)'
-                              },
-                              transition: 'all 0.3s ease'
+                              fontWeight: 'bold'
                             }}
                           >
                             Jogar Agora
-                          </Button>
+                          </CustomButton>
                         ) : (
                           <Box sx={{ position: 'relative' }}>
-                            <Button
-                              variant="contained"
+                            <CustomButton
+                              variant={isDownloading ? "info" : "primary"}
                               size="large"
                               startIcon={isDownloading ? <CloudIcon /> : <DownloadIcon />}
                               onClick={handleDownload}
@@ -866,33 +798,8 @@ const GameDetails = ({ gameId, onBack }) => {
                                 py: 1.5,
                                 fontSize: '1.1rem',
                                 fontWeight: 'bold',
-                                borderRadius: 4,
                                 position: 'relative',
-                                overflow: 'hidden',
-                                // Cor dinâmica baseada no progresso
-                                bgcolor: isDownloading
-                                  ? `hsl(${Math.min(progressPercent * 1.2, 120)}, 70%, 50%)` // Verde gradual conforme progresso
-                                  : 'primary.main',
-                                color: 'white',
-                                boxShadow: isDownloading
-                                  ? `0 8px 25px hsla(${Math.min(progressPercent * 1.2, 120)}, 70%, 50%, 0.4)`
-                                  : '0 8px 25px rgba(25, 118, 210, 0.4)',
-                                '&:hover': {
-                                  bgcolor: isDownloading
-                                    ? `hsl(${Math.min(progressPercent * 1.2, 120)}, 70%, 40%)`
-                                    : 'primary.dark',
-                                  transform: !isDownloading ? 'translateY(-2px)' : 'none',
-                                  boxShadow: isDownloading
-                                    ? `0 12px 30px hsla(${Math.min(progressPercent * 1.2, 120)}, 70%, 50%, 0.6)`
-                                    : '0 12px 30px rgba(25, 118, 210, 0.6)'
-                                },
-                                '&:disabled': {
-                                  bgcolor: isDownloading
-                                    ? `hsl(${Math.min(progressPercent * 1.2, 120)}, 70%, 50%)`
-                                    : 'grey.600',
-                                  color: 'white'
-                                },
-                                transition: 'all 0.3s ease'
+                                overflow: 'hidden'
                               }}
                             >
                               {/* Barra de progresso integrada com gradiente */}
@@ -945,48 +852,35 @@ const GameDetails = ({ gameId, onBack }) => {
                               )}
 
                               {isDownloading ? `Baixando ${progressPercent}%` : 'Baixar Jogo'}
-                            </Button>
+                            </CustomButton>
                           </Box>
                         )}
 
                         {/* Outros botões */}
                         {gameDetails.youtubeVideoId && (
-                          <Button
+                          <CustomButton
                             variant="outlined"
                             startIcon={<YouTubeIcon />}
                             onClick={handleTrailerToggle}
                             sx={{
-                              borderColor: 'rgba(255,255,255,0.3)',
-                              color: 'white',
-                              py: 1.5,
-                              borderRadius: 4,
-                              '&:hover': {
-                                borderColor: 'white',
-                                bgcolor: 'rgba(255,255,255,0.1)'
-                              }
+                              py: 1.5
                             }}
                           >
                             Ver Trailer
-                          </Button>
+                          </CustomButton>
                         )}
 
                         {hasUpdate && gameDetails.installed && (
-                          <Button
-                            variant="outlined"
+                          <CustomButton
+                            variant="warning"
                             startIcon={<UpdateIcon />}
                             onClick={handleUpdate}
                             sx={{
-                              borderColor: 'warning.main',
-                              color: 'warning.main',
-                              py: 1.5,
-                              borderRadius: 4,
-                              '&:hover': {
-                                bgcolor: 'rgba(255, 152, 0, 0.1)'
-                              }
+                              py: 1.5
                             }}
                           >
                             Atualizar
-                          </Button>
+                          </CustomButton>
                         )}
                       </Stack>
                     </Box>
@@ -1056,7 +950,7 @@ const GameDetails = ({ gameId, onBack }) => {
                         </Box>
 
                         {gameDetails.website && (
-                          <Button
+                          <CustomButton
                             variant="outlined"
                             href={gameDetails.website}
                             target="_blank"
@@ -1064,17 +958,11 @@ const GameDetails = ({ gameId, onBack }) => {
                             startIcon={<WebIcon />}
                             size="small"
                             sx={{
-                              borderColor: 'primary.main',
-                              color: 'primary.main',
-                              borderRadius: 3,
-                              mt: 1,
-                              '&:hover': {
-                                bgcolor: 'rgba(33, 150, 243, 0.1)'
-                              }
+                              mt: 1
                             }}
                           >
                             Site Oficial
-                          </Button>
+                          </CustomButton>
                         )}
                       </Stack>
                     </Card>
