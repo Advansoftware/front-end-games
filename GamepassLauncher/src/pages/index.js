@@ -16,8 +16,7 @@ import {
   CloudOff as OfflineIcon
 } from '@mui/icons-material';
 
-import { ThemeContextProvider } from '../contexts/ThemeContext';
-import { GamesProvider, useGames } from '../contexts/GamesContext';
+import { useGames } from '../contexts/GamesContext';
 import { useGamepad } from '../hooks/useGamepad';
 import GameGrid from '../components/GameGrid';
 import GameDetails from '../components/GameDetails';
@@ -316,11 +315,5 @@ const HomePage = () => {
 };
 
 export default function Home() {
-  return (
-    <ThemeContextProvider>
-      <GamesProvider>
-        <HomePage />
-      </GamesProvider>
-    </ThemeContextProvider>
-  );
+  return <HomePage />;
 }
