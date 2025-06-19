@@ -268,32 +268,23 @@ export const GamesProvider = ({ children }) => {
 
   // Função para atualizar um jogo
   const updateGame = useCallback((gameId) => {
-    console.log(`🔄 Iniciando atualização do jogo ${gameId}`);
+    const game = games.find(g => g.id === gameId);
+    if (!game) {
+      console.error(`❌ Jogo ${gameId} não encontrado para atualização`);
+      return false;
+    }
 
-    // Simular progresso de atualização
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += Math.random() * 15;
-      if (progress >= 100) {
-        progress = 100;
-        clearInterval(interval);
+    console.log(`🔄 Iniciando atualização do jogo ${game.title}`);
 
-        // Remover progresso
-        setUpdateProgress(prev => {
-          const newProgress = { ...prev };
-          delete newProgress[gameId];
-          return newProgress;
-        });
+    // Callback para marcar jogo como atualizado quando terminar
+    const onGameUpdated = (updatedGameId) => {
+      // Jogo já está instalado, não precisa alterar o status installed
+      console.log(`✅ Atualização concluída para jogo ${updatedGameId}`);
+    };
 
-        console.log(`✅ Atualização do jogo ${gameId} concluída`);
-      }
-
-      setUpdateProgress(prev => ({
-        ...prev,
-        [gameId]: Math.min(progress, 100)
-      }));
-    }, 800);
-  }, []);
+    // Usar o sistema de download para simular atualização
+    return downloads.startDownload(game, 'high', onGameUpdated);
+  }, [games, downloads]);
 
   // Função para executar um jogo
   const launchGame = useCallback((gameId) => {

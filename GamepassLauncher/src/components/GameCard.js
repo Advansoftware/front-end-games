@@ -75,10 +75,14 @@ const GameCard = ({
   const isUpdating = isDownloaded && isDownloading; // Se já instalado e baixando = atualizando
   const operationType = isUpdating ? 'updating' : 'downloading';
 
-  // Determinar mensagem baseada no status real
+  // Determinar mensagem baseada no status real e tipo de operação
   let operationMessage = 'Baixando';
   if (isUpdating) {
-    operationMessage = downloadData?.status === 'installing' ? 'Instalando' : 'Atualizando';
+    if (downloadData?.status === 'installing') {
+      operationMessage = 'Instalando';
+    } else {
+      operationMessage = 'Atualizando';
+    }
   } else if (downloadData?.status === 'installing') {
     operationMessage = 'Instalando';
   }

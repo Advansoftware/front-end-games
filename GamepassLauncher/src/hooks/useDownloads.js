@@ -143,15 +143,15 @@ export const DownloadsProvider = ({ children }) => {
           return currentDownloads;
         }
 
-        // Fase de download (0-90%)
-        if (currentPhase === 'downloading' && progress < 90) {
+        // Fase de download (0-85%)
+        if (currentPhase === 'downloading' && progress < 85) {
           const currentSpeed = Math.max(5, baseSpeed + (Math.random() - 0.5) * 25);
           const bytesThisSecond = currentSpeed * 1024 * 1024;
 
-          downloadedBytes = Math.min(downloadedBytes + bytesThisSecond, totalBytes * 0.9);
+          downloadedBytes = Math.min(downloadedBytes + bytesThisSecond, totalBytes * 0.85);
           progress = (downloadedBytes / totalBytes) * 100;
 
-          const remainingBytes = (totalBytes * 0.9) - downloadedBytes;
+          const remainingBytes = (totalBytes * 0.85) - downloadedBytes;
           const etaSeconds = remainingBytes / (currentSpeed * 1024 * 1024);
           const etaFormatted = etaSeconds > 60
             ? `${Math.ceil(etaSeconds / 60)}m ${Math.ceil(etaSeconds % 60)}s`
@@ -159,7 +159,7 @@ export const DownloadsProvider = ({ children }) => {
 
           const updatedItem = {
             ...downloadItem,
-            progress: Math.min(progress, 90),
+            progress: Math.min(progress, 85),
             speed: `${currentSpeed.toFixed(1)} MB/s`,
             eta: etaFormatted,
             downloaded: `${(downloadedBytes / (1024 * 1024 * 1024)).toFixed(1)} GB`,
@@ -167,28 +167,40 @@ export const DownloadsProvider = ({ children }) => {
             status: 'downloading'
           };
 
-          // Quando chegar a 90%, muda para fase de instalação
-          if (progress >= 90) {
+          // Quando chegar a 85%, muda para fase de instalação
+          if (progress >= 85) {
             currentPhase = 'installing';
           }
 
           return new Map(currentDownloads.set(game.id, updatedItem));
         }
 
-        // Fase de instalação (90-100%)
+        // Fase de instalação (85-100%) - Simulando extração/instalação
         else if (currentPhase === 'installing') {
-          // Instalação mais lenta (simula processamento)
-          progress += Math.random() * 2; // 0-2% por segundo
+          // Instalação com progresso mais lento e variável (simula extração de ZIP)
+          const installSpeed = Math.random() * 3 + 1; // 1-4% por segundo (mais lento)
+          progress += installSpeed;
           progress = Math.min(progress, 100);
+
+          // Durante instalação, simular diferentes velocidades de processamento
+          let installMessage = 'Instalando...';
+          if (progress < 90) {
+            installMessage = 'Extraindo arquivos...';
+          } else if (progress < 95) {
+            installMessage = 'Configurando...';
+          } else if (progress < 100) {
+            installMessage = 'Finalizando...';
+          }
 
           const updatedItem = {
             ...downloadItem,
             progress: progress,
-            speed: '0 MB/s', // Sem velocidade durante instalação
-            eta: progress >= 100 ? 'Concluído' : 'Instalando...',
+            speed: '0 MB/s', // Sem velocidade de rede durante instalação
+            eta: progress >= 100 ? 'Concluído' : installMessage,
             downloaded: `${downloadItem.size}`, // Download completo
             downloadedBytes: totalBytes,
-            status: progress >= 100 ? 'completed' : 'installing'
+            status: progress >= 100 ? 'completed' : 'installing',
+            installationProgress: progress >= 85 ? Math.round(((progress - 85) / 15) * 100) : 0
           };
 
           if (progress >= 100) {

@@ -55,14 +55,14 @@ const GameDetails = ({ gameId, onBack }) => {
   const downloadData = activeDownloads.get(gameId);
   const updatePercent = updateProgress[gameId];
   const isDownloading = downloadData !== undefined;
-  const isUpdating = updatePercent !== undefined;
 
   // Garantir que o progresso seja sempre um número inteiro
   const progressPercent = isDownloading ? Math.round(downloadData.progress || 0) : 0;
-  const updateProgressPercent = isUpdating ? Math.round(updatePercent) : 0;
+  const updateProgressPercent = updatePercent ? Math.round(updatePercent) : 0;
 
   // Determinar status real baseado na fase
   const isInstalling = downloadData?.status === 'installing';
+  const isUpdating = gameDetails?.installed && isDownloading; // Se já instalado e baixando = atualizando
 
   // Simular atualizações disponíveis para alguns jogos - MANTÉM durante o processo de atualização
   const hasUpdate = gameDetails && [1, 3].includes(gameId) && gameDetails.installed && !isDownloading;
