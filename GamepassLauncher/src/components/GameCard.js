@@ -7,7 +7,8 @@ import {
   IconButton,
   Chip,
   Stack,
-  LinearProgress
+  LinearProgress,
+  CircularProgress
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import {
@@ -15,10 +16,12 @@ import {
   Star as StarIcon,
   Schedule as ClockIcon,
   Download as DownloadIcon,
-  CloudDownload as CloudIcon
+  CloudDownload as CloudIcon,
+  Update as UpdateIcon
 } from '@mui/icons-material';
 import { useGames } from '../contexts/GamesContext';
 import { useDownloads } from '../hooks/useDownloads';
+import { useTheme } from '../contexts/ThemeContext';
 import CustomButton from './CustomButton';
 
 const GameCard = ({
@@ -29,6 +32,31 @@ const GameCard = ({
 }) => {
   const { downloadGame } = useGames();
   const { activeDownloads } = useDownloads();
+  const { currentTheme } = useTheme();
+
+  // Cores por tema
+  const themeColors = {
+    xbox: {
+      primary: '#107C10',
+      secondary: '#0E6A0E',
+      accent: '#40E040',
+      glow: '#40E040'
+    },
+    ps5: {
+      primary: '#0070F3',
+      secondary: '#0051CC',
+      accent: '#40B4FF',
+      glow: '#40B4FF'
+    },
+    switch: {
+      primary: '#E60012',
+      secondary: '#CC0010',
+      accent: '#FF4040',
+      glow: '#FF4040'
+    }
+  };
+
+  const currentColors = themeColors[currentTheme];
 
   // Dimensões fixas e consistentes para todos os cards
   const cardDimensions = variant === 'horizontal'
@@ -42,6 +70,12 @@ const GameCard = ({
 
   // Garantir que o progresso seja sempre um número inteiro
   const progressPercent = isDownloading ? Math.round(downloadData.progress || 0) : 0;
+
+  // Determinar tipo de operação e mensagem
+  const isUpdating = isDownloaded && isDownloading; // Se já instalado e baixando = atualizando
+  const operationType = isUpdating ? 'updating' : 'downloading';
+  const operationMessage = isUpdating ? 'Atualizando' : 'Baixando';
+  const operationIcon = isUpdating ? UpdateIcon : DownloadIcon;
 
   // Função para iniciar download
   const handleDownload = (e) => {
@@ -100,10 +134,10 @@ const GameCard = ({
             sx={{
               height: '100%',
               width: `${progressPercent}%`,
-              bgcolor: 'info.main',
               borderRadius: '0 2px 2px 0',
               transition: 'width 0.3s ease',
-              background: 'linear-gradient(90deg, #0070f3, #00d4ff)'
+              background: `linear-gradient(90deg, ${currentColors.primary}, ${currentColors.accent})`,
+              boxShadow: `0 0 8px ${currentColors.glow}40`
             }}
           />
         </Box>
@@ -211,13 +245,31 @@ const GameCard = ({
               left: 0,
               right: 0,
               bottom: 0,
-              bgcolor: 'rgba(0,0,0,0.8)',
+              bgcolor: 'rgba(0,0,0,0.85)',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              backdropFilter: 'blur(4px)'
             }}
           >
+            {/* Ícone da operação */}
+            <Box sx={{ mb: 2 }}>
+              {React.createElement(operationIcon, {
+                sx: {
+                  fontSize: 32,
+                  color: currentColors.primary,
+                  filter: `drop-shadow(0 0 8px ${currentColors.glow}60)`,
+                  animation: 'pulse 2s infinite',
+                  '@keyframes pulse': {
+                    '0%, 100%': { opacity: 1 },
+                    '50%': { opacity: 0.7 }
+                  }
+                }
+              })}
+            </Box>
+
+            {/* Loading circular com porcentagem ou infinito */}
             <Box
               sx={{
                 position: 'relative',
@@ -229,40 +281,94 @@ const GameCard = ({
                 mb: 2
               }}
             >
-              {/* Círculo de progresso */}
-              <Box
-                sx={{
-                  position: 'absolute',
-                  width: '100%',
-                  height: '100%',
-                  borderRadius: '50%',
-                  border: '4px solid rgba(255,255,255,0.2)',
-                }}
-              />
-              <Box
-                sx={{
-                  position: 'absolute',
-                  width: '100%',
-                  height: '100%',
-                  borderRadius: '50%',
-                  border: '4px solid transparent',
-                  borderTopColor: 'info.main',
-                  transform: `rotate(${(progressPercent / 100) * 360}deg)`,
-                  transition: 'transform 0.3s ease'
-                }}
-              />
+              {progressPercent > 0 ? (
+                // Loading com porcentagem
+                <>
+                  {/* Círculo de fundo */}
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      width: '100%',
+                      height: '100%',
+                      borderRadius: '50%',
+                      border: '4px solid rgba(255,255,255,0.1)',
+                    }}
+                  />
+                  {/* Círculo de progresso */}
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      width: '100%',
+                      height: '100%',
+                      borderRadius: '50%',
+                      border: '4px solid transparent',
+                      borderTopColor: currentColors.primary,
+                      borderRightColor: progressPercent > 25 ? currentColors.primary : 'transparent',
+                      borderBottomColor: progressPercent > 50 ? currentColors.accent : 'transparent',
+                      borderLeftColor: progressPercent > 75 ? currentColors.accent : 'transparent',
+                      transform: `rotate(${(progressPercent / 100) * 360}deg)`,
+                      transition: 'all 0.3s ease',
+                      filter: `drop-shadow(0 0 6px ${currentColors.glow}40)`
+                    }}
+                  />
+                  {/* Texto da porcentagem */}
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      color: 'white',
+                      fontWeight: 700,
+                      fontSize: '1rem',
+                      textShadow: `0 0 8px ${currentColors.glow}60`
+                    }}
+                  >
+                    {progressPercent}%
+                  </Typography>
+                </>
+              ) : (
+                // Loading infinito
+                <CircularProgress
+                  size={72}
+                  thickness={4}
+                  sx={{
+                    color: currentColors.primary,
+                    filter: `drop-shadow(0 0 8px ${currentColors.glow}40)`,
+                    '& .MuiCircularProgress-circle': {
+                      strokeLinecap: 'round',
+                    }
+                  }}
+                />
+              )}
+            </Box>
+
+            {/* Mensagem da operação */}
+            <Typography
+              variant="body2"
+              sx={{
+                color: 'white',
+                fontWeight: 600,
+                fontSize: '0.9rem',
+                textAlign: 'center',
+                textShadow: `0 0 8px ${currentColors.glow}40`,
+                mb: 1
+              }}
+            >
+              {operationMessage}
+            </Typography>
+
+            {/* Informações adicionais */}
+            {downloadData?.speed && (
               <Typography
-                variant="h6"
+                variant="caption"
                 sx={{
-                  color: 'white',
-                  fontWeight: 700,
-                  fontSize: '1rem'
+                  color: currentColors.accent,
+                  fontSize: '0.75rem',
+                  fontWeight: 500,
+                  textShadow: `0 0 4px ${currentColors.glow}30`
                 }}
               >
-                {progressPercent}%
+                {downloadData.speed}
               </Typography>
-            </Box>
-            {/* Removido o texto "Baixando..." da parte inferior */}
+            )}
           </Box>
         )}
 
