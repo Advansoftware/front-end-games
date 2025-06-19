@@ -170,6 +170,7 @@ export const DownloadsProvider = ({ children }) => {
           // Quando chegar a 85%, muda para fase de instalação
           if (progress >= 85) {
             currentPhase = 'installing';
+            console.log(`🔧 Iniciando fase de instalação para ${game.title}`);
           }
 
           return new Map(currentDownloads.set(game.id, updatedItem));
@@ -178,7 +179,7 @@ export const DownloadsProvider = ({ children }) => {
         // Fase de instalação (85-100%) - Simulando extração/instalação
         else if (currentPhase === 'installing') {
           // Instalação com progresso mais lento e variável (simula extração de ZIP)
-          const installSpeed = Math.random() * 3 + 1; // 1-4% por segundo (mais lento)
+          const installSpeed = Math.random() * 2 + 0.5; // 0.5-2.5% por segundo (mais lento)
           progress += installSpeed;
           progress = Math.min(progress, 100);
 
@@ -190,6 +191,8 @@ export const DownloadsProvider = ({ children }) => {
             installMessage = 'Configurando...';
           } else if (progress < 100) {
             installMessage = 'Finalizando...';
+          } else {
+            installMessage = 'Concluído';
           }
 
           const updatedItem = {
@@ -207,22 +210,26 @@ export const DownloadsProvider = ({ children }) => {
             clearInterval(interval);
             intervalRefs.current.delete(game.id);
 
+            console.log(`✅ ${game.title} - Instalação completa!`);
+
             // Chamar callback para marcar jogo como instalado
             if (onGameInstalled) {
-              onGameInstalled(game.id);
+              setTimeout(() => {
+                onGameInstalled(game.id);
+                console.log(`🎮 ${game.title} marcado como instalado`);
+              }, 500);
             }
 
-            // Mover para histórico após 3 segundos
+            // Mover para histórico após 2 segundos
             setTimeout(() => {
               setDownloadHistory(prev => [updatedItem, ...prev]);
               setActiveDownloads(prev => {
                 const newMap = new Map(prev);
                 newMap.delete(game.id);
+                console.log(`📋 ${game.title} removido dos downloads ativos`);
                 return newMap;
               });
-            }, 3000);
-
-            console.log(`✅ Jogo instalado: ${game.title}`);
+            }, 2000);
           }
 
           return new Map(currentDownloads.set(game.id, updatedItem));

@@ -506,7 +506,7 @@ const GameDetails = ({ gameId, onBack }) => {
                             minWidth: 180
                           }}
                         >
-                          {isDownloading ? (isInstalling ? 'Instalando' : 'Baixando') : 'Atualizando'}
+                          {isDownloading ? (isUpdating ? (isInstalling ? 'Instalando' : 'Atualizando') : (isInstalling ? 'Instalando' : 'Baixando')) : 'Atualizando'}
                         </CustomButton>
                       ) : (
                         /* Se NÃO está baixando/atualizando */
@@ -828,7 +828,7 @@ const GameDetails = ({ gameId, onBack }) => {
                               fontWeight: 'bold'
                             }}
                           >
-                            {isDownloading ? (isInstalling ? 'Instalando' : 'Baixando') : 'Atualizando'}
+                            {isDownloading ? (isUpdating ? (isInstalling ? 'Instalando' : 'Atualizando') : (isInstalling ? 'Instalando' : 'Baixando')) : 'Atualizando'}
                           </CustomButton>
                         ) : (
                           /* Se NÃO está processando */
