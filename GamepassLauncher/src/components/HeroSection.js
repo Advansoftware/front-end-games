@@ -3,9 +3,15 @@ import { Box, Typography, Chip, Stack } from '@mui/material';
 import { motion } from 'framer-motion';
 import {
   Download as DownloadIcon,
-  Star as StarIcon
+  Star as StarIcon,
+  PlayArrow as PlayIcon,
+  Update as UpdateIcon,
+  CloudDownload as CloudIcon
 } from '@mui/icons-material';
 import CustomButton from './CustomButton';
+import { useTheme, getThemeColors } from '../contexts/ThemeContext';
+import { useGames } from '../contexts/GamesContext';
+import { useDownloads } from '../hooks/useDownloads';
 
 const HeroSection = ({
   featuredGame,
@@ -13,7 +19,161 @@ const HeroSection = ({
   heroGames = [],
   onDownload
 }) => {
+  const { currentTheme } = useTheme();
+  const currentColors = getThemeColors(currentTheme);
+
+  const {
+    downloadGame,
+    updateGame,
+    launchGame,
+    updateProgress
+  } = useGames();
+
+  const { activeDownloads } = useDownloads();
+
   if (!featuredGame) return null;
+
+  // Lógica de estado do jogo (mesma da tela de detalhes)
+  const downloadData = activeDownloads.get(featuredGame.id);
+  const updatePercent = updateProgress[featuredGame.id];
+  const isDownloading = downloadData !== undefined;
+
+  const progressPercent = isDownloading ? Math.round(downloadData.progress || 0) : 0;
+  const updateProgressPercent = updatePercent ? Math.round(updatePercent) : 0;
+
+  const isInstalling = downloadData?.status === 'installing';
+  const isUpdating = featuredGame?.installed && isDownloading;
+
+  // Simular atualizações disponíveis para alguns jogos
+  const hasUpdate = featuredGame && [1, 3].includes(featuredGame.id) && featuredGame.installed && !isDownloading;
+
+  // Função para obter mensagem correta baseada no contexto
+  const getOperationMessage = () => {
+    if (!isDownloading) return '';
+    if (isInstalling) return 'Instalando';
+    if (isUpdating) return 'Atualizando';
+    return 'Baixando';
+  };
+
+  const operationMessage = getOperationMessage();
+
+  // Handlers
+  const handlePlay = (e) => {
+    e.stopPropagation();
+    launchGame(featuredGame.id);
+  };
+
+  const handleDownload = (e) => {
+    e.stopPropagation();
+    downloadGame(featuredGame.id);
+  };
+
+  const handleUpdate = (e) => {
+    e.stopPropagation();
+    updateGame(featuredGame.id);
+  };
+
+  // Função para determinar o botão principal
+  const renderPrimaryButton = () => {
+    // Se está baixando/instalando/atualizando - mostrar progresso
+    if (isDownloading || isUpdating) {
+      return (
+        <CustomButton
+          variant={isUpdating ? "warning" : "info"}
+          startIcon={<CloudIcon />}
+          disabled={true}
+          downloadProgress={isDownloading ? progressPercent : updateProgressPercent}
+          sx={{
+            fontWeight: 700,
+            px: 3,
+            py: 1.5,
+            borderRadius: 2,
+            fontSize: '1rem',
+            textTransform: 'none',
+            minWidth: 180
+          }}
+        >
+          {operationMessage}
+        </CustomButton>
+      );
+    }
+
+    // Se está instalado E tem atualização - botão ATUALIZAR
+    if (featuredGame.installed && hasUpdate) {
+      return (
+        <CustomButton
+          variant="warning"
+          startIcon={<UpdateIcon />}
+          onClick={handleUpdate}
+          sx={{
+            fontWeight: 700,
+            px: 3,
+            py: 1.5,
+            borderRadius: 2,
+            fontSize: '1rem',
+            textTransform: 'none',
+            boxShadow: `0 4px 20px ${currentColors.glow}40`,
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: `0 6px 25px ${currentColors.glow}60`
+            }
+          }}
+        >
+          Atualizar
+        </CustomButton>
+      );
+    }
+
+    // Se está instalado E NÃO tem atualização - botão JOGAR AGORA
+    if (featuredGame.installed && !hasUpdate) {
+      return (
+        <CustomButton
+          variant="success"
+          startIcon={<PlayIcon />}
+          onClick={handlePlay}
+          sx={{
+            fontWeight: 700,
+            px: 3,
+            py: 1.5,
+            borderRadius: 2,
+            fontSize: '1rem',
+            textTransform: 'none',
+            boxShadow: `0 4px 20px ${currentColors.glow}40`,
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: `0 6px 25px ${currentColors.glow}60`
+            }
+          }}
+        >
+          Jogar Agora
+        </CustomButton>
+      );
+    }
+
+    // Se NÃO está instalado - botão BAIXAR
+    return (
+      <CustomButton
+        variant="primary"
+        startIcon={<DownloadIcon />}
+        onClick={handleDownload}
+        sx={{
+          fontWeight: 700,
+          px: 3,
+          py: 1.5,
+          borderRadius: 2,
+          fontSize: '1rem',
+          textTransform: 'none',
+          boxShadow: `0 4px 20px ${currentColors.glow}40`,
+          '&:hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: `0 6px 25px ${currentColors.glow}60`
+          }
+        }}
+      >
+        Baixar agora
+      </CustomButton>
+    );
+  };
 
   return (
     <Box
@@ -95,10 +255,11 @@ const HeroSection = ({
           size="small"
           sx={{
             mb: 2,
-            bgcolor: 'success.main',
+            bgcolor: currentColors.primary,
             color: 'white',
             fontWeight: 600,
-            fontSize: '0.8rem'
+            fontSize: '0.8rem',
+            boxShadow: `0 0 10px ${currentColors.glow}60`
           }}
         />
 
@@ -147,32 +308,7 @@ const HeroSection = ({
         </Stack>
 
         <Stack direction="row" spacing={2}>
-          <CustomButton
-            variant="contained"
-            startIcon={<DownloadIcon />}
-            onClick={(e) => {
-              e.stopPropagation();
-              onDownload?.(featuredGame);
-            }}
-            sx={{
-              bgcolor: 'success.main',
-              color: 'white',
-              fontWeight: 700,
-              px: 3,
-              py: 1.5,
-              borderRadius: 2,
-              fontSize: '1rem',
-              textTransform: 'none',
-              boxShadow: '0 4px 20px rgba(46, 125, 50, 0.4)',
-              '&:hover': {
-                bgcolor: 'success.dark',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 6px 25px rgba(46, 125, 50, 0.6)'
-              }
-            }}
-          >
-            Baixar agora
-          </CustomButton>
+          {renderPrimaryButton()}
 
           <CustomButton
             variant="outlined"
