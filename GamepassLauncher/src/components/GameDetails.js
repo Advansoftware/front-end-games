@@ -30,8 +30,8 @@ import {
 import { useGames } from '../contexts/GamesContext';
 import { useDownloads } from '../hooks/useDownloads';
 import CacheService from '../services/CacheService';
-import YouTubePlayer from './YouTubePlayer';
 import CustomButton from './CustomButton';
+import TrailerModal from './TrailerModal';
 
 const GameDetails = ({ gameId, onBack }) => {
   const {
@@ -372,23 +372,15 @@ const GameDetails = ({ gameId, onBack }) => {
                       maxWidth: 350
                     }}
                   >
-                    {showTrailer && gameDetails.youtubeVideoId ? (
-                      <YouTubePlayer
-                        videoId={gameDetails.youtubeVideoId}
-                        height={280}
-                        onClose={() => setShowTrailer(false)}
-                      />
-                    ) : (
-                      <CardMedia
-                        component="img"
-                        image={heroImage}
-                        alt={gameDetails.title}
-                        sx={{
-                          height: { xs: 220, md: 280 },
-                          objectFit: 'cover'
-                        }}
-                      />
-                    )}
+                    <CardMedia
+                      component="img"
+                      image={heroImage}
+                      alt={gameDetails.title}
+                      sx={{
+                        height: { xs: 220, md: 280 },
+                        objectFit: 'cover'
+                      }}
+                    />
                   </Card>
                 </motion.div>
               </Grid>
@@ -1033,6 +1025,14 @@ const GameDetails = ({ gameId, onBack }) => {
             </Box>
           </Fade>
         </Modal>
+
+        {/* Modal de Trailer do YouTube */}
+        <TrailerModal
+          open={showTrailer}
+          onClose={() => setShowTrailer(false)}
+          videoId={gameDetails.youtubeVideoId}
+          gameTitle={gameDetails.title}
+        />
       </motion.div>
     </AnimatePresence>
   );
