@@ -28,7 +28,7 @@ import OverlayActionButton from './OverlayActionButton';
 const GameCard = ({
   game,
   isRecent = false,
-  onGameSelect,
+  onSelect, // Mudança: usar onSelect em vez de onGameSelect
   variant = 'horizontal' // 'horizontal' | 'vertical'
 }) => {
   const { downloadGame, updateGame } = useGames();
@@ -59,10 +59,8 @@ const GameCard = ({
 
   const currentColors = themeColors[currentTheme];
 
-  // Dimensões fixas e consistentes para todos os cards
-  const cardDimensions = variant === 'horizontal'
-    ? { width: 200, height: 280 } // Dimensões fixas para todos
-    : { width: 220, height: 300 }; // Dimensões fixas para vertical
+  // Remover dimensões fixas - usar 100% da largura do grid item
+  const cardHeight = variant === 'horizontal' ? 280 : 300;
 
   // Usar o status de instalação do jogo e dados do hook useDownloads
   const isDownloaded = game.installed === true;
@@ -113,8 +111,8 @@ const GameCard = ({
       component={motion.div}
       whileTap={{ scale: 0.98 }}
       sx={{
-        width: cardDimensions.width,
-        height: cardDimensions.height + 120, // +120 para info do jogo (aumentado para caber tudo)
+        width: '100%', // Usar largura completa do grid item
+        height: cardHeight + 120, // Altura fixa + info do jogo
         flexShrink: 0,
         bgcolor: 'rgba(255,255,255,0.05)',
         backdropFilter: 'blur(10px)',
@@ -126,7 +124,7 @@ const GameCard = ({
         opacity: isDownloaded ? 1 : 0.7,
         position: 'relative',
         display: 'flex',
-        flexDirection: 'column', // Garantir layout em coluna
+        flexDirection: 'column',
         '&:hover': {
           bgcolor: 'rgba(255,255,255,0.1)',
           borderColor: 'primary.main',
@@ -138,7 +136,7 @@ const GameCard = ({
           }
         }
       }}
-      onClick={() => onGameSelect(game.id)}
+      onClick={() => onSelect && onSelect(game.id)} // Mudança: usar onSelect com verificação
     >
       {/* Progress bar no topo do card durante download */}
       {isDownloading && (
@@ -166,12 +164,13 @@ const GameCard = ({
         </Box>
       )}
 
-      {/* Thumbnail com proporção fixa */}
+      {/* Thumbnail com proporção responsiva */}
       <Box
         sx={{
           position: 'relative',
-          height: cardDimensions.height,
-          flexShrink: 0 // Não permite que a imagem diminua
+          height: cardHeight, // Altura fixa
+          width: '100%', // Largura completa
+          flexShrink: 0
         }}
       >
         <CardMedia
@@ -420,12 +419,13 @@ const GameCard = ({
         className="game-info"
         sx={{
           p: 2,
-          height: 120, // Altura fixa para todas as informações
+          height: 120,
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
           transition: 'transform 0.2s ease',
-          flexGrow: 1 // Ocupa o espaço restante
+          flexGrow: 1,
+          width: '100%' // Garantir largura completa
         }}
       >
         {/* Informações do jogo - parte superior */}
