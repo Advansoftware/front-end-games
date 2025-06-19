@@ -455,16 +455,19 @@ const GameDetails = ({ gameId, onBack }) => {
                           {gameDetails.description}
                         </Typography>
 
-                        {/* Botão Ver Mais */}
+                        {/* Botão Ver Mais - MENOR */}
                         <CustomButton
                           variant="outlined"
+                          size="small"
                           startIcon={<InfoIcon />}
                           onClick={() => setShowInfoModal(true)}
                           sx={{
                             color: 'rgba(255,255,255,0.8)',
-                            fontSize: '0.9rem',
+                            fontSize: '0.8rem',
                             textTransform: 'none',
                             borderColor: 'rgba(255,255,255,0.3)',
+                            px: 2,
+                            py: 0.8,
                             '&:hover': {
                               borderColor: 'rgba(255,255,255,0.6)',
                               bgcolor: 'rgba(255,255,255,0.1)'
@@ -476,22 +479,22 @@ const GameDetails = ({ gameId, onBack }) => {
                       </Box>
                     )}
 
-                    {/* Botões de ação principais - Maiores e mais destacados */}
-                    <Stack direction="row" spacing={3} sx={{ mb: 4 }}>
+                    {/* Botões de ação principais - TAMANHO REDUZIDO */}
+                    <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
                       {/* Botão principal - Jogar/Baixar */}
                       {gameDetails.installed ? (
                         <CustomButton
                           variant="success"
-                          size="large"
-                          startIcon={<PlayIcon sx={{ fontSize: 24 }} />}
+                          size="medium"
+                          startIcon={<PlayIcon />}
                           onClick={handlePlay}
                           disabled={isDownloading || isUpdating}
                           sx={{
-                            px: 6,
-                            py: 2,
-                            fontSize: '1.3rem',
+                            px: 4,
+                            py: 1.5,
+                            fontSize: '1.1rem',
                             fontWeight: 'bold',
-                            minWidth: 200
+                            minWidth: 160
                           }}
                         >
                           Jogar Agora
@@ -499,17 +502,17 @@ const GameDetails = ({ gameId, onBack }) => {
                       ) : (
                         <CustomButton
                           variant={isDownloading ? "info" : "primary"}
-                          size="large"
-                          startIcon={isDownloading ? <CloudIcon sx={{ fontSize: 24 }} /> : <DownloadIcon sx={{ fontSize: 24 }} />}
+                          size="medium"
+                          startIcon={isDownloading ? <CloudIcon /> : <DownloadIcon />}
                           onClick={handleDownload}
                           disabled={isDownloading || isUpdating}
                           downloadProgress={isDownloading ? progressPercent : undefined}
                           sx={{
-                            px: 6,
-                            py: 2,
-                            fontSize: '1.3rem',
+                            px: 4,
+                            py: 1.5,
+                            fontSize: '1.1rem',
                             fontWeight: 'bold',
-                            minWidth: 220
+                            minWidth: 180
                           }}
                         >
                           {isDownloading ? `Baixando` : 'Baixar Jogo'}
@@ -520,13 +523,13 @@ const GameDetails = ({ gameId, onBack }) => {
                       {gameDetails.youtubeVideoId && (
                         <CustomButton
                           variant="outlined"
-                          size="large"
-                          startIcon={<YouTubeIcon sx={{ fontSize: 24 }} />}
+                          size="medium"
+                          startIcon={<YouTubeIcon />}
                           onClick={handleTrailerToggle}
                           sx={{
-                            px: 4,
-                            py: 2,
-                            fontSize: '1.2rem',
+                            px: 3,
+                            py: 1.5,
+                            fontSize: '1rem',
                             fontWeight: 'bold'
                           }}
                         >
@@ -538,15 +541,15 @@ const GameDetails = ({ gameId, onBack }) => {
                       {hasUpdate && gameDetails.installed && (
                         <CustomButton
                           variant="warning"
-                          size="large"
-                          startIcon={isUpdating ? <CloudIcon sx={{ fontSize: 24 }} /> : <UpdateIcon sx={{ fontSize: 24 }} />}
+                          size="medium"
+                          startIcon={isUpdating ? <CloudIcon /> : <UpdateIcon />}
                           onClick={handleUpdate}
                           disabled={isDownloading || isUpdating}
                           downloadProgress={isUpdating ? updateProgressPercent : undefined}
                           sx={{
-                            px: 4,
-                            py: 2,
-                            fontSize: '1.2rem',
+                            px: 3,
+                            py: 1.5,
+                            fontSize: '1rem',
                             fontWeight: 'bold'
                           }}
                         >

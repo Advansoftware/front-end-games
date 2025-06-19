@@ -226,7 +226,7 @@ const CustomButton = ({
       {/* Barra de progresso de download - preenche todo o botão */}
       {isDownloading && (
         <>
-          {/* Fundo da barra */}
+          {/* Fundo da barra - formato quadrado */}
           <Box
             sx={{
               position: 'absolute',
@@ -235,10 +235,11 @@ const CustomButton = ({
               right: 0,
               bottom: 0,
               bgcolor: 'rgba(0,0,0,0.3)',
-              zIndex: 1
+              zIndex: 1,
+              borderRadius: 0 // Formato quadrado
             }}
           />
-          {/* Progresso com gradiente da cor do tema */}
+          {/* Progresso com gradiente da cor do tema - formato quadrado */}
           <Box
             sx={{
               position: 'absolute',
@@ -252,7 +253,7 @@ const CustomButton = ({
                 ${theme.palette.primary.main})`,
               zIndex: 2,
               transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-              borderRadius: 'inherit',
+              borderRadius: 0, // Formato quadrado - não segue o botão
               '&::after': {
                 content: '""',
                 position: 'absolute',
@@ -272,21 +273,6 @@ const CustomButton = ({
               }
             }}
           />
-          {/* Overlay do texto */}
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              zIndex: 3,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'rgba(0,0,0,0.1)'
-            }}
-          />
         </>
       )}
 
@@ -301,33 +287,31 @@ const CustomButton = ({
             width: `${Math.round(progress)}%`,
             bgcolor: 'rgba(255,255,255,0.8)',
             transition: 'width 0.3s ease',
-            borderRadius: '0 0 6px 6px',
+            borderRadius: 0, // Formato quadrado
             zIndex: 3
           }}
         />
       )}
 
-      {/* Conteúdo do botão */}
-      <Box sx={{ position: 'relative', zIndex: 4, display: 'flex', alignItems: 'center', gap: 1 }}>
-        {loading && loadingText ? loadingText : children}
-        {isDownloading && (
-          <Box
-            component="span"
-            sx={{
-              ml: 1,
-              px: 1,
-              py: 0.25,
-              bgcolor: 'rgba(255,255,255,0.2)',
-              borderRadius: 1,
-              fontSize: '0.8em',
-              fontWeight: 800,
-              minWidth: '45px',
-              textAlign: 'center'
-            }}
-          >
-            {progressPercent}%
-          </Box>
-        )}
+      {/* Conteúdo do botão - Apenas o texto com porcentagem */}
+      <Box
+        sx={{
+          position: 'relative',
+          zIndex: 20,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 1,
+          color: isDownloading || loading ? '#ffffff !important' : 'inherit',
+          textShadow: isDownloading || loading ? '2px 2px 4px rgba(0,0,0,0.9)' : 'none',
+          fontWeight: isDownloading || loading ? 800 : 'inherit',
+          whiteSpace: 'nowrap',
+          minWidth: 'fit-content'
+        }}
+      >
+        {isDownloading ? `Baixando ${progressPercent}%` :
+          loading && loadingText ? loadingText :
+            children}
       </Box>
     </Button>
   );
