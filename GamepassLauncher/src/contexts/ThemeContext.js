@@ -374,6 +374,45 @@ const themes = {
   }),
 };
 
+// Cores específicas para cada tema - para usar em animações e progressos
+export const themeColors = {
+  xbox: {
+    primary: '#107C10',
+    secondary: '#00BCF2',
+    accent: '#16AA16',
+    glow: '#40E040',
+    progress: '#107C10',
+    progressGlow: 'rgba(16, 124, 16, 0.6)',
+    gradient: 'linear-gradient(90deg, #107C10, #16AA16)',
+    shadowColor: 'rgba(16, 124, 16, 0.4)'
+  },
+  ps5: {
+    primary: '#0070F3',
+    secondary: '#FFFFFF',
+    accent: '#3391FF',
+    glow: '#40B4FF',
+    progress: '#0070F3',
+    progressGlow: 'rgba(0, 112, 243, 0.6)',
+    gradient: 'linear-gradient(90deg, #0070F3, #3391FF)',
+    shadowColor: 'rgba(0, 112, 243, 0.4)'
+  },
+  switch: {
+    primary: '#E60012',
+    secondary: '#0066CC',
+    accent: '#FF3345',
+    glow: '#FF4040',
+    progress: '#E60012',
+    progressGlow: 'rgba(230, 0, 18, 0.6)',
+    gradient: 'linear-gradient(90deg, #E60012, #FF3345)',
+    shadowColor: 'rgba(230, 0, 18, 0.4)'
+  }
+};
+
+// Função auxiliar para obter cores do tema atual
+export const getThemeColors = (themeName) => {
+  return themeColors[themeName] || themeColors.xbox;
+};
+
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (!context) {

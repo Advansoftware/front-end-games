@@ -58,10 +58,10 @@ const CustomButton = ({
       switch: {
         primary: '#E60012',
         secondary: '#FF3345',
-        accent: '#0066CC',
+        accent: '#FF6B6B',
         glow: '#E60012',
         particle: '#FF3345',
-        wave: 'linear-gradient(45deg, #E60012, #FF3345, #0066CC)',
+        wave: 'linear-gradient(45deg, #E60012, #FF3345, #FF6B6B)',
         pulse: '#E60012',
         name: 'Nintendo'
       }
@@ -119,66 +119,66 @@ const CustomButton = ({
     switch (color) {
       case 'secondary':
         return {
-          bgcolor: effectiveVariant === 'contained' ? colors.secondary.main : 'rgba(0, 188, 242, 0.1)',
+          bgcolor: effectiveVariant === 'contained' ? colors.secondary.main : `${themeExp.secondary}20`,
           color: effectiveVariant === 'contained' ? colors.secondary.contrastText : colors.secondary.main,
           borderColor: colors.secondary.main,
           '&:hover': {
-            bgcolor: effectiveVariant === 'contained' ? colors.secondary.dark : 'rgba(0, 188, 242, 0.2)',
+            bgcolor: effectiveVariant === 'contained' ? colors.secondary.dark : `${themeExp.secondary}30`,
             borderColor: colors.secondary.light,
             boxShadow: `0 0 20px ${colors.secondary.main}40`
           }
         };
       case 'success':
         return {
-          bgcolor: effectiveVariant === 'contained' ? colors.success.main : 'rgba(46, 125, 50, 0.15)',
+          bgcolor: effectiveVariant === 'contained' ? colors.success.main : `${themeExp.primary}20`,
           color: effectiveVariant === 'contained' ? '#ffffff' : colors.success.main,
           borderColor: colors.success.main,
           '&:hover': {
-            bgcolor: effectiveVariant === 'contained' ? colors.success.dark : 'rgba(46, 125, 50, 0.25)',
+            bgcolor: effectiveVariant === 'contained' ? colors.success.dark : `${themeExp.primary}30`,
             borderColor: colors.success.light,
             boxShadow: `0 0 20px ${colors.success.main}40`
           }
         };
       case 'info':
         return {
-          bgcolor: effectiveVariant === 'contained' ? colors.info.main : 'rgba(3, 169, 244, 0.15)',
-          color: effectiveVariant === 'contained' ? '#ffffff' : colors.info.main,
-          borderColor: colors.info.main,
+          bgcolor: effectiveVariant === 'contained' ? themeExp.primary : `${themeExp.primary}20`,
+          color: effectiveVariant === 'contained' ? '#ffffff' : themeExp.primary,
+          borderColor: themeExp.primary,
           '&:hover': {
-            bgcolor: effectiveVariant === 'contained' ? colors.info.dark : 'rgba(3, 169, 244, 0.25)',
-            borderColor: colors.info.light,
-            boxShadow: `0 0 20px ${colors.info.main}40`
+            bgcolor: effectiveVariant === 'contained' ? themeExp.secondary : `${themeExp.primary}30`,
+            borderColor: themeExp.accent,
+            boxShadow: `0 0 20px ${themeExp.primary}40`
           }
         };
       case 'warning':
         return {
-          bgcolor: effectiveVariant === 'contained' ? (colors.warning?.main || '#ff9800') : 'rgba(255, 152, 0, 0.15)',
+          bgcolor: effectiveVariant === 'contained' ? (colors.warning?.main || '#ff9800') : `${colors.warning?.main || '#ff9800'}20`,
           color: effectiveVariant === 'contained' ? '#ffffff' : (colors.warning?.main || '#ff9800'),
           borderColor: colors.warning?.main || '#ff9800',
           '&:hover': {
-            bgcolor: effectiveVariant === 'contained' ? (colors.warning?.dark || '#f57c00') : 'rgba(255, 152, 0, 0.25)',
+            bgcolor: effectiveVariant === 'contained' ? (colors.warning?.dark || '#f57c00') : `${colors.warning?.main || '#ff9800'}30`,
             borderColor: colors.warning?.light || '#ffb74d',
             boxShadow: `0 0 20px ${colors.warning?.main || '#ff9800'}40`
           }
         };
       case 'error':
         return {
-          bgcolor: effectiveVariant === 'contained' ? (colors.error?.main || '#f44336') : 'rgba(244, 67, 54, 0.15)',
+          bgcolor: effectiveVariant === 'contained' ? (colors.error?.main || '#f44336') : `${colors.error?.main || '#f44336'}20`,
           color: effectiveVariant === 'contained' ? '#ffffff' : (colors.error?.main || '#f44336'),
           borderColor: colors.error?.main || '#f44336',
           '&:hover': {
-            bgcolor: effectiveVariant === 'contained' ? (colors.error?.dark || '#d32f2f') : 'rgba(244, 67, 54, 0.25)',
+            bgcolor: effectiveVariant === 'contained' ? (colors.error?.dark || '#d32f2f') : `${colors.error?.main || '#f44336'}30`,
             borderColor: colors.error?.light || '#e57373',
             boxShadow: `0 0 20px ${colors.error?.main || '#f44336'}40`
           }
         };
       default: // primary
         return {
-          bgcolor: effectiveVariant === 'contained' ? colors.primary.main : 'rgba(16, 124, 16, 0.15)',
+          bgcolor: effectiveVariant === 'contained' ? colors.primary.main : `${themeExp.primary}20`,
           color: effectiveVariant === 'contained' ? colors.primary.contrastText : colors.primary.main,
           borderColor: colors.primary.main,
           '&:hover': {
-            bgcolor: effectiveVariant === 'contained' ? colors.primary.dark : 'rgba(16, 124, 16, 0.25)',
+            bgcolor: effectiveVariant === 'contained' ? colors.primary.dark : `${themeExp.primary}30`,
             borderColor: colors.primary.light,
             boxShadow: `0 0 20px ${colors.primary.main}40`
           }
@@ -230,9 +230,52 @@ const CustomButton = ({
     },
     // Experiência especial para botão de download/atualizar
     ...(isDownloading && {
-      background: themeExp.wave,
+      background: `linear-gradient(135deg, rgba(0,0,0,0.4), rgba(0,0,0,0.2))`, // Fundo neutro escuro
       border: 'none',
       boxShadow: `0 0 30px ${themeExp.glow}60, inset 0 0 20px ${themeExp.primary}20`,
+      // Efeito de fundo sutil
+      '&::after': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: themeExp.wave,
+        opacity: 0.15, // Bem sutil no fundo
+        zIndex: 1,
+        animation: `${currentTheme}BackgroundWave 4s infinite ease-in-out`,
+        '@keyframes xboxBackgroundWave': {
+          '0%, 100%': { 
+            opacity: 0.1,
+            transform: 'scale(1)'
+          },
+          '50%': { 
+            opacity: 0.2,
+            transform: 'scale(1.02)'
+          }
+        },
+        '@keyframes ps5BackgroundWave': {
+          '0%, 100%': { 
+            opacity: 0.15,
+            filter: 'hue-rotate(0deg)'
+          },
+          '50%': { 
+            opacity: 0.25,
+            filter: 'hue-rotate(10deg)'
+          }
+        },
+        '@keyframes switchBackgroundWave': {
+          '0%, 100%': { 
+            opacity: 0.12,
+            transform: 'skewX(0deg)'
+          },
+          '50%': { 
+            opacity: 0.22,
+            transform: 'skewX(1deg)'
+          }
+        }
+      },
       // Animação de pulso do tema
       animation: `${currentTheme}Pulse 2s infinite ease-in-out`,
       '@keyframes xboxPulse': {
@@ -242,27 +285,23 @@ const CustomButton = ({
         },
         '50%': {
           boxShadow: `0 0 50px ${themeExp.glow}80, inset 0 0 30px ${themeExp.secondary}30`,
-          filter: 'brightness(1.2)'
+          filter: 'brightness(1.1)'
         }
       },
       '@keyframes ps5Pulse': {
         '0%, 100%': {
-          boxShadow: `0 0 30px ${themeExp.glow}60, inset 0 0 20px ${themeExp.primary}20`,
-          background: `linear-gradient(45deg, ${themeExp.primary}, ${themeExp.secondary})`
+          boxShadow: `0 0 30px ${themeExp.glow}60, inset 0 0 20px ${themeExp.primary}20`
         },
         '50%': {
-          boxShadow: `0 0 50px ${themeExp.accent}80, inset 0 0 30px ${themeExp.accent}30`,
-          background: `linear-gradient(45deg, ${themeExp.secondary}, ${themeExp.accent})`
+          boxShadow: `0 0 50px ${themeExp.accent}80, inset 0 0 30px ${themeExp.accent}30`
         }
       },
       '@keyframes switchPulse': {
         '0%, 100%': {
-          boxShadow: `0 0 30px ${themeExp.glow}60, inset 0 0 20px ${themeExp.primary}20`,
-          background: `linear-gradient(135deg, ${themeExp.primary}, ${themeExp.secondary})`
+          boxShadow: `0 0 30px ${themeExp.glow}60, inset 0 0 20px ${themeExp.primary}20`
         },
         '50%': {
-          boxShadow: `0 0 50px ${themeExp.secondary}80, inset 0 0 30px ${themeExp.accent}30`,
-          background: `linear-gradient(135deg, ${themeExp.secondary}, ${themeExp.accent})`
+          boxShadow: `0 0 50px ${themeExp.secondary}80, inset 0 0 30px ${themeExp.accent}30`
         }
       },
       // Efeito shimmer temático
@@ -273,30 +312,34 @@ const CustomButton = ({
         left: 0,
         right: 0,
         bottom: 0,
-        background: `linear-gradient(45deg, transparent 30%, ${themeExp.particle}40 50%, transparent 70%)`,
-        animation: `${currentTheme}Shimmer 2s infinite`,
+        background: `linear-gradient(45deg, transparent 30%, ${themeExp.particle}15 50%, transparent 70%)`, // Reduzida opacidade
+        opacity: 0.3, // Mais sutil
+        zIndex: 1,
+        animation: `${currentTheme}Shimmer 3s infinite`, // Mais lento
         '@keyframes xboxShimmer': {
-          '0%': { transform: 'translateX(-100%) skewX(-20deg)' },
-          '100%': { transform: 'translateX(200%) skewX(-20deg)' }
+          '0%, 100%': {
+            boxShadow: `0 0 30px ${themeExp.glow}60, inset 0 0 20px ${themeExp.primary}20`,
+            filter: 'brightness(1)'
+          },
+          '50%': {
+            boxShadow: `0 0 50px ${themeExp.glow}80, inset 0 0 30px ${themeExp.secondary}30`,
+            filter: 'brightness(1.1)'
+          }
         },
         '@keyframes ps5Shimmer': {
-          '0%': {
-            transform: 'translateX(-100%) skewX(-15deg)',
-            background: `linear-gradient(45deg, transparent 30%, ${themeExp.accent}50 50%, transparent 70%)`
+          '0%, 100%': {
+            boxShadow: `0 0 30px ${themeExp.glow}60, inset 0 0 20px ${themeExp.primary}20`
           },
-          '100%': {
-            transform: 'translateX(200%) skewX(-15deg)',
-            background: `linear-gradient(45deg, transparent 30%, ${themeExp.particle}30 50%, transparent 70%)`
+          '50%': {
+            boxShadow: `0 0 50px ${themeExp.accent}80, inset 0 0 30px ${themeExp.accent}30`
           }
         },
         '@keyframes switchShimmer': {
-          '0%': {
-            transform: 'translateX(-100%) skewX(-25deg) rotateZ(2deg)',
-            background: `linear-gradient(45deg, transparent 30%, ${themeExp.accent}60 50%, transparent 70%)`
+          '0%, 100%': {
+            boxShadow: `0 0 30px ${themeExp.glow}60, inset 0 0 20px ${themeExp.primary}20`
           },
-          '100%': {
-            transform: 'translateX(200%) skewX(-25deg) rotateZ(2deg)',
-            background: `linear-gradient(45deg, transparent 30%, ${themeExp.secondary}40 50%, transparent 70%)`
+          '50%': {
+            boxShadow: `0 0 50px ${themeExp.secondary}80, inset 0 0 30px ${themeExp.accent}30`
           }
         }
       }
@@ -386,48 +429,59 @@ const CustomButton = ({
               bottom: 0,
               width: `${progressPercent}%`,
               background: `linear-gradient(90deg, 
-                ${themeExp.primary}E0, 
-                ${themeExp.secondary}F0, 
-                ${themeExp.accent}E0,
-                ${themeExp.primary}F0)`,
+                ${themeExp.primary}, 
+                ${themeExp.secondary}, 
+                ${themeExp.accent},
+                ${themeExp.primary})`,
               backgroundSize: '300% 100%',
-              zIndex: 2,
+              zIndex: 10, // Maior z-index para ficar na frente
               transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
               borderRadius: 0,
+              opacity: 0.95, // Bem visível
+              boxShadow: `inset 0 0 20px ${themeExp.glow}40, 0 0 15px ${themeExp.primary}60`, // Brilho interno e externo
               animation: `${currentTheme}ProgressFlow 3s infinite linear`,
               '@keyframes xboxProgressFlow': {
-                '0%': { backgroundPosition: '0% 50%' },
-                '100%': { backgroundPosition: '200% 50%' }
+                '0%': { 
+                  backgroundPosition: '0% 50%',
+                  filter: 'brightness(1) saturate(1.2)'
+                },
+                '100%': { 
+                  backgroundPosition: '200% 50%',
+                  filter: 'brightness(1.1) saturate(1.3)'
+                }
               },
               '@keyframes ps5ProgressFlow': {
                 '0%': {
                   backgroundPosition: '0% 50%',
-                  filter: 'hue-rotate(0deg)'
+                  filter: 'brightness(1) hue-rotate(0deg) saturate(1.2)'
                 },
                 '50%': {
                   backgroundPosition: '100% 50%',
-                  filter: 'hue-rotate(10deg)'
+                  filter: 'brightness(1.1) hue-rotate(5deg) saturate(1.3)'
                 },
                 '100%': {
                   backgroundPosition: '200% 50%',
-                  filter: 'hue-rotate(0deg)'
+                  filter: 'brightness(1) hue-rotate(0deg) saturate(1.2)'
                 }
               },
               '@keyframes switchProgressFlow': {
                 '0%': {
                   backgroundPosition: '0% 50%',
-                  transform: 'scaleY(1)'
+                  transform: 'scaleY(1)',
+                  filter: 'brightness(1) saturate(1.3)'
                 },
                 '50%': {
                   backgroundPosition: '100% 50%',
-                  transform: 'scaleY(1.1)'
+                  transform: 'scaleY(1.05)',
+                  filter: 'brightness(1.15) saturate(1.4)'
                 },
                 '100%': {
                   backgroundPosition: '200% 50%',
-                  transform: 'scaleY(1)'
+                  transform: 'scaleY(1)',
+                  filter: 'brightness(1) saturate(1.3)'
                 }
               },
-              // Efeito de ondas no progresso
+              // Efeito de ondas no progresso mais intenso
               '&::after': {
                 content: '""',
                 position: 'absolute',
@@ -437,8 +491,9 @@ const CustomButton = ({
                 bottom: 0,
                 background: `linear-gradient(90deg, 
                   transparent, 
-                  ${themeExp.particle}60, 
+                  ${themeExp.glow}80, 
                   transparent)`,
+                opacity: 0.8,
                 animation: `${currentTheme}Wave 2s infinite`,
                 '@keyframes xboxWave': {
                   '0%': { transform: 'translateX(-100%)' },
@@ -464,8 +519,8 @@ const CustomButton = ({
                     filter: 'hue-rotate(0deg)'
                   },
                   '50%': {
-                    transform: 'translateX(0%) rotateZ(2deg)',
-                    filter: 'hue-rotate(15deg)'
+                    transform: 'translateX(0%) rotateZ(1deg)',
+                    filter: 'hue-rotate(10deg)'
                   },
                   '100%': {
                     transform: 'translateX(100%) rotateZ(0deg)',
@@ -610,9 +665,7 @@ const CustomButton = ({
         {isDownloading ? (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box component="span">
-              {currentTheme === 'xbox' ? 'Baixando via Xbox' :
-                currentTheme === 'ps5' ? 'Download PS5' :
-                  'Baixando Nintendo'} {progressPercent}%
+              Baixando {progressPercent}%
             </Box>
             {/* Indicador de progresso temático */}
             <Box

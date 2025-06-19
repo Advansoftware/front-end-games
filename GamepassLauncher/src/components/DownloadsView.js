@@ -365,7 +365,7 @@ const DownloadsView = () => {
                             </Typography>
                           </Box>
                           <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 700 }}>
-                            {downloadStats.totalSpeed.toFixed(1)} MB/s
+                            {downloadStats.totalSpeed.toFixed(2)} MB/s
                           </Typography>
                         </Grid>
                         <Grid item xs={6}>
