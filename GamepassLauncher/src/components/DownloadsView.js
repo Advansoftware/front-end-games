@@ -212,11 +212,12 @@ const DownloadsView = () => {
           zIndex: 1,
           height: '100%',
           overflow: 'auto',
-          p: 4
+          p: 0, // Remove todo padding
+          m: 0  // Remove toda margem
         }}
       >
         {/* Header futurista */}
-        <Box sx={{ mb: 4 }}>
+        <Box sx={{ mb: 4, px: 3, pt: 10 }}>
           <motion.div
             initial={{ opacity: 0, y: -30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -264,7 +265,7 @@ const DownloadsView = () => {
           </motion.div>
         </Box>
 
-        <Grid container spacing={3}>
+        <Grid container spacing={3} sx={{ px: 3 }}>
           {/* Painel de estatísticas do sistema */}
           <Grid item xs={12}>
             <motion.div
