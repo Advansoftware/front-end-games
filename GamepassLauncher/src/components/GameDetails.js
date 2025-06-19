@@ -564,7 +564,7 @@ const GameDetails = ({ gameId, onBack }) => {
           </Box>
         </Box>
 
-        {/* Modal de Informações Completas - MELHORADO */}
+        {/* Modal de Informações Completas - CORRIGIDO */}
         <Modal
           open={showInfoModal}
           onClose={() => setShowInfoModal(false)}
@@ -572,7 +572,13 @@ const GameDetails = ({ gameId, onBack }) => {
           BackdropComponent={Backdrop}
           BackdropProps={{
             timeout: 500,
-            sx: { backgroundColor: 'rgba(0,0,0,0.9)' }
+            sx: {
+              backgroundColor: 'rgba(0,0,0,0.9)',
+              zIndex: 15000 // Z-index maior que o GameDetails
+            }
+          }}
+          sx={{
+            zIndex: 15000 // Garantir que o modal fique por cima
           }}
         >
           <Fade in={showInfoModal}>
@@ -582,21 +588,22 @@ const GameDetails = ({ gameId, onBack }) => {
                 top: '50%',
                 left: '50%',
                 transform: 'translate(-50%, -50%)',
-                width: { xs: '95%', md: '80%', lg: '70%' },
+                width: { xs: '95%', md: '85%', lg: '75%' },
                 maxHeight: '90vh',
                 bgcolor: 'rgba(8, 16, 20, 0.98)',
                 backdropFilter: 'blur(30px)',
                 border: '2px solid rgba(255,255,255,0.15)',
-                borderRadius: 5,
+                borderRadius: 3,
                 boxShadow: '0 30px 60px rgba(0,0,0,0.8)',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                zIndex: 15001
               }}
             >
               {/* Header do modal com imagem de fundo */}
               <Box
                 sx={{
                   position: 'relative',
-                  height: 200,
+                  height: 180,
                   backgroundImage: `url(${heroImage})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
@@ -621,17 +628,18 @@ const GameDetails = ({ gameId, onBack }) => {
                       color: 'white',
                       fontWeight: 900,
                       textShadow: '3px 3px 6px rgba(0,0,0,0.8)',
-                      mb: 1
+                      mb: 1,
+                      fontSize: { xs: '1.8rem', md: '2.5rem' }
                     }}
                   >
                     {gameDetails.title}
                   </Typography>
 
                   {/* Rating e gênero no modal */}
-                  <Stack direction="row" spacing={2} alignItems="center">
+                  <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
                     {gameDetails.rating && gameDetails.rating > 0 && (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <StarIcon sx={{ color: 'warning.main', fontSize: 20 }} />
+                        <StarIcon sx={{ color: 'warning.main', fontSize: 18 }} />
                         <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'white' }}>
                           {gameDetails.rating}/10
                         </Typography>
@@ -641,6 +649,7 @@ const GameDetails = ({ gameId, onBack }) => {
                     {gameDetails.genre && (
                       <Chip
                         label={gameDetails.genre}
+                        size="small"
                         sx={{
                           bgcolor: 'rgba(255,255,255,0.25)',
                           color: 'white',
@@ -673,7 +682,7 @@ const GameDetails = ({ gameId, onBack }) => {
               </Box>
 
               {/* Conteúdo principal do modal */}
-              <Box sx={{ p: 4, maxHeight: 'calc(90vh - 200px)', overflow: 'auto' }}>
+              <Box sx={{ p: 4, maxHeight: 'calc(90vh - 180px)', overflow: 'auto' }}>
                 <Grid container spacing={4}>
                   {/* Lado esquerdo - Descrição e screenshots */}
                   <Grid item xs={12} lg={8}>
@@ -706,7 +715,7 @@ const GameDetails = ({ gameId, onBack }) => {
                       </Typography>
                     </Box>
 
-                    {/* Screenshots em grid melhorado */}
+                    {/* Screenshots em grid melhorado - APENAS NO MODAL */}
                     {displayImages.length > 1 && (
                       <Box>
                         <Typography
@@ -728,7 +737,7 @@ const GameDetails = ({ gameId, onBack }) => {
                             <Grid item xs={6} md={4} key={index}>
                               <Card
                                 sx={{
-                                  borderRadius: 3,
+                                  borderRadius: 2,
                                   overflow: 'hidden',
                                   cursor: 'pointer',
                                   transition: 'all 0.3s ease',
@@ -744,7 +753,7 @@ const GameDetails = ({ gameId, onBack }) => {
                                   image={image}
                                   alt={`Screenshot ${index + 1}`}
                                   sx={{
-                                    height: 140,
+                                    height: 120,
                                     objectFit: 'cover'
                                   }}
                                 />
@@ -772,101 +781,50 @@ const GameDetails = ({ gameId, onBack }) => {
                       </Typography>
 
                       <Stack spacing={2}>
-                        {/* Botão principal no modal - MELHORADO */}
+                        {/* Botão principal no modal */}
                         {gameDetails.installed ? (
                           <CustomButton
                             variant="success"
-                            size="large"
+                            size="medium"
                             startIcon={<PlayIcon />}
                             onClick={handlePlay}
                             disabled={isDownloading || isUpdating}
                             sx={{
                               py: 1.5,
-                              fontSize: '1.1rem',
+                              fontSize: '1rem',
                               fontWeight: 'bold'
                             }}
                           >
                             Jogar Agora
                           </CustomButton>
                         ) : (
-                          <Box sx={{ position: 'relative' }}>
-                            <CustomButton
-                              variant={isDownloading ? "info" : "primary"}
-                              size="large"
-                              startIcon={isDownloading ? <CloudIcon /> : <DownloadIcon />}
-                              onClick={handleDownload}
-                              disabled={isDownloading || isUpdating}
-                              sx={{
-                                width: '100%',
-                                py: 1.5,
-                                fontSize: '1.1rem',
-                                fontWeight: 'bold',
-                                position: 'relative',
-                                overflow: 'hidden'
-                              }}
-                            >
-                              {/* Barra de progresso integrada com gradiente */}
-                              {isDownloading && (
-                                <>
-                                  {/* Fundo da barra */}
-                                  <Box
-                                    sx={{
-                                      position: 'absolute',
-                                      bottom: 0,
-                                      left: 0,
-                                      right: 0,
-                                      height: '4px',
-                                      bgcolor: 'rgba(0,0,0,0.3)'
-                                    }}
-                                  />
-                                  {/* Barra de progresso com gradiente */}
-                                  <Box
-                                    sx={{
-                                      position: 'absolute',
-                                      bottom: 0,
-                                      left: 0,
-                                      height: '4px',
-                                      width: `${progressPercent}%`,
-                                      background: `linear-gradient(90deg, 
-                                        hsl(0, 70%, 60%), 
-                                        hsl(${progressPercent * 1.2}, 70%, 60%), 
-                                        hsl(120, 70%, 60%))`,
-                                      borderRadius: '0 0 4px 4px',
-                                      transition: 'width 0.3s ease'
-                                    }}
-                                  />
-                                  {/* Efeito de brilho na barra */}
-                                  <Box
-                                    sx={{
-                                      position: 'absolute',
-                                      bottom: 0,
-                                      left: 0,
-                                      height: '4px',
-                                      width: `${progressPercent}%`,
-                                      background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
-                                      animation: 'shimmer 2s infinite',
-                                      '@keyframes shimmer': {
-                                        '0%': { transform: 'translateX(-100%)' },
-                                        '100%': { transform: 'translateX(100%)' }
-                                      }
-                                    }}
-                                  />
-                                </>
-                              )}
-
-                              {isDownloading ? `Baixando ${progressPercent}%` : 'Baixar Jogo'}
-                            </CustomButton>
-                          </Box>
+                          <CustomButton
+                            variant={isDownloading ? "info" : "primary"}
+                            size="medium"
+                            startIcon={isDownloading ? <CloudIcon /> : <DownloadIcon />}
+                            onClick={handleDownload}
+                            disabled={isDownloading || isUpdating}
+                            downloadProgress={isDownloading ? progressPercent : undefined}
+                            sx={{
+                              width: '100%',
+                              py: 1.5,
+                              fontSize: '1rem',
+                              fontWeight: 'bold'
+                            }}
+                          >
+                            {isDownloading ? `Baixando` : 'Baixar Jogo'}
+                          </CustomButton>
                         )}
 
                         {/* Outros botões */}
                         {gameDetails.youtubeVideoId && (
                           <CustomButton
                             variant="outlined"
+                            size="medium"
                             startIcon={<YouTubeIcon />}
                             onClick={handleTrailerToggle}
                             sx={{
-                              py: 1.5
+                              py: 1.2
                             }}
                           >
                             Ver Trailer
@@ -876,13 +834,15 @@ const GameDetails = ({ gameId, onBack }) => {
                         {hasUpdate && gameDetails.installed && (
                           <CustomButton
                             variant="warning"
+                            size="medium"
                             startIcon={<UpdateIcon />}
                             onClick={handleUpdate}
+                            downloadProgress={isUpdating ? updateProgressPercent : undefined}
                             sx={{
-                              py: 1.5
+                              py: 1.2
                             }}
                           >
-                            Atualizar
+                            {isUpdating ? `Atualizando` : 'Atualizar'}
                           </CustomButton>
                         )}
                       </Stack>
@@ -894,7 +854,7 @@ const GameDetails = ({ gameId, onBack }) => {
                         bgcolor: 'rgba(255,255,255,0.05)',
                         backdropFilter: 'blur(10px)',
                         border: '1px solid rgba(255,255,255,0.1)',
-                        borderRadius: 3,
+                        borderRadius: 2,
                         p: 3
                       }}
                     >
