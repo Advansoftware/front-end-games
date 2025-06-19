@@ -1,5 +1,6 @@
 import { GamesProvider } from '../contexts/GamesContext';
 import { ThemeContextProvider } from '../contexts/ThemeContext';
+import { DownloadsProvider } from '../hooks/useDownloads';
 import Head from 'next/head';
 import { CssBaseline, Box } from '@mui/material';
 
@@ -27,20 +28,22 @@ function MyApp({ Component, pageProps }) {
         }
       `}</style>
       <ThemeContextProvider>
-        <GamesProvider>
-          <Box
-            sx={{
-              width: '100vw',
-              height: '100vh',
-              margin: 0,
-              padding: 0,
-              overflow: 'hidden',
-              position: 'relative'
-            }}
-          >
-            <Component {...pageProps} />
-          </Box>
-        </GamesProvider>
+        <DownloadsProvider>
+          <GamesProvider>
+            <Box
+              sx={{
+                width: '100vw',
+                height: '100vh',
+                margin: 0,
+                padding: 0,
+                overflow: 'hidden',
+                position: 'relative'
+              }}
+            >
+              <Component {...pageProps} />
+            </Box>
+          </GamesProvider>
+        </DownloadsProvider>
       </ThemeContextProvider>
     </>
   );

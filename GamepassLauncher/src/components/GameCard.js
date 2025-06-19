@@ -18,6 +18,7 @@ import {
   CloudDownload as CloudIcon
 } from '@mui/icons-material';
 import { useGames } from '../contexts/GamesContext';
+import { useDownloads } from '../hooks/useDownloads';
 import CustomButton from './CustomButton';
 
 const GameCard = ({
@@ -26,20 +27,21 @@ const GameCard = ({
   onGameSelect,
   variant = 'horizontal' // 'horizontal' | 'vertical'
 }) => {
-  const { downloadProgress, downloadGame } = useGames();
+  const { downloadGame } = useGames();
+  const { activeDownloads } = useDownloads();
 
   // Dimensões fixas e consistentes para todos os cards
   const cardDimensions = variant === 'horizontal'
     ? { width: 200, height: 280 } // Dimensões fixas para todos
     : { width: 220, height: 300 }; // Dimensões fixas para vertical
 
-  // Usar o status de instalação do jogo
+  // Usar o status de instalação do jogo e dados do hook useDownloads
   const isDownloaded = game.installed === true;
-  const downloadPercent = downloadProgress[game.id];
-  const isDownloading = downloadPercent !== undefined;
+  const downloadData = activeDownloads.get(game.id);
+  const isDownloading = downloadData !== undefined;
 
   // Garantir que o progresso seja sempre um número inteiro
-  const progressPercent = isDownloading ? Math.round(downloadPercent) : 0;
+  const progressPercent = isDownloading ? Math.round(downloadData.progress || 0) : 0;
 
   // Função para iniciar download
   const handleDownload = (e) => {

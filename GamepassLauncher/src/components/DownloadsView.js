@@ -44,7 +44,7 @@ import {
   Memory as RAMIcon,
   DeviceHub as CPUIcon
 } from '@mui/icons-material';
-import { useGames } from '../contexts/GamesContext';
+import { useDownloads } from '../hooks/useDownloads';
 import { useTheme } from '../contexts/ThemeContext';
 import CustomButton from './CustomButton';
 
@@ -57,7 +57,7 @@ const DownloadsView = () => {
     retryDownload,
     activeDownloads,
     downloadHistory
-  } = useGames();
+  } = useDownloads();
   const { currentTheme, playSound } = useTheme();
 
   const [filter, setFilter] = useState('all'); // all, downloading, completed, paused, failed

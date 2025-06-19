@@ -28,6 +28,7 @@ import {
   Language as WebIcon
 } from '@mui/icons-material';
 import { useGames } from '../contexts/GamesContext';
+import { useDownloads } from '../hooks/useDownloads';
 import CacheService from '../services/CacheService';
 import YouTubePlayer from './YouTubePlayer';
 import CustomButton from './CustomButton';
@@ -38,9 +39,10 @@ const GameDetails = ({ gameId, onBack }) => {
     downloadGame,
     updateGame,
     launchGame,
-    downloadProgress,
     updateProgress
   } = useGames();
+
+  const { activeDownloads } = useDownloads();
 
   const [gameDetails, setGameDetails] = useState(null);
   const [selectedScreenshot, setSelectedScreenshot] = useState(0);
@@ -48,13 +50,15 @@ const GameDetails = ({ gameId, onBack }) => {
   const [showInfoModal, setShowInfoModal] = useState(false);
 
   const game = getGameById(gameId);
-  const downloadPercent = downloadProgress[gameId];
+
+  // Usar dados do hook useDownloads
+  const downloadData = activeDownloads.get(gameId);
   const updatePercent = updateProgress[gameId];
-  const isDownloading = downloadPercent !== undefined;
+  const isDownloading = downloadData !== undefined;
   const isUpdating = updatePercent !== undefined;
 
   // Garantir que o progresso seja sempre um número inteiro
-  const progressPercent = isDownloading ? Math.round(downloadPercent) : 0;
+  const progressPercent = isDownloading ? Math.round(downloadData.progress || 0) : 0;
   const updateProgressPercent = isUpdating ? Math.round(updatePercent) : 0;
 
   // Simular atualizações disponíveis para alguns jogos

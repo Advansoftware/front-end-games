@@ -22,16 +22,20 @@ import {
 import { motion } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
 import { useGames } from '../contexts/GamesContext';
+import { useDownloads } from '../hooks/useDownloads';
 import { useGamepad } from '../hooks/useGamepad';
 
 const Sidebar = ({ open, onClose, currentView, onViewChange }) => {
   const { playSound } = useTheme();
-  const { games, downloadProgress } = useGames();
+  const { games } = useGames();
+  const { getDownloadStats } = useDownloads();
   const gamepad = useGamepad();
 
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const activeDownloads = Object.keys(downloadProgress).length;
+  // Usar o hook useDownloads para obter estatísticas
+  const downloadStats = getDownloadStats();
+  const activeDownloads = downloadStats.downloading;
   const installedGames = games.filter(game => game.installed).length;
 
   const menuItems = [
