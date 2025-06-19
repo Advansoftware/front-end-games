@@ -949,76 +949,15 @@ const SettingsPanel = () => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       sx={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
         width: '100vw',
         height: '100vh',
         overflow: 'hidden',
-        bgcolor: 'background.default',
+        // Remover background próprio - usar o background fixo do layout principal
+        bgcolor: 'transparent',
         color: 'text.primary'
       }}
     >
-      {/* Background revolucionário com efeitos glassmorphism */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: currentColors.background,
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: `
-              radial-gradient(circle at 25% 25%, ${currentColors.glow}15 0%, transparent 50%),
-              radial-gradient(circle at 75% 75%, ${currentColors.accent}10 0%, transparent 50%),
-              repeating-linear-gradient(
-                45deg,
-                transparent,
-                transparent 100px,
-                ${currentColors.primary}05 101px,
-                ${currentColors.primary}05 102px
-              )
-            `,
-            animation: 'float 20s ease-in-out infinite',
-            '@keyframes float': {
-              '0%, 100%': { transform: 'translateX(0) translateY(0)' },
-              '25%': { transform: 'translateX(10px) translateY(-10px)' },
-              '50%': { transform: 'translateX(-5px) translateY(5px)' },
-              '75%': { transform: 'translateX(15px) translateY(-5px)' }
-            }
-          },
-          '&::after': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: `
-              linear-gradient(135deg, 
-                transparent 0%, 
-                ${currentColors.primary}03 25%, 
-                ${currentColors.accent}05 50%, 
-                ${currentColors.secondary}03 75%, 
-                transparent 100%)
-            `,
-            animation: 'breathe 8s ease-in-out infinite',
-            '@keyframes breathe': {
-              '0%, 100%': { opacity: 0.8 },
-              '50%': { opacity: 1 }
-            }
-          }
-        }}
-      />
+      {/* Remover background próprio completamente */}
 
       {/* Conteúdo principal */}
       <Box

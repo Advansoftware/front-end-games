@@ -150,60 +150,15 @@ const DownloadsView = () => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       sx={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
         width: '100vw',
         height: '100vh',
         overflow: 'hidden',
-        bgcolor: 'background.default',
+        // Remover background próprio - usar o background fixo do layout principal
+        bgcolor: 'transparent',
         color: 'text.primary'
       }}
     >
-      {/* Background com efeitos visuais avançados */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: theme => `
-            radial-gradient(circle at 20% 80%, ${currentColors.primary}15 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, ${currentColors.accent}10 0%, transparent 50%),
-            linear-gradient(135deg, 
-              ${theme.palette.background.default} 0%, 
-              ${theme.palette.background.paper} 25%,
-              ${currentColors.primary}05 50%,
-              ${theme.palette.background.default} 75%,
-              ${currentColors.secondary}08 100%)
-          `,
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: `
-              repeating-linear-gradient(
-                90deg,
-                transparent,
-                transparent 100px,
-                ${currentColors.glow}02 101px,
-                ${currentColors.glow}02 102px
-              )
-            `,
-            animation: 'moveLines 20s linear infinite'
-          },
-          '@keyframes moveLines': {
-            '0%': { transform: 'translateX(-100px)' },
-            '100%': { transform: 'translateX(100px)' }
-          }
-        }}
-      />
+      {/* Remover background próprio completamente */}
 
       {/* Conteúdo principal */}
       <Box
@@ -212,8 +167,8 @@ const DownloadsView = () => {
           zIndex: 1,
           height: '100%',
           overflow: 'auto',
-          p: 0, // Remove todo padding
-          m: 0  // Remove toda margem
+          p: 0,
+          m: 0
         }}
       >
         {/* Header futurista */}

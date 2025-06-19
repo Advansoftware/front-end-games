@@ -244,50 +244,39 @@ const HomePage = () => {
       <Box
         component={motion.div}
         animate={{
-          marginLeft: selectedGameId ? 0 : (sidebarOpen && (currentView === 'settings' || currentView === 'downloads') ? 0 : (sidebarOpen ? 280 : 0)), // Sem margem para Settings e Downloads
+          marginLeft: selectedGameId ? 0 : 0, // Sempre 0 - sidebar sempre flutuante
           transition: { duration: 0.3, ease: 'easeInOut' }
         }}
         sx={{
           height: '100vh',
-          paddingTop: selectedGameId ? '0px' : ((currentView === 'settings' || currentView === 'downloads') ? '56px' : '56px'), // Padding correto
+          paddingTop: selectedGameId ? '0px' : '56px', // Padding top sempre consistente
           overflow: selectedGameId ? 'auto' : 'hidden',
-          background: selectedGameId ? 'transparent' : (currentView === 'home' ? 'transparent' : 'background.default'),
-          // Para telas fullscreen (settings e downloads), ocupar toda a largura sem margem
-          ...((currentView === 'settings' || currentView === 'downloads') && {
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 1200,
-            marginLeft: '0 !important',
-            width: '100vw'
-          })
+          background: 'transparent', // Sempre transparente para mostrar o background fixo
+          // Remover override de posicionamento para manter consistência
+          width: '100vw'
         }}
       >
-        {/* Background com gradiente Xbox - APENAS quando não há GameDetails */}
-        {currentView === 'home' && !selectedGameId && (
-          <Box
-            sx={{
-              position: 'fixed',
-              top: 0,
-              left: sidebarOpen ? 280 : 0,
-              right: 0,
-              bottom: 0,
-              background: 'linear-gradient(135deg, #0C1618 0%, #1A2B32 50%, #0C1618 100%)',
-              zIndex: -1,
-              transition: 'left 0.3s ease'
-            }}
-          />
-        )}
+        {/* Background com gradiente fixo - SEMPRE presente */}
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0, // Sempre da esquerda total
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(135deg, #0C1618 0%, #1A2B32 50%, #0C1618 100%)',
+            zIndex: -1,
+            // Remover transição - sempre fixo
+          }}
+        />
 
         <Container
-          maxWidth={selectedGameId ? false : ((currentView === 'settings' || currentView === 'downloads') ? false : 'false')} // Full width para GameDetails, Settings e Downloads
+          maxWidth={false} // Sempre full width
           sx={{
             height: '100%',
-            padding: selectedGameId || currentView === 'settings' || currentView === 'downloads' ? 0 : 3, // Sem padding para fullscreen views
-            maxWidth: selectedGameId || currentView === 'settings' || currentView === 'downloads' ? 'none' : undefined, // Sem limitação de largura
-            margin: selectedGameId || currentView === 'settings' || currentView === 'downloads' ? 0 : undefined // Sem margem para fullscreen views
+            padding: selectedGameId ? 0 : (currentView === 'home' ? 3 : 0), // Padding apenas na home
+            maxWidth: 'none', // Sempre sem limitação
+            margin: 0 // Sempre sem margem
           }}
         >
           <AnimatePresence mode="wait">
