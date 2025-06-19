@@ -106,7 +106,7 @@ export const useControllerDetection = () => {
         // CORREÇÃO ESPECÍFICA PARA ELECTRON: Ajustar mapeamento do botão Start
         if (typeof window !== 'undefined' && window.electronAPI) {
           const electronConfig = { ...config };
-          
+
           // Para Xbox no Electron, o botão Start pode estar no índice 7 em vez de 9
           if (type === 'XBOX') {
             electronConfig.buttonMap = {
@@ -115,7 +115,7 @@ export const useControllerDetection = () => {
               9: 'Start'  // Manter o original também
             };
           }
-          
+
           // Para PlayStation no Electron, o botão Options pode estar em índice diferente
           if (type === 'PLAYSTATION') {
             electronConfig.buttonMap = {
@@ -124,11 +124,11 @@ export const useControllerDetection = () => {
               9: 'Options'  // Manter o original também
             };
           }
-          
+
           console.log('🎮 Electron: Usando mapeamento ajustado para', type);
           return { type, config: electronConfig };
         }
-        
+
         return { type, config };
       }
     }

@@ -78,7 +78,7 @@ export const useButtonStates = (gamepadConnected, gamepadIndex, controllerConfig
       if (typeof window !== 'undefined' && window.electronAPI) {
         // Índices alternativos onde o botão Start pode estar no Electron
         const startButtonIndices = [6, 7, 8, 9, 10, 11];
-        
+
         for (const index of startButtonIndices) {
           const button = gamepad.buttons[index];
           if (button && button.pressed && button.value > 0.5) {
