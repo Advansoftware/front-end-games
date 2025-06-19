@@ -14,16 +14,22 @@ import {
   Storage as StorageIcon,
   Memory as MemoryIcon,
   DeviceHub as ProcessorIcon,
-  SportsEsports as GamepadIcon
+  SportsEsports as GamepadIcon,
+  Download as DownloadIcon,
+  PlayArrow as PlayIcon,
+  CloudDownload as CloudIcon,
+  YouTube as YouTubeIcon
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 
 import { useDownloads } from '../../hooks/useDownloads';
-import GameDetailsActions from '../game-details/GameDetailsActions';
+import { useGames } from '../../contexts/GamesContext';
+import CustomButton from '../CustomButton';
 
-const GameInfoContent = ({ game, activeTab, currentColors, onShowTrailer, isContentFocused = false }) => {
+const GameInfoContent = ({ game, activeTab, currentColors, onShowTrailer, isContentFocused = false, contentNavigation }) => {
   const theme = useTheme();
   const { activeDownloads } = useDownloads();
+  const { downloadGame, launchGame } = useGames();
 
   // Memoizar dados do download para evitar re-renders desnecessários
   const downloadData = useMemo(() => {
@@ -52,7 +58,7 @@ const GameInfoContent = ({ game, activeTab, currentColors, onShowTrailer, isCont
     }
   };
 
-  // Componente Overview
+  // Componente Overview - COM NAVEGAÇÃO
   const OverviewTab = useMemo(() => (
     <motion.div
       key="overview-tab"
@@ -77,29 +83,35 @@ const GameInfoContent = ({ game, activeTab, currentColors, onShowTrailer, isCont
             >
               Sobre o Jogo
             </Typography>
-            <Typography
-              variant="body1"
-              sx={{
-                color: 'rgba(255,255,255,0.9)',
-                lineHeight: 1.7,
-                fontSize: '1rem',
-                textAlign: 'justify',
-                mb: 3
-              }}
-            >
-              {game.description || game.shortDescription || 'Descrição não disponível.'}
-            </Typography>
 
-            {/* Tags */}
+            {/* Descrição - Elemento focável 0 */}
+            <Box {...contentNavigation?.getElementProps(0)}>
+              <Typography
+                variant="body1"
+                sx={{
+                  color: 'rgba(255,255,255,0.9)',
+                  lineHeight: 1.7,
+                  fontSize: '1rem',
+                  textAlign: 'justify',
+                  mb: 3,
+                  p: 2,
+                  borderRadius: 2
+                }}
+              >
+                {game.description || game.shortDescription || 'Descrição não disponível.'}
+              </Typography>
+            </Box>
+
+            {/* Tags - Elemento focável 1 */}
             {game.tags && game.tags.length > 0 && (
-              <Box>
+              <Box {...contentNavigation?.getElementProps(1)}>
                 <Typography
                   variant="h6"
                   sx={{ color: 'white', fontWeight: 'bold', mb: 2 }}
                 >
                   Tags
                 </Typography>
-                <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
+                <Stack direction="row" spacing={1} flexWrap="wrap" gap={1} sx={{ p: 2, borderRadius: 2 }}>
                   {game.tags.map((tag, index) => (
                     <motion.div
                       key={index}
@@ -128,7 +140,7 @@ const GameInfoContent = ({ game, activeTab, currentColors, onShowTrailer, isCont
             )}
           </Grid>
 
-          {/* Informações laterais */}
+          {/* Informações laterais - Elemento focável 2 */}
           <Grid item xs={12} md={4}>
             <motion.div
               initial={{ opacity: 0, x: 20 }}
@@ -136,6 +148,7 @@ const GameInfoContent = ({ game, activeTab, currentColors, onShowTrailer, isCont
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <Paper
+                {...contentNavigation?.getElementProps(2)}
                 sx={{
                   bgcolor: 'rgba(255,255,255,0.05)',
                   backdropFilter: 'blur(10px)',
@@ -174,9 +187,9 @@ const GameInfoContent = ({ game, activeTab, currentColors, onShowTrailer, isCont
         </Grid>
       </Box>
     </motion.div>
-  ), [game, currentColors]);
+  ), [game, currentColors, contentNavigation]);
 
-  // Componente Galeria
+  // Componente Galeria - COM NAVEGAÇÃO
   const GalleryTab = useMemo(() => (
     <motion.div
       key="gallery-tab"
@@ -208,7 +221,7 @@ const GameInfoContent = ({ game, activeTab, currentColors, onShowTrailer, isCont
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.1 }}
               >
-                <ImageListItem>
+                <ImageListItem {...contentNavigation?.getImageProps(index)}>
                   <img
                     src={screenshot}
                     alt={`Screenshot ${index + 1}`}
@@ -216,13 +229,10 @@ const GameInfoContent = ({ game, activeTab, currentColors, onShowTrailer, isCont
                     style={{
                       borderRadius: 8,
                       transition: 'transform 0.3s ease',
-                      cursor: 'pointer'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.transform = 'scale(1.05)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.transform = 'scale(1)';
+                      cursor: 'pointer',
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover'
                     }}
                   />
                 </ImageListItem>
@@ -231,6 +241,7 @@ const GameInfoContent = ({ game, activeTab, currentColors, onShowTrailer, isCont
           </ImageList>
         ) : (
           <Box
+            {...contentNavigation?.getElementProps(0)}
             sx={{
               display: 'flex',
               alignItems: 'center',
@@ -248,9 +259,9 @@ const GameInfoContent = ({ game, activeTab, currentColors, onShowTrailer, isCont
         )}
       </Box>
     </motion.div>
-  ), [game, currentColors]);
+  ), [game, currentColors, contentNavigation]);
 
-  // Componente Especificações
+  // Componente Especificações - COM NAVEGAÇÃO
   const SpecsTab = useMemo(() => (
     <motion.div
       key="specs-tab"
@@ -274,7 +285,7 @@ const GameInfoContent = ({ game, activeTab, currentColors, onShowTrailer, isCont
         </Typography>
 
         <Grid container spacing={3}>
-          {/* Requisitos mínimos */}
+          {/* Requisitos mínimos - Elemento focável 0 */}
           <Grid item xs={12} md={6}>
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -282,6 +293,7 @@ const GameInfoContent = ({ game, activeTab, currentColors, onShowTrailer, isCont
               transition={{ duration: 0.5, delay: 0.1 }}
             >
               <Paper
+                {...contentNavigation?.getElementProps(0)}
                 sx={{
                   bgcolor: 'rgba(255,255,255,0.05)',
                   backdropFilter: 'blur(10px)',
@@ -321,7 +333,7 @@ const GameInfoContent = ({ game, activeTab, currentColors, onShowTrailer, isCont
             </motion.div>
           </Grid>
 
-          {/* Requisitos recomendados */}
+          {/* Requisitos recomendados - Elemento focável 1 */}
           <Grid item xs={12} md={6}>
             <motion.div
               initial={{ opacity: 0, x: 20 }}
@@ -329,6 +341,7 @@ const GameInfoContent = ({ game, activeTab, currentColors, onShowTrailer, isCont
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <Paper
+                {...contentNavigation?.getElementProps(1)}
                 sx={{
                   bgcolor: 'rgba(255,255,255,0.05)',
                   backdropFilter: 'blur(10px)',
@@ -370,12 +383,12 @@ const GameInfoContent = ({ game, activeTab, currentColors, onShowTrailer, isCont
         </Grid>
       </Box>
     </motion.div>
-  ), [game, currentColors]);
+  ), [game, currentColors, contentNavigation]);
 
-  // Componente Ações - Memoizado para evitar re-renders
+  // Componente Ações - COM NAVEGAÇÃO
   const ActionsTab = useMemo(() => (
     <motion.div
-      key="actions-tab" // Key estável para evitar re-mount
+      key="actions-tab"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
@@ -395,33 +408,90 @@ const GameInfoContent = ({ game, activeTab, currentColors, onShowTrailer, isCont
           Ações do Jogo
         </Typography>
 
-        {/* Usando o componente GameDetailsActions existente */}
-        <Box sx={{
-          '& > div': {
-            flexDirection: { xs: 'column', sm: 'row' },
-            alignItems: 'stretch',
-            gap: 2
-          },
-          '& button': {
-            minHeight: 56,
-            fontSize: '1rem'
-          }
-        }}>
-          <GameDetailsActions
-            game={game}
-            onShowTrailer={onShowTrailer}
-            // Passar informação de foco para navegação interna
-            getButtonProps={isContentFocused ? (index) => ({
-              'data-focused': index === 0, // Primeiro botão recebe foco quando conteúdo está focado
-              tabIndex: index === 0 ? 0 : -1,
-              sx: {
-                border: index === 0 ? '2px solid rgba(255,255,255,0.8)' : '2px solid transparent',
-                transform: index === 0 ? 'scale(1.05)' : 'scale(1)',
-                transition: 'all 0.3s ease'
-              }
-            }) : undefined}
-          />
-        </Box>
+        {/* Botões de ação personalizados para navegação */}
+        <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
+          {/* Botão principal (Baixar/Jogar) */}
+          {!game.installed && !isDownloading && (
+            <Box {...contentNavigation?.getActionProps(0)}>
+              <CustomButton
+                variant="primary"
+                size="medium"
+                startIcon={<DownloadIcon />}
+                onClick={() => handleGameAction('download')}
+                sx={{
+                  px: 4,
+                  py: 1.5,
+                  fontSize: '1.1rem',
+                  fontWeight: 'bold',
+                  minWidth: 180
+                }}
+              >
+                Baixar Jogo
+              </CustomButton>
+            </Box>
+          )}
+
+          {game.installed && !isDownloading && (
+            <Box {...contentNavigation?.getActionProps(0)}>
+              <CustomButton
+                variant="success"
+                size="medium"
+                startIcon={<PlayIcon />}
+                onClick={() => handleGameAction('play')}
+                sx={{
+                  px: 4,
+                  py: 1.5,
+                  fontSize: '1.1rem',
+                  fontWeight: 'bold',
+                  minWidth: 160
+                }}
+              >
+                Jogar Agora
+              </CustomButton>
+            </Box>
+          )}
+
+          {isDownloading && (
+            <Box {...contentNavigation?.getActionProps(0)}>
+              <CustomButton
+                variant="info"
+                size="medium"
+                startIcon={<CloudIcon />}
+                disabled={true}
+                downloadProgress={Math.round(downloadData?.progress || 0)}
+                sx={{
+                  px: 4,
+                  py: 1.5,
+                  fontSize: '1.1rem',
+                  fontWeight: 'bold',
+                  minWidth: 180
+                }}
+              >
+                {isDownloading ? 'Baixando...' : 'Instalando...'}
+              </CustomButton>
+            </Box>
+          )}
+
+          {/* Botão de trailer - sempre disponível */}
+          {game.youtubeVideoId && (
+            <Box {...contentNavigation?.getActionProps(1)}>
+              <CustomButton
+                variant="outlined"
+                size="medium"
+                startIcon={<YouTubeIcon />}
+                onClick={onShowTrailer}
+                sx={{
+                  px: 3,
+                  py: 1.5,
+                  fontSize: '1rem',
+                  fontWeight: 'bold'
+                }}
+              >
+                Ver Trailer
+              </CustomButton>
+            </Box>
+          )}
+        </Stack>
 
         {/* Informações adicionais sobre ações */}
         <Grid container spacing={3} sx={{ mt: 2 }}>
@@ -540,7 +610,7 @@ const GameInfoContent = ({ game, activeTab, currentColors, onShowTrailer, isCont
         </Grid>
       </Box>
     </motion.div>
-  ), [game, currentColors, onShowTrailer, isDownloading, downloadData, isContentFocused]); // Dependências específicas
+  ), [game, currentColors, onShowTrailer, isDownloading, downloadData, contentNavigation, handleGameAction]);
 
   // Renderizar conteúdo baseado na tab ativa - sem AnimatePresence
   const renderTabContent = () => {

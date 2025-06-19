@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, Box } from '@mui/material';
 import { useTheme } from '../contexts/ThemeContext';
 
-const CustomButton = ({
+const CustomButton = React.forwardRef(({
   children,
   variant = 'contained',
   color = 'primary',
@@ -18,7 +18,7 @@ const CustomButton = ({
   downloadProgress, // Novo prop específico para download
   sx = {},
   ...props
-}) => {
+}, ref) => {
   const { theme, playSound, currentTheme } = useTheme();
 
   const handleClick = (event) => {
@@ -347,6 +347,7 @@ const CustomButton = ({
 
   return (
     <Button
+      ref={ref}
       variant={isDownloading ? 'contained' : variant}
       size={size}
       startIcon={startIcon}
@@ -708,6 +709,8 @@ const CustomButton = ({
       </Box>
     </Button>
   );
-};
+});
+
+CustomButton.displayName = 'CustomButton';
 
 export default CustomButton;

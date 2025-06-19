@@ -39,7 +39,6 @@ export const useGameInfoModalNavigation = ({
           newIndex = currentIndex - 1;
         } else {
           // Se já está na primeira, não faz nada
-          console.log('🎮 GameInfoModal: Já está na primeira tab, LB ignorado');
           return;
         }
       } else {
@@ -48,19 +47,13 @@ export const useGameInfoModalNavigation = ({
           newIndex = currentIndex + 1;
         } else {
           // Se já está na última, não faz nada
-          console.log('🎮 GameInfoModal: Já está na última tab, RB ignorado');
           return;
         }
       }
 
-      console.log(`🎮 GameInfoModal: Navegando tab ${direction} - ${tabs[currentIndex]} → ${tabs[newIndex]}`);
       setActiveTab(tabs[newIndex]);
       gamepad.navigationVibrate('navigate');
     });
-
-    if (!executed) {
-      console.log('⏱️ GameInfoModal: Navegação tabs ignorada devido ao debounce');
-    }
   }, [activeTab, tabs, debounceTabNavigation, gamepad]);
 
   // Ação de confirmar (A)
@@ -68,20 +61,14 @@ export const useGameInfoModalNavigation = ({
     const executed = debounceAction(() => {
       if (focusMode === 'tabs') {
         // Se estava navegando tabs, entrar no conteúdo
-        console.log('🎮 GameInfoModal: Entrando no conteúdo da tab');
         setFocusMode('content');
         gamepad.navigationVibrate('confirm');
       } else {
         // Se estava no conteúdo, executar ação específica da tab
         // Isso será tratado pelos componentes internos
-        console.log('🎮 GameInfoModal: Executando ação no conteúdo');
         gamepad.navigationVibrate('confirm');
       }
     });
-
-    if (!executed) {
-      console.log('⏱️ GameInfoModal: Ação A ignorada devido ao debounce');
-    }
   }, [focusMode, debounceAction, gamepad]);
 
   // Ação de cancelar (B)
@@ -89,20 +76,14 @@ export const useGameInfoModalNavigation = ({
     const executed = debounceAction(() => {
       if (focusMode === 'content') {
         // Se estava no conteúdo, voltar para navegação de tabs
-        console.log('🎮 GameInfoModal: Voltando para navegação de tabs');
         setFocusMode('tabs');
         gamepad.navigationVibrate('cancel');
       } else {
         // Se estava nas tabs, fechar modal
-        console.log('🎮 GameInfoModal: Fechando modal');
         onClose();
         gamepad.navigationVibrate('cancel');
       }
     });
-
-    if (!executed) {
-      console.log('⏱️ GameInfoModal: Ação B ignorada devido ao debounce');
-    }
   }, [focusMode, onClose, debounceAction, gamepad]);
 
   // Efeito principal para escutar inputs do gamepad
@@ -114,12 +95,10 @@ export const useGameInfoModalNavigation = ({
     const rightBumperName = gamepad.getRightBumper();
 
     if (gamepad.isButtonJustPressed(leftBumperName)) {
-      console.log(`🎮 GameInfoModal: ${leftBumperName} pressionado`);
       navigateTabs('left');
     }
 
     if (gamepad.isButtonJustPressed(rightBumperName)) {
-      console.log(`🎮 GameInfoModal: ${rightBumperName} pressionado`);
       navigateTabs('right');
     }
 
@@ -142,7 +121,6 @@ export const useGameInfoModalNavigation = ({
 
     if (navigation.menu) {
       // Menu/Start também fecha o modal
-      console.log('🎮 GameInfoModal: Start/Menu pressionado - fechando modal');
       onClose();
       gamepad.navigationVibrate('cancel');
     }

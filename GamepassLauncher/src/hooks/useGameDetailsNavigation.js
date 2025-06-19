@@ -25,13 +25,12 @@ export const useGameDetailsNavigation = ({
   const NAVIGATION_COOLDOWN = 180;
 
   // Debounce para ações (B, A, etc) - AUMENTADO PARA CONSISTÊNCIA
-  const { debounce: debounceAction } = useGamepadDebounce(400); // ✅ Aumentado para 400ms
+  const { debounce: debounceAction } = useGamepadDebounce(400);
 
   // Debounce mais rápido para navegação direcional - TAMBÉM AUMENTADO
-  const { debounce: debounceNavigation } = useGamepadDebounce(180); // ✅ Aumentado para 180ms
+  const { debounce: debounceNavigation } = useGamepadDebounce(180);
 
   const gamepad = useGamepad();
-  const navigation = gamepad.getNavigationInput();
 
   // Função para verificar cooldown
   const canNavigate = useCallback(() => {
@@ -162,76 +161,118 @@ export const useGameDetailsNavigation = ({
 
       setCurrentButtonIndex(newIndex);
 
-      // Scroll para o botão focado
-      setTimeout(() => {
+      // Scroll para o botão focado com delay reduzido
+      const timeoutId = setTimeout(() => {
         const element = buttonRefs.current[newIndex];
         if (element) {
           scrollToElement(element);
         }
       }, 50);
+
+      // Cleanup para evitar memory leaks
+      return () => clearTimeout(timeoutId);
     });
 
     if (!executed) {
       console.log('⏱️ Navegação ignorada devido ao debounce');
     }
-  }, [currentButtonIndex, availableButtons.length, debounceNavigation]);
+  }, [currentButtonIndex, availableButtons.length, debounceNavigation, scrollToElement]);
 
-  // Efeito principal para escutar inputs do gamepad
+  // Efeito principal para escutar inputs do gamepad - CORRIGIDO
   useEffect(() => {
     if (!gamepad.gamepadConnected) return;
+
+    // Obter navegação uma única vez para evitar múltiplas chamadas
+    const navigation = gamepad.getNavigationInput();
 
     // Navegação direcional
     if (navigation.left) {
       navigateButtons('left');
-    }
-
-    if (navigation.right) {
+    } else if (navigation.right) {
       navigateButtons('right');
-    }
-
-    if (navigation.up) {
+    } else if (navigation.up) {
       navigateButtons('up');
-    }
-
-    if (navigation.down) {
+    } else if (navigation.down) {
       navigateButtons('down');
     }
 
     // Ações
     if (navigation.confirm) {
       confirmAction();
-    }
-
-    if (navigation.cancel) {
+    } else if (navigation.cancel) {
       cancelAction();
-    }
-
-    // Menu/Start também volta
-    if (navigation.menu) {
+    } else if (navigation.menu) {
       cancelAction();
     }
 
   }, [
-    navigation,
     gamepad.gamepadConnected,
-    navigateButtons,
-    confirmAction,
-    cancelAction
+    // REMOVIDO: navigation - isso causava o loop infinito
+    // REMOVIDO: navigateButtons, confirmAction, cancelAction - dependências circulares
   ]);
 
-  // Reset do foco quando os botões disponíveis mudam
+  // Reset do foco quando os botões disponíveis mudam - MELHORADO
   useEffect(() => {
     if (availableButtons.length > 0 && currentButtonIndex >= availableButtons.length) {
       setCurrentButtonIndex(0);
     }
-  }, [availableButtons.length, currentButtonIndex]);
+  }, [availableButtons.length]); // REMOVIDO currentButtonIndex da dependência
 
-  // Auto-focus no primeiro botão
+  // Auto-focus no primeiro botão - MELHORADO
   useEffect(() => {
-    if (availableButtons.length > 0 && buttonRefs.current[0]) {
-      setTimeout(() => scrollToElement(buttonRefs.current[0]), 300);
+    if (availableButtons.length > 0) {
+      const timeoutId = setTimeout(() => {
+        const firstButton = buttonRefs.current[0];
+        if (firstButton) {
+          scrollToElement(firstButton);
+        }
+      }, 300);
+
+      return () => clearTimeout(timeoutId);
     }
   }, [availableButtons.length, scrollToElement]);
+
+  // Efeito separado para monitorar mudanças de gamepad - NOVO
+  useEffect(() => {
+    let animationFrameId;
+
+    const checkGamepadInput = () => {
+      if (!gamepad.gamepadConnected) {
+        animationFrameId = requestAnimationFrame(checkGamepadInput);
+        return;
+      }
+
+      const navigation = gamepad.getNavigationInput();
+
+      // Navegação direcional
+      if (navigation.left) {
+        navigateButtons('left');
+      } else if (navigation.right) {
+        navigateButtons('right');
+      } else if (navigation.up) {
+        navigateButtons('up');
+      } else if (navigation.down) {
+        navigateButtons('down');
+      }
+
+      // Ações
+      if (navigation.confirm) {
+        confirmAction();
+      } else if (navigation.cancel || navigation.menu) {
+        cancelAction();
+      }
+
+      animationFrameId = requestAnimationFrame(checkGamepadInput);
+    };
+
+    animationFrameId = requestAnimationFrame(checkGamepadInput);
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [navigateButtons, confirmAction, cancelAction, gamepad]);
 
   return {
     // Estados de navegação

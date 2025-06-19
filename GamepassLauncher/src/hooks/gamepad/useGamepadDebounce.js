@@ -1,9 +1,15 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 // Hook para debounce de ações do gamepad
 export const useGamepadDebounce = (delay = 200) => {
   const [isDebouncing, setIsDebouncing] = useState(false);
   const timeoutRef = useRef(null);
+  const delayRef = useRef(delay);
+
+  // Atualizar delay ref quando delay muda
+  useEffect(() => {
+    delayRef.current = delay;
+  }, [delay]);
 
   const debounce = useCallback((callback) => {
     if (isDebouncing) return false;
@@ -19,16 +25,26 @@ export const useGamepadDebounce = (delay = 200) => {
     // Definir novo timeout
     timeoutRef.current = setTimeout(() => {
       setIsDebouncing(false);
-    }, delay);
+    }, delayRef.current);
 
     return true;
-  }, [isDebouncing, delay]);
+  }, [isDebouncing]); // REMOVIDO delay da dependência
 
   const reset = useCallback(() => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
     setIsDebouncing(false);
+  }, []);
+
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
   }, []);
 
   return {

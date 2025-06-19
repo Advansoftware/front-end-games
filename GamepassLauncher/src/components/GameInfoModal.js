@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   Modal,
   Backdrop,
@@ -10,6 +10,7 @@ import {
 import { Close as CloseIcon, SportsEsports as GamepadIcon } from '@mui/icons-material';
 
 import { useGameInfoModalNavigation } from '../hooks/useGameInfoModalNavigation';
+import { useGameInfoContentNavigation } from '../hooks/useGameInfoContentNavigation';
 import { useTheme as useCustomTheme } from '../contexts/ThemeContext';
 import GameInfoHeader from './game-info-modal/GameInfoHeader';
 import GameInfoNavigation from './game-info-modal/GameInfoNavigation';
@@ -26,6 +27,7 @@ const GameInfoModal = ({ game, open, onClose, onShowTrailer }) => {
     activeTab,
     focusMode,
     setActiveTab,
+    setFocusMode,
     navigationInfo,
     getTabProps,
     isContentFocused
@@ -36,6 +38,13 @@ const GameInfoModal = ({ game, open, onClose, onShowTrailer }) => {
     initialTab: 'overview'
   });
 
+  // Hook de navegação dentro do conteúdo
+  const contentNavigation = useGameInfoContentNavigation({
+    activeTab,
+    isContentFocused,
+    onExitContent: () => setFocusMode('tabs') // Voltar para navegação de tabs
+  });
+
   // Cores por tema
   const themeColors = {
     xbox: { primary: '#107C10', accent: '#40E040', secondary: '#0E6A0E' },
@@ -44,13 +53,6 @@ const GameInfoModal = ({ game, open, onClose, onShowTrailer }) => {
   };
 
   const currentColors = themeColors[currentTheme] || themeColors.xbox;
-
-  // Reset quando abre o modal
-  useEffect(() => {
-    if (open) {
-      setActiveTab('overview');
-    }
-  }, [open]);
 
   if (!game) return null;
 
@@ -157,6 +159,7 @@ const GameInfoModal = ({ game, open, onClose, onShowTrailer }) => {
             currentColors={currentColors}
             onShowTrailer={onShowTrailer}
             isContentFocused={isContentFocused}
+            contentNavigation={contentNavigation}
           />
 
           {/* Indicador de controles gamepad na parte inferior */}
@@ -180,6 +183,7 @@ const GameInfoModal = ({ game, open, onClose, onShowTrailer }) => {
             >
               {[
                 { key: 'LB/RB', action: 'Trocar Abas' },
+                { key: 'Analógico', action: 'Navegar' },
                 { key: 'A', action: focusMode === 'tabs' ? 'Entrar' : 'Ação' },
                 { key: 'B', action: focusMode === 'tabs' ? 'Fechar' : 'Voltar' }
               ].map((control, index) => (

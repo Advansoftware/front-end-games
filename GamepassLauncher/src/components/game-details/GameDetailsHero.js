@@ -60,7 +60,7 @@ const GameDetailsHero = ({ game, onShowInfo, onShowTrailer, getInfoButtonProps, 
   return (
     <Box
       sx={{
-        position: 'absolute',
+        position: 'fixed', // Mudado de 'absolute' para 'fixed'
         top: 0,
         left: 0,
         right: 0,
@@ -69,13 +69,15 @@ const GameDetailsHero = ({ game, onShowInfo, onShowTrailer, getInfoButtonProps, 
         height: '100vh',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        zIndex: 1, // Adicionado z-index
+        overflow: 'hidden' // Adicionado para evitar scroll
       }}
     >
       {/* Background com gradiente */}
       <Box
         sx={{
-          position: 'absolute',
+          position: 'fixed', // Mudado para fixed
           top: 0,
           left: 0,
           right: 0,
@@ -83,20 +85,23 @@ const GameDetailsHero = ({ game, onShowInfo, onShowTrailer, getInfoButtonProps, 
           backgroundImage: `url(${heroImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
           filter: 'brightness(0.3) blur(2px)',
-          transform: 'scale(1.1)'
+          transform: 'scale(1.1)',
+          zIndex: -2 // Para ficar atrás do overlay
         }}
       />
 
       {/* Overlay */}
       <Box
         sx={{
-          position: 'absolute',
+          position: 'fixed', // Mudado para fixed
           top: 0,
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.9) 100%)'
+          background: 'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.9) 100%)',
+          zIndex: -1 // Para ficar atrás do conteúdo
         }}
       />
 
@@ -109,8 +114,11 @@ const GameDetailsHero = ({ game, onShowInfo, onShowTrailer, getInfoButtonProps, 
           alignItems: 'center',
           width: '100%',
           height: '100%',
+          maxWidth: '100vw', // Garantir que não ultrapasse viewport
+          maxHeight: '100vh', // Garantir que não ultrapasse viewport
           px: 4,
-          py: 4
+          py: 4,
+          overflow: 'hidden' // Evitar overflow
         }}
       >
         <Grid container spacing={6} alignItems="center" sx={{ width: '100%' }}>

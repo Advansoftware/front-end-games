@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { Box, IconButton, Typography } from '@mui/material';
+import { Box, IconButton, Typography, CircularProgress } from '@mui/material';
 import {
   ArrowBack as BackIcon,
   Minimize as MinimizeIcon,
@@ -14,19 +14,54 @@ import { useGameDetailsNavigation } from '../../hooks/useGameDetailsNavigation';
 import GameDetailsHero from '../../components/game-details/GameDetailsHero';
 import GameInfoModal from '../../components/GameInfoModal';
 import TrailerModal from '../../components/TrailerModal';
+import CacheService from '../../services/CacheService';
 
 const GameDetailsPage = () => {
   const router = useRouter();
   const { slug } = router.query;
   const [showTrailer, setShowTrailer] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
+  const [enrichedGame, setEnrichedGame] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const { games, getGameById } = useGames();
+  const { games, enrichGameWithAPI } = useGames();
 
   // Encontrar jogo pelo slug
-  const game = games.find(g =>
+  const baseGame = games.find(g =>
     g.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') === slug
   );
+
+  // Carregar dados enriquecidos quando a página carrega
+  useEffect(() => {
+    const loadEnrichedData = async () => {
+      if (!baseGame) {
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        // Primeiro, tentar carregar do cache
+        const cachedData = await CacheService.loadGameFromCache(baseGame.id);
+
+        if (cachedData) {
+          setEnrichedGame(cachedData);
+        } else {
+          // Se não há cache, enriquecer via API
+          const apiEnrichedData = await enrichGameWithAPI(baseGame.id);
+          setEnrichedGame(apiEnrichedData || baseGame);
+        }
+      } catch (error) {
+        console.error('❌ Erro ao carregar dados enriquecidos:', error);
+        setEnrichedGame(baseGame);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadEnrichedData();
+  }, [baseGame?.id]); // Removido enrichGameWithAPI das dependências para evitar loop infinito
 
   // Voltar para home
   const handleBack = () => {
@@ -38,14 +73,14 @@ const GameDetailsPage = () => {
     const buttons = [];
 
     // Sempre tem o botão "Ver mais informações" se há descrição
-    if (game?.description) {
+    if (enrichedGame?.description) {
       buttons.push('info');
     }
 
     // Botões de ação (Play/Download/Update)
-    if (game?.installed) {
+    if (enrichedGame?.installed) {
       // Se tem atualização disponível
-      if ([1, 3].includes(game.id)) {
+      if ([1, 3].includes(enrichedGame.id)) {
         buttons.push('update');
       } else {
         buttons.push('play');
@@ -55,7 +90,7 @@ const GameDetailsPage = () => {
     }
 
     // Botão de trailer se disponível
-    if (game?.youtubeVideoId) {
+    if (enrichedGame?.youtubeVideoId) {
       buttons.push('trailer');
     }
 
@@ -128,7 +163,21 @@ const GameDetailsPage = () => {
     }
   }, []);
 
-  if (!game) {
+  if (loading) {
+    return (
+      <Box sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: 'background.default'
+      }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!enrichedGame) {
     return (
       <Box sx={{
         minHeight: '100vh',
@@ -149,29 +198,26 @@ const GameDetailsPage = () => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       sx={{
-        minHeight: '100vh',
-        width: '100%',
+        position: 'fixed', // Mudado para fixed
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100vw',
+        height: '100vh',
         bgcolor: 'background.default',
-        // Remover estilos de modal/overlay
-        // position: 'fixed',
-        // top: 0,
-        // left: 0,
-        // right: 0,
-        // bottom: 0,
-        // width: '100vw',
-        // height: '100vh',
-        // overflow: 'hidden',
-        // zIndex: 10000
+        overflow: 'hidden', // Evitar scroll
+        zIndex: 1000 // Z-index alto para ficar acima de tudo
       }}
     >
       {/* Botão voltar */}
       <IconButton
         onClick={handleBack}
         sx={{
-          position: 'absolute',
+          position: 'fixed', // Mudado para fixed
           top: 20,
           left: 20,
-          zIndex: 10,
+          zIndex: 1001, // Z-index maior que o container
           bgcolor: 'rgba(0,0,0,0.8)',
           color: 'white',
           backdropFilter: 'blur(10px)',
@@ -188,10 +234,10 @@ const GameDetailsPage = () => {
       {typeof window !== 'undefined' && window.electronAPI && (
         <Box
           sx={{
-            position: 'absolute',
+            position: 'fixed', // Mudado para fixed
             top: 20,
             right: 20,
-            zIndex: 10,
+            zIndex: 1001, // Z-index maior que o container
             display: 'flex',
             gap: 0,
             bgcolor: 'rgba(0,0,0,0.8)',
@@ -231,11 +277,11 @@ const GameDetailsPage = () => {
       {navigationInfo.gamepadConnected && (
         <Box
           sx={{
-            position: 'absolute',
+            position: 'fixed', // Mudado para fixed
             top: 20,
             left: '50%',
             transform: 'translateX(-50%)',
-            zIndex: 10,
+            zIndex: 1001, // Z-index maior que o container
             bgcolor: 'rgba(0, 0, 0, 0.8)',
             backdropFilter: 'blur(10px)',
             borderRadius: 2,
@@ -252,7 +298,7 @@ const GameDetailsPage = () => {
 
       {/* Hero Section */}
       <GameDetailsHero
-        game={game}
+        game={enrichedGame}
         onShowInfo={() => setShowInfoModal(true)}
         onShowTrailer={() => setShowTrailer(true)}
         getInfoButtonProps={getInfoButtonProps}
@@ -261,7 +307,7 @@ const GameDetailsPage = () => {
 
       {/* Modal de informações completas */}
       <GameInfoModal
-        game={game}
+        game={enrichedGame}
         open={showInfoModal}
         onClose={() => setShowInfoModal(false)}
         onShowTrailer={() => setShowTrailer(true)}
@@ -271,8 +317,8 @@ const GameDetailsPage = () => {
       <TrailerModal
         open={showTrailer}
         onClose={() => setShowTrailer(false)}
-        videoId={game.youtubeVideoId}
-        gameTitle={game.title}
+        videoId={enrichedGame.youtubeVideoId}
+        gameTitle={enrichedGame.title}
       />
     </Box>
   );

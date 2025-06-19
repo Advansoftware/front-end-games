@@ -67,7 +67,7 @@ const GameDetailsActions = ({ game, onShowTrailer, getButtonProps }) => {
     // Se está baixando/instalando/atualizando - APENAS o botão de progresso
     if (isDownloading || isUpdating) {
       buttons.push({
-        index: buttonIndex++,
+        index: buttonIndex,
         type: 'progress',
         element: (
           <CustomButton
@@ -77,25 +77,26 @@ const GameDetailsActions = ({ game, onShowTrailer, getButtonProps }) => {
             startIcon={<CloudIcon />}
             disabled={true}
             downloadProgress={isDownloading ? progressPercent : updateProgressPercent}
-            {...(getButtonProps ? getButtonProps(buttonIndex - 1) : {})}
+            {...(getButtonProps ? getButtonProps(buttonIndex) : {})}
             sx={{
               px: 4,
               py: 1.5,
               fontSize: '1.1rem',
               fontWeight: 'bold',
               minWidth: 180,
-              ...(getButtonProps ? getButtonProps(buttonIndex - 1).sx : {})
+              ...(getButtonProps ? getButtonProps(buttonIndex).sx : {})
             }}
           >
             {operationMessage}
           </CustomButton>
         )
       });
+      buttonIndex++;
     } else {
       // Se está instalado E não tem atualização - JOGAR AGORA
       if (game.installed && !hasUpdate) {
         buttons.push({
-          index: buttonIndex++,
+          index: buttonIndex,
           type: 'play',
           element: (
             <CustomButton
@@ -104,26 +105,27 @@ const GameDetailsActions = ({ game, onShowTrailer, getButtonProps }) => {
               size="medium"
               startIcon={<PlayIcon />}
               onClick={handlePlay}
-              {...(getButtonProps ? getButtonProps(buttonIndex - 1) : {})}
+              {...(getButtonProps ? getButtonProps(buttonIndex) : {})}
               sx={{
                 px: 4,
                 py: 1.5,
                 fontSize: '1.1rem',
                 fontWeight: 'bold',
                 minWidth: 160,
-                ...(getButtonProps ? getButtonProps(buttonIndex - 1).sx : {})
+                ...(getButtonProps ? getButtonProps(buttonIndex).sx : {})
               }}
             >
               Jogar Agora
             </CustomButton>
           )
         });
+        buttonIndex++;
       }
 
       // Se tem atualização disponível - ATUALIZAR
       if (hasUpdate) {
         buttons.push({
-          index: buttonIndex++,
+          index: buttonIndex,
           type: 'update',
           element: (
             <CustomButton
@@ -132,25 +134,26 @@ const GameDetailsActions = ({ game, onShowTrailer, getButtonProps }) => {
               size="medium"
               startIcon={<UpdateIcon />}
               onClick={handleUpdate}
-              {...(getButtonProps ? getButtonProps(buttonIndex - 1) : {})}
+              {...(getButtonProps ? getButtonProps(buttonIndex) : {})}
               sx={{
                 px: 3,
                 py: 1.5,
                 fontSize: '1rem',
                 fontWeight: 'bold',
-                ...(getButtonProps ? getButtonProps(buttonIndex - 1).sx : {})
+                ...(getButtonProps ? getButtonProps(buttonIndex).sx : {})
               }}
             >
               Atualizar
             </CustomButton>
           )
         });
+        buttonIndex++;
       }
 
       // Se NÃO está instalado - BAIXAR
       if (!game.installed) {
         buttons.push({
-          index: buttonIndex++,
+          index: buttonIndex,
           type: 'download',
           element: (
             <CustomButton
@@ -159,27 +162,28 @@ const GameDetailsActions = ({ game, onShowTrailer, getButtonProps }) => {
               size="medium"
               startIcon={<DownloadIcon />}
               onClick={handleDownload}
-              {...(getButtonProps ? getButtonProps(buttonIndex - 1) : {})}
+              {...(getButtonProps ? getButtonProps(buttonIndex) : {})}
               sx={{
                 px: 4,
                 py: 1.5,
                 fontSize: '1.1rem',
                 fontWeight: 'bold',
                 minWidth: 180,
-                ...(getButtonProps ? getButtonProps(buttonIndex - 1).sx : {})
+                ...(getButtonProps ? getButtonProps(buttonIndex).sx : {})
               }}
             >
               Baixar Jogo
             </CustomButton>
           )
         });
+        buttonIndex++;
       }
     }
 
-    // Botão de trailer - sempre disponível
-    if (game.youtubeVideoId) {
+    // Botão de trailer - sempre disponível se houver videoId
+    if (game.youtubeVideoId && onShowTrailer) {
       buttons.push({
-        index: buttonIndex++,
+        index: buttonIndex,
         type: 'trailer',
         element: (
           <CustomButton
@@ -188,21 +192,23 @@ const GameDetailsActions = ({ game, onShowTrailer, getButtonProps }) => {
             size="medium"
             startIcon={<YouTubeIcon />}
             onClick={onShowTrailer}
-            {...(getButtonProps ? getButtonProps(buttonIndex - 1) : {})}
+            {...(getButtonProps ? getButtonProps(buttonIndex) : {})}
             sx={{
               px: 3,
               py: 1.5,
               fontSize: '1rem',
               fontWeight: 'bold',
-              ...(getButtonProps ? getButtonProps(buttonIndex - 1).sx : {})
+              ...(getButtonProps ? getButtonProps(buttonIndex).sx : {})
             }}
           >
             Ver Trailer
           </CustomButton>
         )
       });
+      buttonIndex++;
     }
 
+    console.log(`🎮 GameDetailsActions: ${buttonIndex} botões disponíveis`, buttons.map(b => b.type));
     return buttons;
   };
 
