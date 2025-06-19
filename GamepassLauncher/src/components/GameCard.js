@@ -242,26 +242,23 @@ const GameCard = ({
           >
             <UpdateIcon sx={{
               fontSize: 36,
-              color: '#FF9800',
+              color: currentColors.accent,
               mb: 1.5,
-              filter: 'drop-shadow(0 0 8px #FF980060)'
+              filter: `drop-shadow(0 0 8px ${currentColors.glow}60)`
             }} />
             <CustomButton
-              variant="contained"
+              variant="warning"
               size="medium"
               startIcon={<UpdateIcon />}
               onClick={handleUpdate}
               sx={{
-                bgcolor: '#FF9800',
-                color: 'white',
                 fontSize: '0.8rem',
                 py: 1,
                 px: 2,
-                boxShadow: '0 0 15px #FF980040',
+                boxShadow: `0 0 15px ${currentColors.glow}40`,
                 '&:hover': {
-                  bgcolor: '#F57C00',
                   transform: 'scale(1.05)',
-                  boxShadow: '0 0 25px #FF980060'
+                  boxShadow: `0 0 25px ${currentColors.glow}60`
                 }
               }}
             >
