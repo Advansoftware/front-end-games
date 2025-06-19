@@ -32,19 +32,16 @@ const TrailerModal = ({
   // Simular carregamento do player
   useEffect(() => {
     if (open && videoId) {
-      console.log('🎬 Modal aberto, iniciando loading...');
       setIsPlayerReady(false);
       // Simular tempo de carregamento do iframe
       const timeout = setTimeout(() => {
-        console.log('✅ Player pronto, removendo overlay...');
         setIsPlayerReady(true);
-      }, 2000); // Aumentei para 2 segundos para ter tempo de ver
+      }, 1500);
 
       return () => clearTimeout(timeout);
     }
 
     if (!open) {
-      console.log('❌ Modal fechado, resetando estado...');
       setIsPlayerReady(false);
     }
   }, [open, videoId]);
@@ -168,14 +165,16 @@ const TrailerModal = ({
                 position: 'absolute',
                 top: 0,
                 left: 0,
-                zIndex: 1
+                zIndex: isPlayerReady ? 100 : 1,
+                opacity: isPlayerReady ? 1 : 0,
+                transition: 'opacity 0.3s ease-in-out'
               }}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
             />
           )}
 
-          {/* Loading overlay - só aparece quando não está pronto */}
+          {/* Loading overlay */}
           {!isPlayerReady && (
             <Box
               sx={{
@@ -188,10 +187,9 @@ const TrailerModal = ({
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                bgcolor: 'rgba(0, 0, 0, 0.9)',
+                bgcolor: '#000',
                 color: 'white',
-                zIndex: 100,
-                backdropFilter: 'blur(5px)'
+                zIndex: 200 // Z-index maior que o iframe
               }}
             >
               <PlayIcon
