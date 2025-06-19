@@ -622,7 +622,7 @@ const SettingsPanel = () => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       sx={{
-        height: '100vh',
+        height: 'calc(100vh - 56px)', // Altura ajustada para compensar o header
         width: '100%',
         overflow: 'hidden',
         bgcolor: 'background.default',
@@ -808,20 +808,3 @@ const SettingsPanel = () => {
                 <Box sx={{ p: 3, height: 'calc(100% - 80px)', overflow: 'auto' }}>
                   <motion.div
                     key={selectedSection}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {renderSectionContent()}
-                  </motion.div>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-      </Box>
-    </Box>
-  );
-};
-
-export default SettingsPanel;

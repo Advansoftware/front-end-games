@@ -248,7 +248,7 @@ const HomePage = () => {
         }}
         sx={{
           height: '100vh',
-          paddingTop: selectedGameId ? '0px' : '56px', // Sem padding quando GameDetails ativo
+          paddingTop: selectedGameId ? '0px' : (currentView === 'settings' ? '56px' : '56px'), // Padding correto para Settings
           overflow: selectedGameId ? 'auto' : 'hidden',
           background: selectedGameId ? 'transparent' : (currentView === 'home' ? 'transparent' : 'background.default')
         }}
@@ -270,11 +270,12 @@ const HomePage = () => {
         )}
 
         <Container
-          maxWidth={selectedGameId ? false : 'false'} // Full width quando GameDetails ativo
+          maxWidth={selectedGameId ? false : (currentView === 'settings' ? false : 'false')} // Full width para GameDetails e Settings
           sx={{
             height: '100%',
-            padding: selectedGameId ? 0 : 3, // Sem padding quando GameDetails ativo
-            maxWidth: selectedGameId ? 'none' : undefined // Sem limitação de largura
+            padding: selectedGameId || currentView === 'settings' ? 0 : 3, // Sem padding para GameDetails e Settings
+            maxWidth: selectedGameId || currentView === 'settings' ? 'none' : undefined, // Sem limitação de largura
+            margin: selectedGameId || currentView === 'settings' ? 0 : undefined // Sem margem para GameDetails e Settings
           }}
         >
           <AnimatePresence mode="wait">
