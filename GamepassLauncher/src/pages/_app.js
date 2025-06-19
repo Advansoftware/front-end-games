@@ -37,6 +37,8 @@ function MyApp({ Component, pageProps }) {
             margin: 0;
             padding: 0;
             width: 100vw;
+            max-width: 100vw;
+            overflow-x: hidden;
             ${isFullscreenPage ? 'height: 100vh; overflow: hidden;' : 'min-height: 100vh;'}
             background: transparent;
           }
@@ -45,11 +47,22 @@ function MyApp({ Component, pageProps }) {
             margin: 0;
             padding: 0;
             width: 100vw;
+            max-width: 100vw;
+            overflow-x: hidden;
             ${isFullscreenPage ? 'height: 100vh; overflow: hidden;' : 'min-height: 100vh;'}
           }
           
           * {
             box-sizing: border-box;
+          }
+          
+          /* Garantir que elementos não extrapolem a viewport */
+          .MuiContainer-root {
+            max-width: 100vw !important;
+          }
+          
+          .MuiToolbar-root {
+            max-width: 100vw !important;
           }
           
           ${!isFullscreenPage ? `

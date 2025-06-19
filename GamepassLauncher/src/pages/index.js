@@ -146,9 +146,13 @@ const HomePage = () => {
     <Box
       sx={{
         minHeight: '100vh',
+        width: '100vw', // Garantir largura específica
+        maxWidth: '100vw', // Evitar que ultrapasse viewport
         background: 'linear-gradient(135deg, #0a0e1a 0%, #1a1a2e 50%, #16213e 100%)',
         color: 'text.primary',
-        overflow: 'auto'
+        overflow: 'auto',
+        overflowX: 'hidden', // Remover scroll horizontal
+        position: 'relative'
       }}
     >
       {/* Header com navegação */}
@@ -158,12 +162,24 @@ const HomePage = () => {
           bgcolor: 'rgba(0, 0, 0, 0.9)',
           backdropFilter: 'blur(20px)',
           borderBottom: '1px solid rgba(255,255,255,0.1)',
-          zIndex: 1300
+          zIndex: 1300,
+          width: '100vw', // Garantir que não ultrapasse
+          maxWidth: '100vw'
         }}
       >
-        <Toolbar sx={{ justifyContent: 'space-between' }}>
+        <Toolbar sx={{
+          justifyContent: 'space-between',
+          maxWidth: '100vw', // Limitar largura do toolbar
+          px: { xs: 2, md: 3 } // Responsivo
+        }}>
           {/* Logo e menu */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+            minWidth: 0, // Permitir flexibilidade
+            flex: '0 0 auto'
+          }}>
             <IconButton
               onClick={() => setSidebarOpen(true)}
               sx={{ color: 'text.primary' }}
@@ -189,7 +205,8 @@ const HomePage = () => {
                 variant="outlined"
                 sx={{
                   ml: 1,
-                  borderColor: 'primary.main'
+                  borderColor: 'primary.main',
+                  display: { xs: 'none', sm: 'inline-flex' } // Ocultar em telas pequenas
                 }}
               />
             )}
@@ -204,10 +221,13 @@ const HomePage = () => {
               borderRadius: 25,
               px: 2,
               py: 0.5,
-              minWidth: 300,
+              minWidth: { xs: 200, md: 300 }, // Responsivo
+              maxWidth: { xs: 250, md: 400 }, // Limitar largura máxima
               backdropFilter: 'blur(10px)',
               border: '1px solid transparent',
-              transition: 'all 0.3s ease'
+              transition: 'all 0.3s ease',
+              flex: '1 1 auto',
+              mx: 2 // Margem nas laterais
             }}
           >
             <SearchIcon sx={{ color: 'text.secondary', mr: 1 }} />
@@ -218,6 +238,7 @@ const HomePage = () => {
               sx={{
                 color: 'text.primary',
                 flex: 1,
+                minWidth: 0, // Permitir encolhimento
                 '& ::placeholder': {
                   color: 'text.secondary',
                   opacity: 0.8
@@ -227,7 +248,12 @@ const HomePage = () => {
           </Box>
 
           {/* Ações do usuário */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            flex: '0 0 auto'
+          }}>
             <IconButton sx={{ color: 'text.primary' }}>
               <Badge badgeContent={3} color="error">
                 <NotificationsIcon />
@@ -255,13 +281,20 @@ const HomePage = () => {
         sx={{
           pt: 10,
           pb: 4,
-          px: 4,
-          minHeight: 'calc(100vh - 80px)'
+          px: { xs: 2, md: 4 }, // Padding responsivo
+          minHeight: 'calc(100vh - 80px)',
+          width: '100%',
+          maxWidth: '100vw', // Garantir que não ultrapasse viewport
+          boxSizing: 'border-box'
         }}
       >
         {/* Hero Section - Ignorar imagem, focar apenas nos botões */}
         {featuredGame && (
-          <Box sx={{ mb: 6 }}>
+          <Box sx={{ 
+            mb: 6,
+            width: '100%',
+            maxWidth: '100%'
+          }}>
             <HeroSection
               featuredGame={featuredGame}
               onGameSelect={handleGameSelect}
@@ -275,7 +308,11 @@ const HomePage = () => {
         )}
 
         {/* Filtros de gênero */}
-        <Box sx={{ mb: 6 }}>
+        <Box sx={{ 
+          mb: 6,
+          width: '100%',
+          maxWidth: '100%'
+        }}>
           <GenreFilters
             selectedGenre={selectedGenre}
             onGenreChange={setSelectedGenre}
@@ -284,7 +321,10 @@ const HomePage = () => {
         </Box>
 
         {/* Grade de jogos navegável */}
-        <Box>
+        <Box sx={{
+          width: '100%',
+          maxWidth: '100%'
+        }}>
           <Typography
             variant="h4"
             sx={{
@@ -293,7 +333,8 @@ const HomePage = () => {
               color: 'text.primary',
               display: 'flex',
               alignItems: 'center',
-              gap: 2
+              gap: 2,
+              fontSize: { xs: '1.75rem', md: '2.125rem' } // Responsivo
             }}
           >
             🎮 Biblioteca de Jogos
@@ -317,7 +358,10 @@ const HomePage = () => {
                       ref={gameCardProps.ref}
                       data-game-card="true"
                       data-game-index={index}
-                      style={{ width: '100%', height: '100%' }}
+                      style={{ 
+                        width: '100%', 
+                        height: '100%'
+                      }}
                       onClick={() => handleGameSelect(game.id)}
                     >
                       <GameCard
@@ -337,7 +381,9 @@ const HomePage = () => {
                           transition: 'all 0.3s ease',
                           boxShadow: focusMode === 'games' && currentGameIndex === index
                             ? '0 8px 25px rgba(25, 118, 210, 0.4)'
-                            : 'none'
+                            : 'none',
+                          width: '100%',
+                          maxWidth: '100%'
                         }}
                       />
                     </motion.div>
@@ -382,7 +428,9 @@ const HomePage = () => {
               borderRadius: 2,
               p: 2,
               border: '1px solid rgba(255,255,255,0.1)',
-              zIndex: 1000
+              zIndex: 1000,
+              maxWidth: '300px', // Limitar largura máxima
+              wordWrap: 'break-word'
             }}
           >
             <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 1 }}>
