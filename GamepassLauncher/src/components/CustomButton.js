@@ -38,10 +38,10 @@ const CustomButton = ({
       xbox: {
         primary: '#107C10',
         secondary: '#16AA16',
-        accent: '#00BCF2',
+        accent: '#40E040',
         glow: '#107C10',
         particle: '#16AA16',
-        wave: 'linear-gradient(45deg, #107C10, #16AA16, #00BCF2)',
+        wave: 'linear-gradient(45deg, #107C10, #16AA16, #40E040)',
         pulse: '#107C10',
         name: 'Xbox'
       },
