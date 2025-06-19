@@ -82,6 +82,7 @@ const Sidebar = ({ open, onClose, currentView, onViewChange }) => {
       }
 
       if (nav.cancel || nav.back) {
+        // Fechar sidebar com B - não alterar navegação, apenas fechar
         onClose();
         playSound('cancel');
       }

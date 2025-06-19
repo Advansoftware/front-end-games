@@ -18,8 +18,7 @@ import {
 import { useRouter } from 'next/router';
 
 import { useGames } from '../contexts/GamesContext';
-import { useGamepad } from '../hooks/useGamepad';
-import { useHomePageNavigation } from '../hooks/useHomePageNavigation';
+import { useHomeConsoleNavigation } from '../hooks/useHomeConsoleNavigation';
 import GameCard from '../components/GameCard';
 import HeroSection from '../components/HeroSection';
 import Sidebar from '../components/Sidebar';
@@ -28,9 +27,9 @@ import GenreFilters from '../components/GenreFilters';
 const HomePage = () => {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('all');
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Mover para cima
 
   const {
     games,
@@ -39,8 +38,6 @@ const HomePage = () => {
     selectedGame,
     setSelectedGame
   } = useGames();
-
-  const gamepad = useGamepad();
 
   // Aguardar hidratação
   useEffect(() => {
@@ -54,8 +51,6 @@ const HomePage = () => {
       game.genre?.toLowerCase().includes(selectedGenre.toLowerCase());
     return matchesSearch && matchesGenre;
   });
-
-  const featuredGame = games.find(game => game.id === 8) || games[0]; // Hades como featured
 
   // Navegação para detalhes do jogo
   const handleGameSelect = (gameId) => {
@@ -79,52 +74,37 @@ const HomePage = () => {
     }
   };
 
-  // Hook de navegação com gamepad para homepage
+  // Hook de navegação console para homepage
   const {
-    currentSection,
-    currentIndex,
-    isNavigating,
-    gamesBySection,
-    heroRef,
-    searchRef,
-    filtersRef,
-    navigationInfo
-  } = useHomePageNavigation({
-    games,
-    filteredGames,
+    focusMode,
+    currentGameIndex,
+    currentHeroButton,
+    sidebarOpen: hookSidebarOpen,
+    selectedGame: currentGame,
+    featuredGame,
+    registerHeroButtonRef,
+    registerGameCardRef,
+    setSidebarOpen: setHookSidebarOpen,
+    navigationInfo,
+    getGameCardProps,
+    getHeroButtonProps
+  } = useHomeConsoleNavigation({
+    games: filteredGames,
     onGameSelect: handleGameSelect,
-    onViewChange: handleViewChange,
-    router,
-    setSidebarOpen,
-    setSearchQuery,
-    selectedGenre,
-    setSelectedGenre
+    onSidebarToggle: setSidebarOpen,
+    router
   });
 
-  // Detectar se é Electron apenas após hidratação
-  const isElectron = mounted && typeof window !== 'undefined' && window.electronAPI;
+  // Sincronizar estado do sidebar
+  useEffect(() => {
+    setSidebarOpen(hookSidebarOpen);
+  }, [hookSidebarOpen]);
 
-  // Renderizar loading durante hidratação
+  // Organizar jogos para exibição
+  const gameCards = filteredGames.filter(game => game.id !== featuredGame?.id);
+
   if (!mounted) {
-    return (
-      <Box
-        sx={{
-          minHeight: '100vh',
-          background: 'linear-gradient(135deg, #0a0e1a 0%, #1a1a2e 50%, #16213e 100%)',
-          color: 'text.primary',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
-      >
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-        >
-          <GamepadIcon sx={{ fontSize: 48, color: 'primary.main' }} />
-        </motion.div>
-      </Box>
-    );
+    return null;
   }
 
   return (
@@ -165,18 +145,16 @@ const HomePage = () => {
             />
 
             {/* Indicador de navegação com gamepad */}
-            {gamepad.gamepadConnected && (
+            {navigationInfo.gamepadConnected && (
               <Chip
                 icon={<GamepadIcon />}
-                label={`${currentSection} ${currentIndex + 1}/${navigationInfo.totalInSection}`}
+                label={`${focusMode} ${focusMode === 'games' ? currentGameIndex + 1 : currentHeroButton + 1}`}
                 size="small"
                 color="primary"
                 variant="outlined"
                 sx={{
                   ml: 1,
-                  opacity: isNavigating ? 1 : 0.7,
-                  transition: 'opacity 0.3s ease',
-                  borderColor: isNavigating ? 'primary.main' : 'rgba(255,255,255,0.3)'
+                  borderColor: 'primary.main'
                 }}
               />
             )}
@@ -187,21 +165,18 @@ const HomePage = () => {
             sx={{
               display: 'flex',
               alignItems: 'center',
-              bgcolor: currentSection === 'search' && gamepad.gamepadConnected ?
-                'rgba(25, 118, 210, 0.2)' : 'rgba(255,255,255,0.1)',
+              bgcolor: 'rgba(255,255,255,0.1)',
               borderRadius: 25,
               px: 2,
               py: 0.5,
               minWidth: 300,
               backdropFilter: 'blur(10px)',
-              border: currentSection === 'search' && gamepad.gamepadConnected ?
-                '2px solid rgba(25, 118, 210, 0.5)' : '1px solid transparent',
+              border: '1px solid transparent',
               transition: 'all 0.3s ease'
             }}
           >
             <SearchIcon sx={{ color: 'text.secondary', mr: 1 }} />
             <InputBase
-              ref={searchRef}
               placeholder="Buscar jogos..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -210,63 +185,22 @@ const HomePage = () => {
                 flex: 1,
                 '& ::placeholder': {
                   color: 'text.secondary',
-                  opacity: 0.7
+                  opacity: 0.8
                 }
               }}
             />
           </Box>
 
-          {/* Controles e perfil */}
+          {/* Ações do usuário */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Tooltip title="Downloads">
-              <IconButton
-                onClick={() => router.push('/downloads')}
-                sx={{ color: 'text.secondary' }}
-              >
-                <Badge badgeContent={0} color="primary">
-                  <DownloadIcon />
-                </Badge>
-              </IconButton>
-            </Tooltip>
-
-            <Tooltip title="Configurações">
-              <IconButton
-                onClick={() => router.push('/configuracoes')}
-                sx={{ color: 'text.secondary' }}
-              >
-                <SettingsIcon />
-              </IconButton>
-            </Tooltip>
-
-            {/* Controles de janela (apenas no Electron após hidratação) */}
-            {isElectron && (
-              <Box sx={{ display: 'flex', ml: 2 }}>
-                <IconButton
-                  onClick={() => window.electronAPI.minimizeWindow()}
-                  size="small"
-                  sx={{ color: 'text.secondary' }}
-                >
-                  <MinimizeIcon fontSize="small" />
-                </IconButton>
-                <IconButton
-                  onClick={() => window.electronAPI.maximizeWindow()}
-                  size="small"
-                  sx={{ color: 'text.secondary' }}
-                >
-                  <MaximizeIcon fontSize="small" />
-                </IconButton>
-                <IconButton
-                  onClick={() => window.electronAPI.closeWindow()}
-                  size="small"
-                  sx={{
-                    color: 'text.secondary',
-                    '&:hover': { bgcolor: 'rgba(244, 67, 54, 0.8)' }
-                  }}
-                >
-                  <CloseIcon fontSize="small" />
-                </IconButton>
-              </Box>
-            )}
+            <IconButton sx={{ color: 'text.primary' }}>
+              <Badge badgeContent={3} color="error">
+                <NotificationsIcon />
+              </Badge>
+            </IconButton>
+            <Avatar sx={{ width: 32, height: 32 }}>
+              <ProfileIcon />
+            </Avatar>
           </Box>
         </Toolbar>
       </AppBar>
@@ -284,273 +218,89 @@ const HomePage = () => {
         maxWidth={false}
         sx={{
           pt: 10,
-          pb: 8,
-          px: 3,
+          pb: 4,
+          px: 4,
           minHeight: 'calc(100vh - 80px)'
         }}
       >
-        {/* Hero Section */}
+        {/* Hero Section - Ignorar imagem, focar apenas nos botões */}
         {featuredGame && (
-          <Box
-            ref={heroRef}
-            tabIndex={0}
-            sx={{
-              outline: 'none',
-              borderRadius: 2,
-              border: currentSection === 'hero' && gamepad.gamepadConnected ?
-                '3px solid rgba(25, 118, 210, 0.7)' : '3px solid transparent',
-              transition: 'border-color 0.3s ease',
-              mb: 6
-            }}
-          >
+          <Box sx={{ mb: 6 }}>
             <HeroSection
               featuredGame={featuredGame}
               onGameSelect={handleGameSelect}
               heroGames={games.slice(0, 5)}
+              // Passar props para controle de foco
+              heroButtonProps={getHeroButtonProps}
+              focusMode={focusMode}
+              currentHeroButton={currentHeroButton}
             />
           </Box>
         )}
 
         {/* Filtros de gênero */}
-        <Box
-          sx={{
-            mb: 6,
-            p: 2,
-            borderRadius: 2,
-            border: currentSection === 'filters' && gamepad.gamepadConnected ?
-              '3px solid rgba(25, 118, 210, 0.7)' : '3px solid transparent',
-            transition: 'border-color 0.3s ease'
-          }}
-        >
+        <Box sx={{ mb: 6 }}>
           <GenreFilters
             selectedGenre={selectedGenre}
             onGenreChange={setSelectedGenre}
-            games={games}
-            gamepadFocus={currentSection === 'filters' && gamepad.gamepadConnected}
-            focusIndex={currentIndex}
+            genres={['all', 'action', 'adventure', 'rpg', 'strategy', 'simulation', 'racing']}
           />
         </Box>
 
-        {/* Seções de Jogos */}
-        <Box sx={{ mt: 6 }}>
-          {/* Jogos em Destaque */}
-          <Box
+        {/* Grade de jogos navegável */}
+        <Box>
+          <Typography
+            variant="h4"
             sx={{
-              mb: 8,
-              p: 2,
-              borderRadius: 2,
-              border: currentSection === 'featured' && gamepad.gamepadConnected ?
-                '3px solid rgba(25, 118, 210, 0.7)' : '3px solid transparent',
-              transition: 'border-color 0.3s ease'
+              mb: 4,
+              fontWeight: 700,
+              color: 'text.primary',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2
             }}
           >
-            <Typography
-              variant="h4"
-              sx={{
-                mb: 4,
-                fontWeight: 700,
-                color: 'text.primary',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 2
-              }}
-            >
-              🎮 Jogos em Destaque
-            </Typography>
+            🎮 Biblioteca de Jogos
+          </Typography>
 
-            <Grid container spacing={1} sx={{ mx: '-0.5rem' }} data-game-section="featured">
-              {gamesBySection.featured?.map((game, index) => (
-                <Grid item xs={2} key={`featured-${game.id}`} sx={{ px: '0.5rem' }}>
+          {gameCards.length > 0 ? (
+            <Grid container spacing={2}>
+              {gameCards.map((game, index) => (
+                <Grid item xs={12} sm={6} md={4} lg={2} key={game.id}>
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{
                       duration: 0.4,
-                      delay: index * 0.1,
+                      delay: index * 0.05,
                       ease: 'easeOut'
                     }}
                   >
                     <GameCard
                       game={game}
-                      onSelect={handleGameSelect}
-                      isSelected={selectedGame?.id === game.id}
-                      gamepadFocus={currentSection === 'featured' && currentIndex === index && gamepad.gamepadConnected}
-                      tabIndex={0}
-                      data-game-card
+                      onSelect={() => handleGameSelect(game.id)}
+                      // Props para controle de foco
+                      {...getGameCardProps(index)}
+                      sx={{
+                        // Estilo visual para elemento focado
+                        border: focusMode === 'games' && currentGameIndex === index
+                          ? '3px solid rgba(25, 118, 210, 0.8)'
+                          : '1px solid rgba(255,255,255,0.1)',
+                        transform: focusMode === 'games' && currentGameIndex === index
+                          ? 'scale(1.05)'
+                          : 'scale(1)',
+                        transition: 'all 0.3s ease',
+                        boxShadow: focusMode === 'games' && currentGameIndex === index
+                          ? '0 8px 25px rgba(25, 118, 210, 0.4)'
+                          : 'none'
+                      }}
                     />
                   </motion.div>
                 </Grid>
               ))}
             </Grid>
-          </Box>
-
-          {/* Jogos Recentes */}
-          <Box
-            sx={{
-              mb: 8,
-              p: 2,
-              borderRadius: 2,
-              border: currentSection === 'recent' && gamepad.gamepadConnected ?
-                '3px solid rgba(25, 118, 210, 0.7)' : '3px solid transparent',
-              transition: 'border-color 0.3s ease'
-            }}
-          >
-            <Typography
-              variant="h4"
-              sx={{
-                mb: 4,
-                fontWeight: 700,
-                color: 'text.primary',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 2
-              }}
-            >
-              🆕 Adicionados Recentemente
-            </Typography>
-
-            <Grid container spacing={1} sx={{ mx: '-0.5rem' }} data-game-section="recent">
-              {gamesBySection.recent?.map((game, index) => (
-                <Grid item xs={2} key={`recent-${game.id}`} sx={{ px: '0.5rem' }}>
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{
-                      duration: 0.4,
-                      delay: index * 0.1,
-                      ease: 'easeOut'
-                    }}
-                  >
-                    <GameCard
-                      game={game}
-                      onSelect={handleGameSelect}
-                      isSelected={selectedGame?.id === game.id}
-                      gamepadFocus={currentSection === 'recent' && currentIndex === index && gamepad.gamepadConnected}
-                      tabIndex={0}
-                      data-game-card
-                    />
-                  </motion.div>
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
-
-          {/* Jogos de Ação */}
-          <Box
-            sx={{
-              mb: 8,
-              p: 2,
-              borderRadius: 2,
-              border: currentSection === 'action' && gamepad.gamepadConnected ?
-                '3px solid rgba(25, 118, 210, 0.7)' : '3px solid transparent',
-              transition: 'border-color 0.3s ease'
-            }}
-          >
-            <Typography
-              variant="h4"
-              sx={{
-                mb: 4,
-                fontWeight: 700,
-                color: 'text.primary',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 2
-              }}
-            >
-              ⚔️ Jogos de Ação
-            </Typography>
-
-            <Grid container spacing={1} sx={{ mx: '-0.5rem' }} data-game-section="action">
-              {gamesBySection.action?.map((game, index) => (
-                <Grid item xs={2} key={`action-${game.id}`} sx={{ px: '0.5rem' }}>
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{
-                      duration: 0.4,
-                      delay: index * 0.1,
-                      ease: 'easeOut'
-                    }}
-                  >
-                    <GameCard
-                      game={game}
-                      onSelect={handleGameSelect}
-                      isSelected={selectedGame?.id === game.id}
-                      gamepadFocus={currentSection === 'action' && currentIndex === index && gamepad.gamepadConnected}
-                      tabIndex={0}
-                      data-game-card
-                    />
-                  </motion.div>
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
-
-          {/* Todos os Jogos */}
-          <Box
-            sx={{
-              mb: 8,
-              p: 2,
-              borderRadius: 2,
-              border: currentSection === 'all' && gamepad.gamepadConnected ?
-                '3px solid rgba(25, 118, 210, 0.7)' : '3px solid transparent',
-              transition: 'border-color 0.3s ease'
-            }}
-          >
-            <Typography
-              variant="h4"
-              sx={{
-                mb: 4,
-                fontWeight: 700,
-                color: 'text.primary',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 2
-              }}
-            >
-              📚 Todos os Jogos
-            </Typography>
-
-            <Grid container spacing={1} sx={{ mx: '-0.5rem' }} data-game-section="all">
-              {gamesBySection.all?.map((game, index) => (
-                <Grid item xs={2} key={`all-${game.id}`} sx={{ px: '0.5rem' }}>
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{
-                      duration: 0.4,
-                      delay: (index % 20) * 0.05,
-                      ease: 'easeOut'
-                    }}
-                  >
-                    <GameCard
-                      game={game}
-                      onSelect={handleGameSelect}
-                      isSelected={selectedGame?.id === game.id}
-                      gamepadFocus={currentSection === 'all' && currentIndex === index && gamepad.gamepadConnected}
-                      tabIndex={0}
-                      data-game-card
-                    />
-                  </motion.div>
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
-
-          {/* Loading state */}
-          {loading && (
-            <Box sx={{ textAlign: 'center', py: 8 }}>
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-              >
-                <GamepadIcon sx={{ fontSize: 48, color: 'primary.main' }} />
-              </motion.div>
-            </Box>
-          )}
-
-          {/* Empty state */}
-          {!loading && filteredGames.length === 0 && (
+          ) : (
+            // Estado vazio
             <Box sx={{ textAlign: 'center', py: 8 }}>
               <Typography variant="h6" sx={{ color: 'text.secondary', mb: 2 }}>
                 Nenhum jogo encontrado
@@ -562,8 +312,20 @@ const HomePage = () => {
           )}
         </Box>
 
+        {/* Loading state */}
+        {loading && (
+          <Box sx={{ textAlign: 'center', py: 8 }}>
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+            >
+              <GamepadIcon sx={{ fontSize: 48, color: 'primary.main' }} />
+            </motion.div>
+          </Box>
+        )}
+
         {/* Dica de controles (apenas quando gamepad conectado) */}
-        {gamepad.gamepadConnected && (
+        {navigationInfo.gamepadConnected && (
           <Box
             sx={{
               position: 'fixed',
@@ -581,10 +343,10 @@ const HomePage = () => {
               Controles do Gamepad:
             </Typography>
             <Typography variant="caption" sx={{ color: 'text.primary', display: 'block' }}>
-              ↕️ Seções • ↔️ Navegação • A Selecionar • B Voltar
+              ↕️ ↔️ Navegar • A Selecionar • B Voltar • Start Menu
             </Typography>
             <Typography variant="caption" sx={{ color: 'text.primary', display: 'block' }}>
-              LB/RB Páginas • Menu Sidebar • Start Configurações
+              Modo: {focusMode} | Posição: {focusMode === 'games' ? currentGameIndex + 1 : currentHeroButton + 1}
             </Typography>
           </Box>
         )}

@@ -17,7 +17,11 @@ const HeroSection = ({
   featuredGame,
   onGameSelect,
   heroGames = [],
-  onDownload
+  onDownload,
+  // Props para controle de foco
+  heroButtonProps,
+  focusMode,
+  currentHeroButton
 }) => {
   const { currentTheme } = useTheme();
   const currentColors = getThemeColors(currentTheme);
@@ -42,161 +46,92 @@ const HeroSection = ({
   const updateProgressPercent = updatePercent ? Math.round(updatePercent) : 0;
 
   const isInstalling = downloadData?.status === 'installing';
-  const isUpdating = featuredGame?.installed && isDownloading;
+  const hasUpdate = featuredGame.hasUpdate;
+  const isDownloaded = featuredGame.installed;
 
-  // Simular atualizações disponíveis para alguns jogos
-  const hasUpdate = featuredGame && [1, 3].includes(featuredGame.id) && featuredGame.installed && !isDownloading;
-
-  // Função para obter mensagem correta baseada no contexto
-  const getOperationMessage = () => {
-    if (!isDownloading) return '';
-    if (isInstalling) return 'Instalando';
-    if (isUpdating) return 'Atualizando';
-    return 'Baixando';
-  };
-
-  const operationMessage = getOperationMessage();
-
-  // Handlers
-  const handlePlay = (e) => {
-    e.stopPropagation();
-    launchGame(featuredGame.id);
-  };
-
-  const handleDownload = (e) => {
-    e.stopPropagation();
-    downloadGame(featuredGame.id);
-  };
-
-  const handleUpdate = (e) => {
-    e.stopPropagation();
-    updateGame(featuredGame.id);
-  };
-
-  // Função para determinar o botão principal
+  // Determinar qual botão principal mostrar
   const renderPrimaryButton = () => {
-    // Se está baixando/instalando/atualizando - mostrar progresso
-    if (isDownloading || isUpdating) {
-      return (
-        <CustomButton
-          variant={isUpdating ? "warning" : "info"}
-          startIcon={<CloudIcon />}
-          disabled={true}
-          downloadProgress={isDownloading ? progressPercent : updateProgressPercent}
-          sx={{
-            fontWeight: 700,
-            px: 3,
-            py: 1.5,
-            borderRadius: 2,
-            fontSize: '1rem',
-            textTransform: 'none',
-            minWidth: 180
-          }}
-        >
-          {operationMessage}
-        </CustomButton>
-      );
-    }
-
-    // Se está instalado E tem atualização - botão ATUALIZAR
-    if (featuredGame.installed && hasUpdate) {
-      return (
-        <CustomButton
-          variant="warning"
-          startIcon={<UpdateIcon />}
-          onClick={handleUpdate}
-          sx={{
-            fontWeight: 700,
-            px: 3,
-            py: 1.5,
-            borderRadius: 2,
-            fontSize: '1rem',
-            textTransform: 'none',
-            boxShadow: `0 4px 20px ${currentColors.glow}40`,
-            '&:hover': {
-              transform: 'translateY(-2px)',
-              boxShadow: `0 6px 25px ${currentColors.glow}60`
-            }
-          }}
-        >
-          Atualizar
-        </CustomButton>
-      );
-    }
-
-    // Se está instalado E NÃO tem atualização - botão JOGAR AGORA
-    if (featuredGame.installed && !hasUpdate) {
-      return (
-        <CustomButton
-          variant="success"
-          startIcon={<PlayIcon />}
-          onClick={handlePlay}
-          sx={{
-            fontWeight: 700,
-            px: 3,
-            py: 1.5,
-            borderRadius: 2,
-            fontSize: '1rem',
-            textTransform: 'none',
-            boxShadow: `0 4px 20px ${currentColors.glow}40`,
-            '&:hover': {
-              transform: 'translateY(-2px)',
-              boxShadow: `0 6px 25px ${currentColors.glow}60`
-            }
-          }}
-        >
-          Jogar Agora
-        </CustomButton>
-      );
-    }
-
-    // Se NÃO está instalado - botão BAIXAR
+    // Botão principal (índice 0)
     return (
       <CustomButton
-        variant="primary"
-        startIcon={<DownloadIcon />}
-        onClick={handleDownload}
+        {...(heroButtonProps ? heroButtonProps(0) : {})}
+        variant="contained"
+        size="large"
+        startIcon={getButtonIcon()}
+        onClick={(e) => {
+          e.stopPropagation();
+          handlePrimaryAction();
+        }}
+        loading={isDownloading || hasUpdate}
+        progress={isDownloading ? progressPercent : updateProgressPercent}
         sx={{
-          fontWeight: 700,
-          px: 3,
+          fontSize: '1.1rem',
           py: 1.5,
-          borderRadius: 2,
-          fontSize: '1rem',
-          textTransform: 'none',
-          boxShadow: `0 4px 20px ${currentColors.glow}40`,
+          px: 4,
+          minWidth: 180,
+          // Estilo de foco para navegação console
+          border: focusMode === 'hero' && currentHeroButton === 0
+            ? '3px solid rgba(255, 255, 255, 0.8)'
+            : '2px solid transparent',
+          transform: focusMode === 'hero' && currentHeroButton === 0
+            ? 'scale(1.05)'
+            : 'scale(1)',
+          boxShadow: focusMode === 'hero' && currentHeroButton === 0
+            ? '0 8px 25px rgba(255, 255, 255, 0.3)'
+            : `0 4px 20px ${currentColors.glow}40`,
+          transition: 'all 0.3s ease',
           '&:hover': {
-            transform: 'translateY(-2px)',
-            boxShadow: `0 6px 25px ${currentColors.glow}60`
+            transform: focusMode === 'hero' && currentHeroButton === 0
+              ? 'scale(1.05)'
+              : 'translateY(-2px)',
+            boxShadow: focusMode === 'hero' && currentHeroButton === 0
+              ? '0 8px 25px rgba(255, 255, 255, 0.3)'
+              : `0 6px 25px ${currentColors.glow}60`
           }
         }}
       >
-        Baixar agora
+        {getButtonText()}
       </CustomButton>
     );
   };
 
+  const getButtonIcon = () => {
+    if (isDownloading) return <CloudIcon />;
+    if (hasUpdate) return <UpdateIcon />;
+    if (isDownloaded) return <PlayIcon />;
+    return <DownloadIcon />;
+  };
+
+  const getButtonText = () => {
+    if (isDownloading) {
+      return isInstalling ? 'Instalando...' : 'Baixando...';
+    }
+    if (hasUpdate) return 'Atualizando...';
+    if (isDownloaded) return 'Jogar';
+    return 'Baixar';
+  };
+
+  const handlePrimaryAction = () => {
+    if (isDownloaded && !hasUpdate) {
+      launchGame(featuredGame.id);
+    } else if (hasUpdate) {
+      updateGame(featuredGame.id);
+    } else if (!isDownloading) {
+      downloadGame(featuredGame.id);
+    }
+  };
+
   return (
     <Box
-      component={motion.div}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
       sx={{
         position: 'relative',
-        width: '100%',
-        height: '60vh',
-        minHeight: '500px',
-        overflow: 'hidden',
-        mb: 4,
+        height: { xs: 400, md: 500 },
         borderRadius: 3,
-        cursor: 'pointer',
-        '&:hover .hero-overlay': {
-          opacity: 0.95
-        }
+        overflow: 'hidden',
+        mb: 4
       }}
-      onClick={() => onGameSelect(featuredGame.id)}
     >
-      {/* Background image */}
+      {/* Background com gradiente */}
       <Box
         sx={{
           position: 'absolute',
@@ -233,137 +168,124 @@ const HeroSection = ({
           bottom: 0,
           left: 0,
           right: 0,
-          height: '40%',
-          background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%)',
-          zIndex: 1
+          height: '50%',
+          background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%)'
         }}
       />
 
-      {/* Content principal */}
+      {/* Conteúdo principal - FOCÁVEL */}
       <Box
         sx={{
-          position: 'absolute',
-          left: { xs: 30, md: 50 },
-          bottom: { xs: 60, md: 80 },
-          right: { xs: 30, md: '40%' },
-          zIndex: 3,
-          color: 'white'
+          position: 'relative',
+          zIndex: 2,
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          px: { xs: 3, md: 6 }
         }}
       >
-        <Chip
-          label="Em destaque"
-          size="small"
-          sx={{
-            mb: 2,
-            bgcolor: currentColors.primary,
-            color: 'white',
-            fontWeight: 600,
-            fontSize: '0.8rem',
-            boxShadow: `0 0 10px ${currentColors.glow}60`
-          }}
-        />
-
-        <Typography
-          variant="h2"
-          sx={{
-            fontWeight: 800,
-            mb: 2,
-            textShadow: '3px 3px 6px rgba(0,0,0,0.8)',
-            fontSize: { xs: '2rem', md: '3rem', lg: '3.5rem' },
-            lineHeight: 0.9
-          }}
-        >
-          {featuredGame.title}
-        </Typography>
-
-        <Typography
-          variant="h6"
-          sx={{
-            mb: 3,
-            opacity: 0.9,
-            lineHeight: 1.5,
-            textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-            fontSize: { xs: '1rem', md: '1.1rem' },
-            maxWidth: '500px'
-          }}
-        >
-          {featuredGame.description}
-        </Typography>
-
-        <Stack direction="row" spacing={3} alignItems="center" sx={{ mb: 4 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <StarIcon sx={{ color: 'warning.main', fontSize: 20 }} />
-            <Typography variant="body1" sx={{ fontWeight: 700 }}>
-              {featuredGame.rating || '9.5'}
+        <Box sx={{ maxWidth: 600 }}>
+          {/* Título */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <Typography
+              variant="h2"
+              sx={{
+                fontWeight: 900,
+                mb: 2,
+                background: `linear-gradient(45deg, ${currentColors.primary}, ${currentColors.accent})`,
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                textShadow: '0 4px 20px rgba(0,0,0,0.5)',
+                fontSize: { xs: '2.5rem', md: '3.5rem' }
+              }}
+            >
+              {featuredGame.title}
             </Typography>
-          </Box>
+          </motion.div>
 
-          <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 500 }}>
-            {featuredGame.platform || 'PC'}
-          </Typography>
-
-          <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 500 }}>
-            {featuredGame.size || '5.7 GB'}
-          </Typography>
-        </Stack>
-
-        <Stack direction="row" spacing={2}>
-          {renderPrimaryButton()}
-
-          <CustomButton
-            variant="outlined"
-            onClick={(e) => {
-              e.stopPropagation();
-              onGameSelect(featuredGame.id);
-            }}
-            sx={{
-              color: 'white',
-              borderColor: 'rgba(255,255,255,0.6)',
-              fontWeight: 600,
-              px: 3,
-              py: 1.5,
-              borderRadius: 2,
-              fontSize: '1rem',
-              textTransform: 'none',
-              backdropFilter: 'blur(10px)',
-              bgcolor: 'rgba(255,255,255,0.1)',
-              '&:hover': {
-                borderColor: 'white',
-                bgcolor: 'rgba(255,255,255,0.2)',
-                transform: 'translateY(-2px)'
-              }
-            }}
+          {/* Descrição */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
           >
-            Ver detalhes
-          </CustomButton>
-        </Stack>
-      </Box>
+            <Typography
+              variant="h6"
+              sx={{
+                mb: 3,
+                color: 'rgba(255,255,255,0.9)',
+                lineHeight: 1.6,
+                maxWidth: 500,
+                textShadow: '0 2px 10px rgba(0,0,0,0.7)'
+              }}
+            >
+              {featuredGame.description}
+            </Typography>
+          </motion.div>
 
-      {/* Jogos em destaque no lado direito (removendo sobreposição confusa) */}
-      {heroGames.length > 0 && (
-        <Box
-          sx={{
-            position: 'absolute',
-            right: { xs: 20, md: 60 },
-            bottom: 20,
-            zIndex: 3,
-            display: { xs: 'none', lg: 'block' }
-          }}
-        >
-          <Typography
-            variant="caption"
-            sx={{
-              color: 'white',
-              opacity: 0.7,
-              fontSize: '0.75rem',
-              display: 'block',
-              mb: 1
-            }}
-          >
-            +{heroGames.length - 1} jogos na biblioteca
-          </Typography>
+          {/* Info do jogo */}
+          <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <StarIcon sx={{ color: 'warning.main', fontSize: 20 }} />
+              <Typography variant="body1" sx={{ fontWeight: 700 }}>
+                {featuredGame.rating || '9.5'}
+              </Typography>
+            </Box>
+
+            <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 500 }}>
+              {featuredGame.platform || 'PC'}
+            </Typography>
+
+            <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 500 }}>
+              {featuredGame.size || '5.7 GB'}
+            </Typography>
+          </Stack>
+
+          {/* Botões de ação - ELEMENTOS FOCÁVEIS */}
+          <Stack direction="row" spacing={2}>
+            {renderPrimaryButton()}
+
+            <CustomButton
+              {...(heroButtonProps ? heroButtonProps(1) : {})}
+              variant="outlined"
+              onClick={(e) => {
+                e.stopPropagation();
+                onGameSelect(featuredGame.id);
+              }}
+              sx={{
+                color: 'white',
+                borderColor: 'rgba(255,255,255,0.6)',
+                fontSize: '0.8rem',
+                textTransform: 'none',
+                px: 2,
+                py: 0.8,
+                // Estilo de foco para navegação console
+                border: focusMode === 'hero' && currentHeroButton === 1
+                  ? '3px solid rgba(255, 255, 255, 0.8)'
+                  : '1px solid rgba(255,255,255,0.6)',
+                transform: focusMode === 'hero' && currentHeroButton === 1
+                  ? 'scale(1.05)'
+                  : 'scale(1)',
+                boxShadow: focusMode === 'hero' && currentHeroButton === 1
+                  ? '0 8px 25px rgba(255, 255, 255, 0.3)'
+                  : 'none',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  borderColor: 'rgba(255,255,255,0.8)',
+                  bgcolor: 'rgba(255,255,255,0.1)'
+                }
+              }}
+            >
+              Ver mais informações
+            </CustomButton>
+          </Stack>
         </Box>
-      )}
+      </Box>
     </Box>
   );
 };
