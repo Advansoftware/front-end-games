@@ -66,7 +66,7 @@ import CacheService from '../services/CacheService';
 import CustomButton from './CustomButton';
 
 const SettingsPanel = () => {
-  const { soundsEnabled, toggleSounds, currentTheme, setTheme, playSound } = useTheme();
+  const { soundsEnabled, toggleSounds, currentTheme, changeTheme, playSound } = useTheme();
   const { API_CONFIG, syncWithRemoteAPI } = useGames();
   const gamepad = useGamepad();
 
@@ -237,7 +237,7 @@ const SettingsPanel = () => {
   };
 
   const handleThemeChange = (theme) => {
-    setTheme(theme);
+    changeTheme(theme);
     playSound('confirm');
   };
 

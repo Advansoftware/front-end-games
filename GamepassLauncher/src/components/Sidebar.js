@@ -9,7 +9,6 @@ import {
   ListItemText,
   Typography,
   Avatar,
-  Divider,
   Badge,
   IconButton
 } from '@mui/material';
@@ -18,10 +17,7 @@ import {
   Settings as SettingsIcon,
   Download as DownloadIcon,
   SportsEsports as GamepadIcon,
-  Close as CloseIcon,
-  Games as XboxIcon,
-  VideogameAsset as PS5Icon,
-  Casino as SwitchIcon
+  Close as CloseIcon
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
@@ -29,7 +25,7 @@ import { useGames } from '../contexts/GamesContext';
 import { useGamepad } from '../hooks/useGamepad';
 
 const Sidebar = ({ open, onClose, currentView, onViewChange }) => {
-  const { currentTheme, changeTheme, playSound } = useTheme();
+  const { playSound } = useTheme();
   const { games, downloadProgress } = useGames();
   const gamepad = useGamepad();
 
@@ -58,56 +54,27 @@ const Sidebar = ({ open, onClose, currentView, onViewChange }) => {
     }
   ];
 
-  const themeItems = [
-    {
-      id: 'xbox',
-      label: 'Xbox',
-      icon: XboxIcon,
-      color: '#107C10'
-    },
-    {
-      id: 'ps5',
-      label: 'PlayStation 5',
-      icon: PS5Icon,
-      color: '#0070F3'
-    },
-    {
-      id: 'switch',
-      label: 'Nintendo Switch',
-      icon: SwitchIcon,
-      color: '#E60012'
-    }
-  ];
-
   // Navegação com gamepad
   useEffect(() => {
     const handleGamepadNavigation = () => {
       if (!open) return;
 
       const nav = gamepad.getNavigationInput();
-      const totalItems = menuItems.length + themeItems.length;
 
       if (nav.up && selectedIndex > 0) {
         setSelectedIndex(prev => prev - 1);
         playSound('navigate');
       }
 
-      if (nav.down && selectedIndex < totalItems - 1) {
+      if (nav.down && selectedIndex < menuItems.length - 1) {
         setSelectedIndex(prev => prev + 1);
         playSound('navigate');
       }
 
       if (nav.confirm) {
-        if (selectedIndex < menuItems.length) {
-          const item = menuItems[selectedIndex];
-          onViewChange(item.id);
-          playSound('confirm');
-        } else {
-          const themeIndex = selectedIndex - menuItems.length;
-          const theme = themeItems[themeIndex];
-          changeTheme(theme.id);
-          playSound('confirm');
-        }
+        const item = menuItems[selectedIndex];
+        onViewChange(item.id);
+        playSound('confirm');
       }
 
       if (nav.cancel || nav.back) {
@@ -120,7 +87,7 @@ const Sidebar = ({ open, onClose, currentView, onViewChange }) => {
       const interval = setInterval(handleGamepadNavigation, 150);
       return () => clearInterval(interval);
     }
-  }, [gamepad, open, selectedIndex, menuItems, themeItems, onViewChange, changeTheme, onClose, playSound]);
+  }, [gamepad, open, selectedIndex, menuItems, onViewChange, onClose, playSound]);
 
   const handleMenuItemClick = (itemId) => {
     onViewChange(itemId);
@@ -128,11 +95,6 @@ const Sidebar = ({ open, onClose, currentView, onViewChange }) => {
     if (window.innerWidth < 960) {
       onClose();
     }
-  };
-
-  const handleThemeChange = (themeId) => {
-    changeTheme(themeId);
-    playSound('theme-change');
   };
 
   return (
@@ -146,7 +108,6 @@ const Sidebar = ({ open, onClose, currentView, onViewChange }) => {
         '& .MuiDrawer-paper': {
           width: 280,
           boxSizing: 'border-box',
-          // Background usando as cores do tema atual
           background: theme => `linear-gradient(145deg, 
             ${theme.palette.background.paper}F0 0%, 
             ${theme.palette.background.default}E0 100%)`,
@@ -163,7 +124,7 @@ const Sidebar = ({ open, onClose, currentView, onViewChange }) => {
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        color: 'text.primary' // Garantir texto branco
+        color: 'text.primary'
       }}>
         {/* Header */}
         <Box sx={{
@@ -188,12 +149,12 @@ const Sidebar = ({ open, onClose, currentView, onViewChange }) => {
             <Box>
               <Typography variant="h6" sx={{
                 fontWeight: 700,
-                color: 'text.primary' // Texto branco
+                color: 'text.primary'
               }}>
                 Gamepass
               </Typography>
               <Typography variant="caption" sx={{
-                color: 'text.secondary' // Texto secundário
+                color: 'text.secondary'
               }}>
                 {installedGames} jogos instalados
               </Typography>
@@ -232,10 +193,11 @@ const Sidebar = ({ open, onClose, currentView, onViewChange }) => {
                   onClick={() => handleMenuItemClick(item.id)}
                   sx={{
                     borderRadius: 2,
-                    mb: 0.5,
+                    mb: 1,
+                    py: 1.5,
                     border: isGamepadSelected ? 2 : 0,
                     borderColor: 'secondary.main',
-                    color: 'text.primary', // Texto branco
+                    color: 'text.primary',
                     '&.Mui-selected': {
                       bgcolor: 'primary.main',
                       color: 'white',
@@ -249,7 +211,8 @@ const Sidebar = ({ open, onClose, currentView, onViewChange }) => {
                   }}
                 >
                   <ListItemIcon sx={{
-                    color: isSelected ? 'white' : 'text.primary'
+                    color: isSelected ? 'white' : 'text.primary',
+                    minWidth: 40
                   }}>
                     {item.badge ? (
                       <Badge badgeContent={item.badge} color="error">
@@ -264,7 +227,8 @@ const Sidebar = ({ open, onClose, currentView, onViewChange }) => {
                     sx={{
                       color: isSelected ? 'white' : 'text.primary',
                       '& .MuiListItemText-primary': {
-                        fontWeight: isSelected ? 600 : 400
+                        fontWeight: isSelected ? 600 : 400,
+                        fontSize: '1rem'
                       }
                     }}
                   />
@@ -273,74 +237,6 @@ const Sidebar = ({ open, onClose, currentView, onViewChange }) => {
             );
           })}
         </List>
-
-        {/* Seletor de Temas */}
-        <Box sx={{
-          p: 2,
-          borderTop: theme => `1px solid ${theme.palette.primary.main}20`
-        }}>
-          <Typography variant="subtitle2" sx={{
-            mb: 2,
-            color: 'text.secondary',
-            fontWeight: 600,
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px'
-          }}>
-            Temas
-          </Typography>
-
-          <List sx={{ p: 0 }}>
-            {themeItems.map((theme, index) => {
-              const Icon = theme.icon;
-              const isActive = currentTheme === theme.id;
-              const globalIndex = menuItems.length + index;
-              const isGamepadSelected = gamepad.gamepadConnected && selectedIndex === globalIndex;
-
-              return (
-                <ListItem key={theme.id} disablePadding>
-                  <ListItemButton
-                    component={motion.div}
-                    whileHover={{ x: 8 }}
-                    whileTap={{ scale: 0.98 }}
-                    selected={isActive || isGamepadSelected}
-                    onClick={() => handleThemeChange(theme.id)}
-                    sx={{
-                      borderRadius: 2,
-                      mb: 0.5,
-                      border: isGamepadSelected ? 2 : (isActive ? 1 : 0),
-                      borderColor: isGamepadSelected ? 'secondary.main' : theme.color,
-                      color: 'text.primary', // Texto branco
-                      '&.Mui-selected': {
-                        bgcolor: `${theme.color}20`,
-                        borderColor: theme.color,
-                        color: theme.color,
-                      },
-                      '&:hover': {
-                        bgcolor: `${theme.color}15`,
-                      }
-                    }}
-                  >
-                    <ListItemIcon>
-                      <Icon sx={{
-                        color: isActive ? theme.color : 'text.primary',
-                        filter: isActive ? `drop-shadow(0 0 8px ${theme.color}60)` : 'none'
-                      }} />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={theme.label}
-                      sx={{
-                        color: isActive ? theme.color : 'text.primary',
-                        '& .MuiListItemText-primary': {
-                          fontWeight: isActive ? 600 : 400
-                        }
-                      }}
-                    />
-                  </ListItemButton>
-                </ListItem>
-              );
-            })}
-          </List>
-        </Box>
 
         {/* Status do Controle */}
         {gamepad.gamepadConnected && (
