@@ -560,7 +560,7 @@ const DownloadsView = () => {
                                     fontWeight: 600
                                   }}
                                 >
-                                  {download.progress}%
+                                  {Math.round(download.progress)}%
                                 </Typography>
                               </Box>
                               <LinearProgress
