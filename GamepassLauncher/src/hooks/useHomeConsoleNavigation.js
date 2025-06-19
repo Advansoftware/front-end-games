@@ -36,19 +36,69 @@ export const useHomeConsoleNavigation = ({
     gameCardRefs.current[index] = element;
   }, []);
 
-  // Scroll automático para o elemento focado
+  // Scroll automático para o elemento focado - VERSÃO MELHORADA
   const scrollToElement = useCallback((elementRef) => {
-    if (elementRef) {
-      elementRef.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-        inline: 'center'
-      });
+    if (!elementRef) return;
 
-      // Adicionar foco visual
-      elementRef.focus?.();
-    }
+    // Scroll com mais opções para garantir que funcione
+    elementRef.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+      inline: 'center'
+    });
+
+    // Backup: forçar scroll se o elemento não estiver visível
+    setTimeout(() => {
+      const rect = elementRef.getBoundingClientRect();
+      const isVisible = rect.top >= 0 && rect.bottom <= window.innerHeight;
+
+      if (!isVisible) {
+        elementRef.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest'
+        });
+      }
+    }, 100);
+
+    // Adicionar foco visual
+    elementRef.focus?.();
   }, []);
+
+  // Scroll específico para game cards com seletor mais robusto
+  const scrollToGameCard = useCallback((index) => {
+    // Tentar múltiplas estratégias para encontrar o elemento
+    let element = gameCardRefs.current[index];
+
+    if (!element) {
+      // Backup: buscar por atributo data
+      element = document.querySelector(`[data-game-index="${index}"]`);
+    }
+
+    if (!element) {
+      // Backup: buscar por estrutura do grid
+      const gameCards = document.querySelectorAll('[data-game-card="true"]');
+      element = gameCards[index];
+    }
+
+    if (element) {
+      scrollToElement(element);
+
+      // Garantir que o container principal também faça scroll se necessário
+      const container = element.closest('[data-scroll-container]') ||
+        element.closest('.MuiContainer-root') ||
+        document.documentElement;
+
+      if (container && container !== document.documentElement) {
+        const containerRect = container.getBoundingClientRect();
+        const elementRect = element.getBoundingClientRect();
+
+        // Se o elemento está fora da view do container
+        if (elementRect.top < containerRect.top || elementRect.bottom > containerRect.bottom) {
+          container.scrollTop += (elementRect.top - containerRect.top) - (containerRect.height / 2);
+        }
+      }
+    }
+  }, [scrollToElement]);
 
   // Navegação no Hero Section (apenas botões)
   const navigateHero = useCallback((direction) => {
@@ -67,7 +117,7 @@ export const useHomeConsoleNavigation = ({
     setTimeout(() => scrollToElement(heroButtonRefs.current[currentHeroButton]), 50);
   }, [currentHeroButton, scrollToElement]);
 
-  // Navegação nos Game Cards
+  // Navegação nos Game Cards - USANDO SCROLL MELHORADO
   const navigateGames = useCallback((direction) => {
     if (totalGameCards === 0) return;
 
@@ -99,8 +149,8 @@ export const useHomeConsoleNavigation = ({
 
     setCurrentGameIndex(newIndex);
     setLastGameIndex(newIndex); // Salvar para voltar do sidebar
-    setTimeout(() => scrollToElement(gameCardRefs.current[newIndex]), 100);
-  }, [currentGameIndex, totalGameCards, scrollToElement]);
+    setTimeout(() => scrollToGameCard(newIndex), 100); // Usar função melhorada
+  }, [currentGameIndex, totalGameCards, scrollToGameCard]);
 
   // Ação de confirmação (botão A - clique universal)
   const confirmAction = useCallback(() => {

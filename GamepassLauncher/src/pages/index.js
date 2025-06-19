@@ -216,6 +216,7 @@ const HomePage = () => {
       {/* Conteúdo principal */}
       <Container
         maxWidth={false}
+        data-scroll-container // Atributo para identificar container de scroll
         sx={{
           pt: 10,
           pb: 4,
@@ -281,6 +282,9 @@ const HomePage = () => {
                       onSelect={() => handleGameSelect(game.id)}
                       // Props para controle de foco
                       {...getGameCardProps(index)}
+                      // Atributos para scroll automático
+                      data-game-card="true"
+                      data-game-index={index}
                       sx={{
                         // Estilo visual para elemento focado
                         border: focusMode === 'games' && currentGameIndex === index
