@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Home as HomeIcon,
   Settings as SettingsIcon,
-  Download as DownloadIcon,
   SportsEsports as GamepadIcon,
   Minimize as MinimizeIcon,
   CropSquare as MaximizeIcon,
@@ -126,19 +125,6 @@ const HomePage = () => {
                 >
                   Gamepass
                 </Typography>
-              </Box>
-
-              {/* Menu de navegação horizontal */}
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <IconButton
-                  onClick={() => setCurrentView('downloads')}
-                  sx={{
-                    color: currentView === 'downloads' ? 'primary.main' : 'text.secondary',
-                    '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' }
-                  }}
-                >
-                  <DownloadIcon />
-                </IconButton>
               </Box>
             </Box>
 

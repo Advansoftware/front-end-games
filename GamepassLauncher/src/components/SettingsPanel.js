@@ -168,7 +168,14 @@ const SettingsPanel = () => {
               Configurações de Áudio
             </Typography>
 
-            <Card sx={{ mb: 2 }}>
+            <Card sx={{
+              mb: 2,
+              bgcolor: 'rgba(255,255,255,0.08)',
+              backdropFilter: 'blur(15px)',
+              border: theme => `1px solid ${theme.palette.primary.main}25`,
+              borderRadius: 2,
+              boxShadow: theme => `0 8px 20px ${theme.palette.primary.main}10`
+            }}>
               <CardContent>
                 <FormControlLabel
                   control={
@@ -186,7 +193,13 @@ const SettingsPanel = () => {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card sx={{
+              bgcolor: 'rgba(255,255,255,0.08)',
+              backdropFilter: 'blur(15px)',
+              border: theme => `1px solid ${theme.palette.primary.main}25`,
+              borderRadius: 2,
+              boxShadow: theme => `0 8px 20px ${theme.palette.primary.main}10`
+            }}>
               <CardContent>
                 <Typography variant="subtitle1" gutterBottom>
                   Tema de Som Atual
@@ -211,7 +224,14 @@ const SettingsPanel = () => {
               Configurações de Download
             </Typography>
 
-            <Card sx={{ mb: 2 }}>
+            <Card sx={{
+              mb: 2,
+              bgcolor: 'rgba(255,255,255,0.08)',
+              backdropFilter: 'blur(15px)',
+              border: theme => `1px solid ${theme.palette.primary.main}25`,
+              borderRadius: 2,
+              boxShadow: theme => `0 8px 20px ${theme.palette.primary.main}10`
+            }}>
               <CardContent>
                 <Typography variant="subtitle1" gutterBottom>
                   Pasta de Downloads
@@ -223,6 +243,14 @@ const SettingsPanel = () => {
                     onChange={(e) => setDownloadPath(e.target.value)}
                     variant="outlined"
                     size="small"
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        bgcolor: 'rgba(255,255,255,0.05)',
+                        '& fieldset': {
+                          borderColor: theme => `${theme.palette.primary.main}30`
+                        }
+                      }
+                    }}
                   />
                   <CustomButton
                     variant="outlined"
@@ -235,7 +263,13 @@ const SettingsPanel = () => {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card sx={{
+              bgcolor: 'rgba(255,255,255,0.08)',
+              backdropFilter: 'blur(15px)',
+              border: theme => `1px solid ${theme.palette.primary.main}25`,
+              borderRadius: 2,
+              boxShadow: theme => `0 8px 20px ${theme.palette.primary.main}10`
+            }}>
               <CardContent>
                 <Typography variant="subtitle1" gutterBottom>
                   URLs de Download
@@ -270,7 +304,14 @@ const SettingsPanel = () => {
               Configurações do Emulador
             </Typography>
 
-            <Card sx={{ mb: 2 }}>
+            <Card sx={{
+              mb: 2,
+              bgcolor: 'rgba(255,255,255,0.08)',
+              backdropFilter: 'blur(15px)',
+              border: theme => `1px solid ${theme.palette.primary.main}25`,
+              borderRadius: 2,
+              boxShadow: theme => `0 8px 20px ${theme.palette.primary.main}10`
+            }}>
               <CardContent>
                 <Typography variant="subtitle1" gutterBottom>
                   Pasta do Yuzu
@@ -282,6 +323,14 @@ const SettingsPanel = () => {
                     onChange={(e) => setYuzuPath(e.target.value)}
                     variant="outlined"
                     size="small"
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        bgcolor: 'rgba(255,255,255,0.05)',
+                        '& fieldset': {
+                          borderColor: theme => `${theme.palette.primary.main}30`
+                        }
+                      }
+                    }}
                   />
                   <CustomButton
                     variant="outlined"
@@ -303,12 +352,26 @@ const SettingsPanel = () => {
               </CardContent>
             </Card>
 
-            <Alert severity="info" sx={{ mb: 2 }}>
+            <Alert
+              severity="info"
+              sx={{
+                mb: 2,
+                bgcolor: 'rgba(3, 169, 244, 0.1)',
+                border: theme => `1px solid ${theme.palette.info.main}30`,
+                color: 'info.main'
+              }}
+            >
               O Yuzu é necessário para executar jogos de Nintendo Switch.
               Certifique-se de ter as prod.keys e firmware instalados.
             </Alert>
 
-            <Card>
+            <Card sx={{
+              bgcolor: 'rgba(255,255,255,0.08)',
+              backdropFilter: 'blur(15px)',
+              border: theme => `1px solid ${theme.palette.primary.main}25`,
+              borderRadius: 2,
+              boxShadow: theme => `0 8px 20px ${theme.palette.primary.main}10`
+            }}>
               <CardContent>
                 <Typography variant="subtitle1" gutterBottom>
                   Status do Emulador
@@ -339,7 +402,14 @@ const SettingsPanel = () => {
               Atualizações
             </Typography>
 
-            <Card sx={{ mb: 2 }}>
+            <Card sx={{
+              mb: 2,
+              bgcolor: 'rgba(255,255,255,0.08)',
+              backdropFilter: 'blur(15px)',
+              border: theme => `1px solid ${theme.palette.primary.main}25`,
+              borderRadius: 2,
+              boxShadow: theme => `0 8px 20px ${theme.palette.primary.main}10`
+            }}>
               <CardContent>
                 <FormControlLabel
                   control={
@@ -357,7 +427,14 @@ const SettingsPanel = () => {
               </CardContent>
             </Card>
 
-            <Card sx={{ mb: 2 }}>
+            <Card sx={{
+              mb: 2,
+              bgcolor: 'rgba(255,255,255,0.08)',
+              backdropFilter: 'blur(15px)',
+              border: theme => `1px solid ${theme.palette.primary.main}25`,
+              borderRadius: 2,
+              boxShadow: theme => `0 8px 20px ${theme.palette.primary.main}10`
+            }}>
               <CardContent>
                 <Typography variant="subtitle1" gutterBottom>
                   Verificação Manual
@@ -382,7 +459,14 @@ const SettingsPanel = () => {
               </CardContent>
             </Card>
 
-            <Alert severity="success">
+            <Alert
+              severity="success"
+              sx={{
+                bgcolor: 'rgba(76, 175, 80, 0.1)',
+                border: theme => `1px solid ${theme.palette.success.main}30`,
+                color: 'success.main'
+              }}
+            >
               Você está usando a versão mais recente do Gamepass Launcher!
             </Alert>
           </Box>
@@ -395,7 +479,14 @@ const SettingsPanel = () => {
               Configurações Avançadas
             </Typography>
 
-            <Card sx={{ mb: 2 }}>
+            <Card sx={{
+              mb: 2,
+              bgcolor: 'rgba(255,255,255,0.08)',
+              backdropFilter: 'blur(15px)',
+              border: theme => `1px solid ${theme.palette.primary.main}25`,
+              borderRadius: 2,
+              boxShadow: theme => `0 8px 20px ${theme.palette.primary.main}10`
+            }}>
               <CardContent>
                 <Typography variant="subtitle1" gutterBottom>
                   API do Servidor
@@ -406,7 +497,15 @@ const SettingsPanel = () => {
                   variant="outlined"
                   size="small"
                   fullWidth
-                  sx={{ mb: 2 }}
+                  sx={{
+                    mb: 2,
+                    '& .MuiOutlinedInput-root': {
+                      bgcolor: 'rgba(255,255,255,0.05)',
+                      '& fieldset': {
+                        borderColor: theme => `${theme.palette.primary.main}30`
+                      }
+                    }
+                  }}
                   InputProps={{ readOnly: true }}
                 />
                 <CustomButton
@@ -419,7 +518,13 @@ const SettingsPanel = () => {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card sx={{
+              bgcolor: 'rgba(255,255,255,0.08)',
+              backdropFilter: 'blur(15px)',
+              border: theme => `1px solid ${theme.palette.primary.main}25`,
+              borderRadius: 2,
+              boxShadow: theme => `0 8px 20px ${theme.palette.primary.main}10`
+            }}>
               <CardContent>
                 <Typography variant="subtitle1" gutterBottom>
                   Resetar Configurações
@@ -516,56 +621,205 @@ const SettingsPanel = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      sx={{ height: '100%', overflow: 'auto' }}
+      sx={{
+        height: '100vh',
+        width: '100%',
+        overflow: 'hidden',
+        bgcolor: 'background.default',
+        color: 'text.primary',
+        position: 'relative',
+        // Remover margens e paddings
+        m: 0,
+        p: 0
+      }}
     >
-      <Typography variant="h4" gutterBottom>
-        Configurações
-      </Typography>
+      {/* Background com gradiente temático */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: theme => `linear-gradient(135deg, 
+            ${theme.palette.background.default} 0%, 
+            ${theme.palette.background.paper} 30%, 
+            ${theme.palette.background.default} 70%, 
+            ${theme.palette.primary.main}10 100%)`,
+          zIndex: 0
+        }}
+      />
 
-      <Grid container spacing={3}>
-        {/* Menu lateral */}
-        <Grid item xs={12} md={3}>
-          <Card>
-            <CardContent sx={{ p: 1 }}>
-              {sections.map((section, index) => {
-                const Icon = section.icon;
-                const isSelected = selectedSection === index;
-                const isGamepadSelected = gamepad.gamepadConnected && selectedSection === index;
-
-                return (
-                  <CustomButton
-                    key={section.id}
-                    fullWidth
-                    variant={isSelected ? "contained" : "text"}
-                    startIcon={<Icon />}
-                    onClick={() => setSelectedSection(index)}
-                    sx={{
-                      justifyContent: 'flex-start',
-                      mb: 0.5,
-                      border: isGamepadSelected ? 2 : 0,
-                      borderColor: 'secondary.main'
-                    }}
-                  >
-                    {section.label}
-                  </CustomButton>
-                );
-              })}
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Conteúdo */}
-        <Grid item xs={12} md={9}>
-          <motion.div
-            key={selectedSection}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3 }}
+      {/* Conteúdo principal */}
+      <Box
+        sx={{
+          position: 'relative',
+          zIndex: 1,
+          height: '100%',
+          overflow: 'auto',
+          p: 4
+        }}
+      >
+        {/* Header estilizado */}
+        <Box sx={{ mb: 4 }}>
+          <Typography
+            variant="h3"
+            sx={{
+              color: 'text.primary',
+              fontWeight: 800,
+              mb: 1,
+              background: theme => `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              filter: `drop-shadow(0 0 20px ${theme => theme.palette.primary.main}40)`
+            }}
           >
-            {renderSectionContent()}
-          </motion.div>
+            Configurações
+          </Typography>
+          <Typography variant="body1" sx={{ color: 'text.secondary', opacity: 0.8 }}>
+            Personalize sua experiência de jogo
+          </Typography>
+        </Box>
+
+        <Grid container spacing={3} sx={{ height: 'calc(100% - 120px)' }}>
+          {/* Menu lateral aprimorado */}
+          <Grid item xs={12} md={3}>
+            <Card
+              sx={{
+                height: '100%',
+                bgcolor: 'rgba(255,255,255,0.05)',
+                backdropFilter: 'blur(20px)',
+                border: theme => `1px solid ${theme.palette.primary.main}30`,
+                borderRadius: 3,
+                boxShadow: theme => `0 10px 30px ${theme.palette.primary.main}20`
+              }}
+            >
+              <CardContent sx={{ p: 2, height: '100%' }}>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    mb: 3,
+                    color: 'primary.main',
+                    fontWeight: 700,
+                    textAlign: 'center'
+                  }}
+                >
+                  Categorias
+                </Typography>
+
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  {sections.map((section, index) => {
+                    const Icon = section.icon;
+                    const isSelected = selectedSection === index;
+                    const isGamepadSelected = gamepad.gamepadConnected && selectedSection === index;
+
+                    return (
+                      <Box
+                        key={section.id}
+                        component={motion.div}
+                        whileHover={{ x: 8, scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <CustomButton
+                          fullWidth
+                          variant={isSelected ? "contained" : "text"}
+                          startIcon={<Icon />}
+                          onClick={() => setSelectedSection(index)}
+                          sx={{
+                            justifyContent: 'flex-start',
+                            py: 1.5,
+                            px: 2,
+                            borderRadius: 2,
+                            border: isGamepadSelected ? 2 : (isSelected ? 1 : 0),
+                            borderColor: isGamepadSelected ? 'secondary.main' : 'primary.main',
+                            color: isSelected ? 'white' : 'text.primary',
+                            bgcolor: isSelected
+                              ? 'primary.main'
+                              : 'transparent',
+                            '&:hover': {
+                              bgcolor: isSelected
+                                ? 'primary.dark'
+                                : theme => `${theme.palette.primary.main}15`,
+                              boxShadow: theme => `0 8px 25px ${theme.palette.primary.main}30`
+                            },
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                          }}
+                        >
+                          {section.label}
+                        </CustomButton>
+                      </Box>
+                    );
+                  })}
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Conteúdo aprimorado */}
+          <Grid item xs={12} md={9}>
+            <Card
+              sx={{
+                height: '100%',
+                bgcolor: 'rgba(255,255,255,0.03)',
+                backdropFilter: 'blur(20px)',
+                border: theme => `1px solid ${theme.palette.primary.main}20`,
+                borderRadius: 3,
+                boxShadow: theme => `0 10px 30px ${theme.palette.primary.main}15`,
+                overflow: 'hidden'
+              }}
+            >
+              <CardContent sx={{ p: 0, height: '100%' }}>
+                {/* Header da seção */}
+                <Box
+                  sx={{
+                    p: 3,
+                    borderBottom: theme => `1px solid ${theme.palette.primary.main}20`,
+                    background: theme => `linear-gradient(90deg, 
+                      ${theme.palette.primary.main}10, 
+                      transparent)`
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    {sections[selectedSection] && (
+                      <>
+                        {React.createElement(sections[selectedSection].icon, {
+                          sx: {
+                            color: 'primary.main',
+                            fontSize: 28,
+                            filter: theme => `drop-shadow(0 0 10px ${theme.palette.primary.main}60)`
+                          }
+                        })}
+                        <Typography
+                          variant="h5"
+                          sx={{
+                            color: 'text.primary',
+                            fontWeight: 700
+                          }}
+                        >
+                          {sections[selectedSection].label}
+                        </Typography>
+                      </>
+                    )}
+                  </Box>
+                </Box>
+
+                {/* Conteúdo da seção */}
+                <Box sx={{ p: 3, height: 'calc(100% - 80px)', overflow: 'auto' }}>
+                  <motion.div
+                    key={selectedSection}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {renderSectionContent()}
+                  </motion.div>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
         </Grid>
-      </Grid>
+      </Box>
     </Box>
   );
 };

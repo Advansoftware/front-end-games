@@ -32,6 +32,45 @@ const CustomButton = ({
   const isDownloading = downloadProgress !== undefined && downloadProgress >= 0;
   const progressPercent = isDownloading ? Math.round(downloadProgress) : 0;
 
+  // Cores específicas por tema para experiência única
+  const getThemeExperience = () => {
+    const experiences = {
+      xbox: {
+        primary: '#107C10',
+        secondary: '#16AA16',
+        accent: '#00BCF2',
+        glow: '#107C10',
+        particle: '#16AA16',
+        wave: 'linear-gradient(45deg, #107C10, #16AA16, #00BCF2)',
+        pulse: '#107C10',
+        name: 'Xbox'
+      },
+      ps5: {
+        primary: '#0070F3',
+        secondary: '#3391FF',
+        accent: '#00D4FF',
+        glow: '#0070F3',
+        particle: '#00D4FF',
+        wave: 'linear-gradient(45deg, #0070F3, #3391FF, #00D4FF)',
+        pulse: '#0070F3',
+        name: 'PlayStation'
+      },
+      switch: {
+        primary: '#E60012',
+        secondary: '#FF3345',
+        accent: '#0066CC',
+        glow: '#E60012',
+        particle: '#FF3345',
+        wave: 'linear-gradient(45deg, #E60012, #FF3345, #0066CC)',
+        pulse: '#E60012',
+        name: 'Nintendo'
+      }
+    };
+    return experiences[currentTheme] || experiences.xbox;
+  };
+
+  const themeExp = getThemeExperience();
+
   // Definir tamanhos baseados no tema com melhor hierarquia
   const getSizeStyles = () => {
     switch (size) {
@@ -167,7 +206,7 @@ const CustomButton = ({
     textTransform: 'none',
     position: 'relative',
     overflow: 'hidden',
-    border: variant === 'outlined' || !isDownloading ? 1 : 'none', // Borda mais fina
+    border: variant === 'outlined' || !isDownloading ? 1 : 'none',
     borderStyle: 'solid',
     transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
     backdropFilter: 'blur(10px)',
@@ -189,10 +228,44 @@ const CustomButton = ({
       transform: 'none',
       boxShadow: 'none',
     },
-    // Efeito especial para botão de download
+    // Experiência especial para botão de download/atualizar
     ...(isDownloading && {
-      background: `linear-gradient(135deg, ${colorStyles.bgcolor} 0%, ${theme.palette.primary.dark} 100%)`,
+      background: themeExp.wave,
       border: 'none',
+      boxShadow: `0 0 30px ${themeExp.glow}60, inset 0 0 20px ${themeExp.primary}20`,
+      // Animação de pulso do tema
+      animation: `${currentTheme}Pulse 2s infinite ease-in-out`,
+      '@keyframes xboxPulse': {
+        '0%, 100%': {
+          boxShadow: `0 0 30px ${themeExp.glow}60, inset 0 0 20px ${themeExp.primary}20`,
+          filter: 'brightness(1)'
+        },
+        '50%': {
+          boxShadow: `0 0 50px ${themeExp.glow}80, inset 0 0 30px ${themeExp.secondary}30`,
+          filter: 'brightness(1.2)'
+        }
+      },
+      '@keyframes ps5Pulse': {
+        '0%, 100%': {
+          boxShadow: `0 0 30px ${themeExp.glow}60, inset 0 0 20px ${themeExp.primary}20`,
+          background: `linear-gradient(45deg, ${themeExp.primary}, ${themeExp.secondary})`
+        },
+        '50%': {
+          boxShadow: `0 0 50px ${themeExp.accent}80, inset 0 0 30px ${themeExp.accent}30`,
+          background: `linear-gradient(45deg, ${themeExp.secondary}, ${themeExp.accent})`
+        }
+      },
+      '@keyframes switchPulse': {
+        '0%, 100%': {
+          boxShadow: `0 0 30px ${themeExp.glow}60, inset 0 0 20px ${themeExp.primary}20`,
+          background: `linear-gradient(135deg, ${themeExp.primary}, ${themeExp.secondary})`
+        },
+        '50%': {
+          boxShadow: `0 0 50px ${themeExp.secondary}80, inset 0 0 30px ${themeExp.accent}30`,
+          background: `linear-gradient(135deg, ${themeExp.secondary}, ${themeExp.accent})`
+        }
+      },
+      // Efeito shimmer temático
       '&::before': {
         content: '""',
         position: 'absolute',
@@ -200,11 +273,31 @@ const CustomButton = ({
         left: 0,
         right: 0,
         bottom: 0,
-        background: `linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%)`,
-        animation: 'shimmer 2s infinite',
-        '@keyframes shimmer': {
-          '0%': { transform: 'translateX(-100%)' },
-          '100%': { transform: 'translateX(100%)' }
+        background: `linear-gradient(45deg, transparent 30%, ${themeExp.particle}40 50%, transparent 70%)`,
+        animation: `${currentTheme}Shimmer 2s infinite`,
+        '@keyframes xboxShimmer': {
+          '0%': { transform: 'translateX(-100%) skewX(-20deg)' },
+          '100%': { transform: 'translateX(200%) skewX(-20deg)' }
+        },
+        '@keyframes ps5Shimmer': {
+          '0%': {
+            transform: 'translateX(-100%) skewX(-15deg)',
+            background: `linear-gradient(45deg, transparent 30%, ${themeExp.accent}50 50%, transparent 70%)`
+          },
+          '100%': {
+            transform: 'translateX(200%) skewX(-15deg)',
+            background: `linear-gradient(45deg, transparent 30%, ${themeExp.particle}30 50%, transparent 70%)`
+          }
+        },
+        '@keyframes switchShimmer': {
+          '0%': {
+            transform: 'translateX(-100%) skewX(-25deg) rotateZ(2deg)',
+            background: `linear-gradient(45deg, transparent 30%, ${themeExp.accent}60 50%, transparent 70%)`
+          },
+          '100%': {
+            transform: 'translateX(200%) skewX(-25deg) rotateZ(2deg)',
+            background: `linear-gradient(45deg, transparent 30%, ${themeExp.secondary}40 50%, transparent 70%)`
+          }
         }
       }
     }),
@@ -223,10 +316,10 @@ const CustomButton = ({
       sx={buttonStyles}
       {...props}
     >
-      {/* Barra de progresso de download - preenche todo o botão */}
+      {/* Efeitos visuais especiais durante download */}
       {isDownloading && (
         <>
-          {/* Fundo da barra - formato quadrado */}
+          {/* Partículas flutuantes temáticas */}
           <Box
             sx={{
               position: 'absolute',
@@ -234,12 +327,57 @@ const CustomButton = ({
               left: 0,
               right: 0,
               bottom: 0,
-              bgcolor: 'rgba(0,0,0,0.3)',
               zIndex: 1,
-              borderRadius: 0 // Formato quadrado
+              '&::before, &::after': {
+                content: '""',
+                position: 'absolute',
+                width: '4px',
+                height: '4px',
+                background: themeExp.particle,
+                borderRadius: '50%',
+                opacity: 0.8,
+                filter: `drop-shadow(0 0 6px ${themeExp.particle})`
+              },
+              '&::before': {
+                top: '20%',
+                left: '15%',
+                animation: `${currentTheme}Particle1 3s infinite ease-in-out`
+              },
+              '&::after': {
+                top: '70%',
+                right: '20%',
+                animation: `${currentTheme}Particle2 2.5s infinite ease-in-out`
+              },
+              '@keyframes xboxParticle1': {
+                '0%, 100%': { transform: 'translateY(0) scale(1)', opacity: 0.8 },
+                '50%': { transform: 'translateY(-10px) scale(1.5)', opacity: 1 }
+              },
+              '@keyframes xboxParticle2': {
+                '0%, 100%': { transform: 'translateX(0) scale(1)', opacity: 0.6 },
+                '50%': { transform: 'translateX(10px) scale(1.2)', opacity: 1 }
+              },
+              '@keyframes ps5Particle1': {
+                '0%, 100%': { transform: 'rotate(0deg) translateY(0)', opacity: 0.7 },
+                '50%': { transform: 'rotate(180deg) translateY(-8px)', opacity: 1 }
+              },
+              '@keyframes ps5Particle2': {
+                '0%, 100%': { transform: 'scale(1) rotate(0deg)', opacity: 0.8 },
+                '50%': { transform: 'scale(1.3) rotate(90deg)', opacity: 0.9 }
+              },
+              '@keyframes switchParticle1': {
+                '0%, 100%': { transform: 'translateY(0) rotateZ(0deg)', opacity: 0.9 },
+                '25%': { transform: 'translateY(-5px) rotateZ(90deg)', opacity: 1 },
+                '75%': { transform: 'translateY(5px) rotateZ(270deg)', opacity: 0.7 }
+              },
+              '@keyframes switchParticle2': {
+                '0%, 100%': { transform: 'translateX(0) scale(1)', opacity: 0.8 },
+                '33%': { transform: 'translateX(8px) scale(1.4)', opacity: 1 },
+                '66%': { transform: 'translateX(-4px) scale(0.8)', opacity: 0.9 }
+              }
             }}
           />
-          {/* Progresso com gradiente da cor do tema - formato quadrado */}
+
+          {/* Barra de progresso com gradiente temático dinâmico */}
           <Box
             sx={{
               position: 'absolute',
@@ -247,13 +385,49 @@ const CustomButton = ({
               left: 0,
               bottom: 0,
               width: `${progressPercent}%`,
-              background: `linear-gradient(135deg, 
-                ${theme.palette.primary.main}, 
-                ${theme.palette.primary.light}, 
-                ${theme.palette.primary.main})`,
+              background: `linear-gradient(90deg, 
+                ${themeExp.primary}E0, 
+                ${themeExp.secondary}F0, 
+                ${themeExp.accent}E0,
+                ${themeExp.primary}F0)`,
+              backgroundSize: '300% 100%',
               zIndex: 2,
               transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-              borderRadius: 0, // Formato quadrado - não segue o botão
+              borderRadius: 0,
+              animation: `${currentTheme}ProgressFlow 3s infinite linear`,
+              '@keyframes xboxProgressFlow': {
+                '0%': { backgroundPosition: '0% 50%' },
+                '100%': { backgroundPosition: '200% 50%' }
+              },
+              '@keyframes ps5ProgressFlow': {
+                '0%': {
+                  backgroundPosition: '0% 50%',
+                  filter: 'hue-rotate(0deg)'
+                },
+                '50%': {
+                  backgroundPosition: '100% 50%',
+                  filter: 'hue-rotate(10deg)'
+                },
+                '100%': {
+                  backgroundPosition: '200% 50%',
+                  filter: 'hue-rotate(0deg)'
+                }
+              },
+              '@keyframes switchProgressFlow': {
+                '0%': {
+                  backgroundPosition: '0% 50%',
+                  transform: 'scaleY(1)'
+                },
+                '50%': {
+                  backgroundPosition: '100% 50%',
+                  transform: 'scaleY(1.1)'
+                },
+                '100%': {
+                  backgroundPosition: '200% 50%',
+                  transform: 'scaleY(1)'
+                }
+              },
+              // Efeito de ondas no progresso
               '&::after': {
                 content: '""',
                 position: 'absolute',
@@ -263,12 +437,97 @@ const CustomButton = ({
                 bottom: 0,
                 background: `linear-gradient(90deg, 
                   transparent, 
-                  rgba(255,255,255,0.2), 
+                  ${themeExp.particle}60, 
                   transparent)`,
-                animation: 'progressShine 2s infinite',
-                '@keyframes progressShine': {
+                animation: `${currentTheme}Wave 2s infinite`,
+                '@keyframes xboxWave': {
                   '0%': { transform: 'translateX(-100%)' },
                   '100%': { transform: 'translateX(100%)' }
+                },
+                '@keyframes ps5Wave': {
+                  '0%': {
+                    transform: 'translateX(-100%) scaleY(1)',
+                    opacity: 0.6
+                  },
+                  '50%': {
+                    transform: 'translateX(0%) scaleY(1.2)',
+                    opacity: 1
+                  },
+                  '100%': {
+                    transform: 'translateX(100%) scaleY(1)',
+                    opacity: 0.6
+                  }
+                },
+                '@keyframes switchWave': {
+                  '0%': {
+                    transform: 'translateX(-100%) rotateZ(0deg)',
+                    filter: 'hue-rotate(0deg)'
+                  },
+                  '50%': {
+                    transform: 'translateX(0%) rotateZ(2deg)',
+                    filter: 'hue-rotate(15deg)'
+                  },
+                  '100%': {
+                    transform: 'translateX(100%) rotateZ(0deg)',
+                    filter: 'hue-rotate(0deg)'
+                  }
+                }
+              }
+            }}
+          />
+
+          {/* Overlay com texto de status temático */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: `linear-gradient(135deg, 
+                transparent 0%, 
+                ${themeExp.primary}10 25%, 
+                transparent 50%, 
+                ${themeExp.secondary}10 75%, 
+                transparent 100%)`,
+              zIndex: 3,
+              animation: `${currentTheme}StatusOverlay 4s infinite ease-in-out`,
+              '@keyframes xboxStatusOverlay': {
+                '0%, 100%': { opacity: 0.3 },
+                '50%': { opacity: 0.6 }
+              },
+              '@keyframes ps5StatusOverlay': {
+                '0%, 100%': {
+                  opacity: 0.4,
+                  background: `linear-gradient(135deg, 
+                    transparent 0%, 
+                    ${themeExp.primary}15 25%, 
+                    transparent 50%, 
+                    ${themeExp.accent}15 75%, 
+                    transparent 100%)`
+                },
+                '50%': {
+                  opacity: 0.7,
+                  background: `linear-gradient(135deg, 
+                    transparent 0%, 
+                    ${themeExp.accent}20 25%, 
+                    transparent 50%, 
+                    ${themeExp.secondary}20 75%, 
+                    transparent 100%)`
+                }
+              },
+              '@keyframes switchStatusOverlay': {
+                '0%, 100%': {
+                  opacity: 0.5,
+                  transform: 'skewX(0deg)'
+                },
+                '33%': {
+                  opacity: 0.8,
+                  transform: 'skewX(1deg)'
+                },
+                '66%': {
+                  opacity: 0.6,
+                  transform: 'skewX(-1deg)'
                 }
               }
             }}
@@ -287,7 +546,7 @@ const CustomButton = ({
             width: `${Math.round(progress)}%`,
             bgcolor: 'rgba(255,255,255,0.8)',
             transition: 'width 0.3s ease',
-            borderRadius: 0, // Formato quadrado
+            borderRadius: 0,
             zIndex: 3
           }}
         />
@@ -303,15 +562,98 @@ const CustomButton = ({
           justifyContent: 'center',
           gap: 1,
           color: isDownloading || loading ? '#ffffff !important' : 'inherit',
-          textShadow: isDownloading || loading ? '2px 2px 4px rgba(0,0,0,0.9)' : 'none',
+          textShadow: isDownloading || loading ? `2px 2px 8px ${themeExp.glow}80` : 'none',
           fontWeight: isDownloading || loading ? 800 : 'inherit',
           whiteSpace: 'nowrap',
-          minWidth: 'fit-content'
+          minWidth: 'fit-content',
+          // Efeito de texto especial durante download
+          ...(isDownloading && {
+            filter: `drop-shadow(0 0 8px ${themeExp.glow}60)`,
+            animation: `${currentTheme}TextGlow 2s infinite ease-in-out`,
+            '@keyframes xboxTextGlow': {
+              '0%, 100%': {
+                textShadow: `2px 2px 8px ${themeExp.glow}80`,
+                transform: 'scale(1)'
+              },
+              '50%': {
+                textShadow: `2px 2px 12px ${themeExp.glow}100, 0 0 20px ${themeExp.secondary}60`,
+                transform: 'scale(1.02)'
+              }
+            },
+            '@keyframes ps5TextGlow': {
+              '0%, 100%': {
+                textShadow: `2px 2px 8px ${themeExp.glow}80`,
+                color: '#ffffff !important'
+              },
+              '50%': {
+                textShadow: `2px 2px 12px ${themeExp.accent}100, 0 0 15px ${themeExp.accent}80`,
+                color: '#f0f8ff !important'
+              }
+            },
+            '@keyframes switchTextGlow': {
+              '0%, 100%': {
+                textShadow: `2px 2px 8px ${themeExp.glow}80`,
+                transform: 'scale(1) rotateZ(0deg)'
+              },
+              '33%': {
+                textShadow: `2px 2px 10px ${themeExp.secondary}90, 0 0 15px ${themeExp.accent}70`,
+                transform: 'scale(1.01) rotateZ(0.5deg)'
+              },
+              '66%': {
+                textShadow: `2px 2px 10px ${themeExp.accent}90, 0 0 15px ${themeExp.secondary}70`,
+                transform: 'scale(1.01) rotateZ(-0.5deg)'
+              }
+            }
+          })
         }}
       >
-        {isDownloading ? `Baixando ${progressPercent}%` :
-          loading && loadingText ? loadingText :
-            children}
+        {isDownloading ? (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box component="span">
+              {currentTheme === 'xbox' ? 'Baixando via Xbox' :
+                currentTheme === 'ps5' ? 'Download PS5' :
+                  'Baixando Nintendo'} {progressPercent}%
+            </Box>
+            {/* Indicador de progresso temático */}
+            <Box
+              sx={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                background: themeExp.accent,
+                animation: `${currentTheme}Indicator 1.5s infinite ease-in-out`,
+                '@keyframes xboxIndicator': {
+                  '0%, 100%': { transform: 'scale(1)', opacity: 1 },
+                  '50%': { transform: 'scale(1.5)', opacity: 0.7 }
+                },
+                '@keyframes ps5Indicator': {
+                  '0%, 100%': {
+                    transform: 'scale(1) rotate(0deg)',
+                    background: themeExp.accent
+                  },
+                  '50%': {
+                    transform: 'scale(1.3) rotate(180deg)',
+                    background: themeExp.secondary
+                  }
+                },
+                '@keyframes switchIndicator': {
+                  '0%, 100%': {
+                    transform: 'scale(1)',
+                    boxShadow: `0 0 5px ${themeExp.accent}`
+                  },
+                  '25%': {
+                    transform: 'scale(1.2)',
+                    boxShadow: `0 0 10px ${themeExp.secondary}`
+                  },
+                  '75%': {
+                    transform: 'scale(0.8)',
+                    boxShadow: `0 0 8px ${themeExp.primary}`
+                  }
+                }
+              }}
+            />
+          </Box>
+        ) : loading && loadingText ? loadingText : children}
       </Box>
     </Button>
   );

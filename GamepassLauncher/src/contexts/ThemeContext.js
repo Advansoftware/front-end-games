@@ -422,9 +422,16 @@ export const ThemeContextProvider = ({ children }) => {
     if (!soundsEnabled) return;
 
     try {
-      const audio = new Audio(`/assets/sounds/${currentTheme}/${soundType}.mp3`);
+      // Sons específicos para cada tema durante download/atualização
+      const themeSound = isDownloading || loading ? `${soundType}-${currentTheme}` : soundType;
+      const audio = new Audio(`/assets/sounds/${currentTheme}/${themeSound}.mp3`);
       audio.volume = 0.3;
-      audio.play().catch(console.warn);
+      audio.play().catch(() => {
+        // Fallback para som genérico se o som temático não existir
+        const fallbackAudio = new Audio(`/assets/sounds/${currentTheme}/${soundType}.mp3`);
+        fallbackAudio.volume = 0.3;
+        fallbackAudio.play().catch(console.warn);
+      });
     } catch (error) {
       console.warn('Erro ao reproduzir som:', error);
     }

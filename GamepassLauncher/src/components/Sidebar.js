@@ -146,47 +146,77 @@ const Sidebar = ({ open, onClose, currentView, onViewChange }) => {
         '& .MuiDrawer-paper': {
           width: 280,
           boxSizing: 'border-box',
-          background: 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
+          // Background usando as cores do tema atual
+          background: theme => `linear-gradient(145deg, 
+            ${theme.palette.background.paper}F0 0%, 
+            ${theme.palette.background.default}E0 100%)`,
           backdropFilter: 'blur(20px)',
-          borderRight: '1px solid rgba(255,255,255,0.1)',
-          zIndex: 1300, // Abaixo do header (1400)
-          marginTop: '56px', // Altura do header para não sobrepor
-          height: 'calc(100vh - 56px)', // Altura ajustada
+          borderRight: theme => `1px solid ${theme.palette.primary.main}30`,
+          color: theme => theme.palette.text.primary,
+          zIndex: 1300,
+          marginTop: '56px',
+          height: 'calc(100vh - 56px)',
         },
       }}
     >
-      <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        color: 'text.primary' // Garantir texto branco
+      }}>
         {/* Header */}
-        <Box sx={{ p: 2, pt: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box sx={{
+          p: 2,
+          pt: 3,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderBottom: theme => `1px solid ${theme.palette.primary.main}20`
+        }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Avatar
               sx={{
                 bgcolor: 'primary.main',
                 width: 40,
-                height: 40
+                height: 40,
+                border: theme => `2px solid ${theme.palette.primary.main}40`
               }}
             >
-              <GamepadIcon />
+              <GamepadIcon sx={{ color: 'white' }} />
             </Avatar>
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+              <Typography variant="h6" sx={{
+                fontWeight: 700,
+                color: 'text.primary' // Texto branco
+              }}>
                 Gamepass
               </Typography>
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" sx={{
+                color: 'text.secondary' // Texto secundário
+              }}>
                 {installedGames} jogos instalados
               </Typography>
             </Box>
           </Box>
 
-          <IconButton onClick={onClose} size="small">
+          <IconButton
+            onClick={onClose}
+            size="small"
+            sx={{
+              color: 'text.primary',
+              '&:hover': {
+                bgcolor: 'primary.main',
+                color: 'white'
+              }
+            }}
+          >
             <CloseIcon />
           </IconButton>
         </Box>
 
-        <Divider sx={{ mx: 2 }} />
-
         {/* Menu Principal */}
-        <List sx={{ flex: 1, px: 1 }}>
+        <List sx={{ flex: 1, px: 1, py: 2 }}>
           {menuItems.map((item, index) => {
             const Icon = item.icon;
             const isSelected = currentView === item.id;
@@ -205,15 +235,22 @@ const Sidebar = ({ open, onClose, currentView, onViewChange }) => {
                     mb: 0.5,
                     border: isGamepadSelected ? 2 : 0,
                     borderColor: 'secondary.main',
+                    color: 'text.primary', // Texto branco
                     '&.Mui-selected': {
                       bgcolor: 'primary.main',
+                      color: 'white',
                       '&:hover': {
                         bgcolor: 'primary.dark',
                       },
                     },
+                    '&:hover': {
+                      bgcolor: theme => `${theme.palette.primary.main}20`,
+                    }
                   }}
                 >
-                  <ListItemIcon sx={{ color: isSelected ? 'white' : 'inherit' }}>
+                  <ListItemIcon sx={{
+                    color: isSelected ? 'white' : 'text.primary'
+                  }}>
                     {item.badge ? (
                       <Badge badgeContent={item.badge} color="error">
                         <Icon />
@@ -224,7 +261,12 @@ const Sidebar = ({ open, onClose, currentView, onViewChange }) => {
                   </ListItemIcon>
                   <ListItemText
                     primary={item.label}
-                    sx={{ color: isSelected ? 'white' : 'inherit' }}
+                    sx={{
+                      color: isSelected ? 'white' : 'text.primary',
+                      '& .MuiListItemText-primary': {
+                        fontWeight: isSelected ? 600 : 400
+                      }
+                    }}
                   />
                 </ListItemButton>
               </ListItem>
@@ -232,11 +274,18 @@ const Sidebar = ({ open, onClose, currentView, onViewChange }) => {
           })}
         </List>
 
-        <Divider sx={{ mx: 2 }} />
-
         {/* Seletor de Temas */}
-        <Box sx={{ p: 2 }}>
-          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+        <Box sx={{
+          p: 2,
+          borderTop: theme => `1px solid ${theme.palette.primary.main}20`
+        }}>
+          <Typography variant="subtitle2" sx={{
+            mb: 2,
+            color: 'text.secondary',
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px'
+          }}>
             Temas
           </Typography>
 
@@ -260,19 +309,27 @@ const Sidebar = ({ open, onClose, currentView, onViewChange }) => {
                       mb: 0.5,
                       border: isGamepadSelected ? 2 : (isActive ? 1 : 0),
                       borderColor: isGamepadSelected ? 'secondary.main' : theme.color,
+                      color: 'text.primary', // Texto branco
                       '&.Mui-selected': {
                         bgcolor: `${theme.color}20`,
                         borderColor: theme.color,
+                        color: theme.color,
                       },
+                      '&:hover': {
+                        bgcolor: `${theme.color}15`,
+                      }
                     }}
                   >
                     <ListItemIcon>
-                      <Icon sx={{ color: isActive ? theme.color : 'inherit' }} />
+                      <Icon sx={{
+                        color: isActive ? theme.color : 'text.primary',
+                        filter: isActive ? `drop-shadow(0 0 8px ${theme.color}60)` : 'none'
+                      }} />
                     </ListItemIcon>
                     <ListItemText
                       primary={theme.label}
                       sx={{
-                        color: isActive ? theme.color : 'inherit',
+                        color: isActive ? theme.color : 'text.primary',
                         '& .MuiListItemText-primary': {
                           fontWeight: isActive ? 600 : 400
                         }
@@ -287,19 +344,23 @@ const Sidebar = ({ open, onClose, currentView, onViewChange }) => {
 
         {/* Status do Controle */}
         {gamepad.gamepadConnected && (
-          <>
-            <Divider sx={{ mx: 2 }} />
-            <Box sx={{ p: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Badge color="success" variant="dot">
-                  <GamepadIcon sx={{ color: 'success.main' }} />
-                </Badge>
-                <Typography variant="caption" color="success.main">
-                  Controle conectado
-                </Typography>
-              </Box>
+          <Box sx={{
+            p: 2,
+            borderTop: theme => `1px solid ${theme.palette.success.main}30`,
+            bgcolor: theme => `${theme.palette.success.main}10`
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Badge color="success" variant="dot">
+                <GamepadIcon sx={{ color: 'success.main' }} />
+              </Badge>
+              <Typography variant="caption" sx={{
+                color: 'success.main',
+                fontWeight: 600
+              }}>
+                Controle conectado
+              </Typography>
             </Box>
-          </>
+          </Box>
         )}
       </Box>
     </Drawer>
