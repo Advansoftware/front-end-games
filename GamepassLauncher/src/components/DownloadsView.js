@@ -109,6 +109,8 @@ const DownloadsView = () => {
     switch (status) {
       case 'downloading':
         return { icon: DownloadIcon, color: currentColors.primary, label: 'Baixando' };
+      case 'installing':
+        return { icon: UpdateIcon, color: currentColors.accent, label: 'Instalando' };
       case 'completed':
         return { icon: CompleteIcon, color: '#4CAF50', label: 'Concluído' };
       case 'paused':

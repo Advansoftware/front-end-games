@@ -30,7 +30,7 @@ const GameCard = ({
   onGameSelect,
   variant = 'horizontal' // 'horizontal' | 'vertical'
 }) => {
-  const { downloadGame } = useGames();
+  const { downloadGame, updateGame } = useGames();
   const { activeDownloads } = useDownloads();
   const { currentTheme } = useTheme();
 
@@ -74,8 +74,19 @@ const GameCard = ({
   // Determinar tipo de operação e mensagem
   const isUpdating = isDownloaded && isDownloading; // Se já instalado e baixando = atualizando
   const operationType = isUpdating ? 'updating' : 'downloading';
-  const operationMessage = isUpdating ? 'Atualizando' : 'Baixando';
+
+  // Determinar mensagem baseada no status real
+  let operationMessage = 'Baixando';
+  if (isUpdating) {
+    operationMessage = downloadData?.status === 'installing' ? 'Instalando' : 'Atualizando';
+  } else if (downloadData?.status === 'installing') {
+    operationMessage = 'Instalando';
+  }
+
   const operationIcon = isUpdating ? UpdateIcon : DownloadIcon;
+
+  // Determinar se tem atualização disponível (mesma lógica do GameDetails)
+  const hasUpdate = [1, 3].includes(game.id) && game.installed && !isDownloading;
 
   // Função para iniciar download
   const handleDownload = (e) => {
@@ -83,6 +94,13 @@ const GameCard = ({
     if (!isDownloaded && !isDownloading) {
       downloadGame(game.id);
     }
+  };
+
+  // Função para iniciar atualização
+  const handleUpdate = (e) => {
+    e.stopPropagation(); // Impede que o clique propague para o card
+    // Usar downloadGame para simular atualização (mesmo processo interno)
+    downloadGame(game.id);
   };
 
   return (
@@ -163,8 +181,8 @@ const GameCard = ({
           }}
         />
 
-        {/* Overlay para jogos baixados */}
-        {isDownloaded && !isDownloading && (
+        {/* Overlay para jogos baixados - LÓGICA CORRIGIDA */}
+        {game.installed && !isDownloading && !hasUpdate && (
           <Box
             className="game-overlay"
             sx={{
@@ -183,16 +201,68 @@ const GameCard = ({
           >
             <IconButton
               sx={{
-                bgcolor: 'primary.main',
+                bgcolor: currentColors.primary,
                 color: 'white',
                 size: 'large',
+                boxShadow: `0 0 20px ${currentColors.glow}60`,
                 '&:hover': {
-                  bgcolor: 'primary.dark'
+                  bgcolor: currentColors.secondary,
+                  transform: 'scale(1.1)',
+                  boxShadow: `0 0 30px ${currentColors.glow}80`
                 }
               }}
             >
               <PlayIcon sx={{ fontSize: 32 }} />
             </IconButton>
+          </Box>
+        )}
+
+        {/* Overlay para jogos com atualização disponível */}
+        {hasUpdate && !isDownloading && !isUpdating && (
+          <Box
+            className="game-overlay"
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              bgcolor: 'rgba(0,0,0,0.7)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              opacity: 0,
+              transition: 'opacity 0.3s ease'
+            }}
+          >
+            <UpdateIcon sx={{
+              fontSize: 36,
+              color: '#FF9800',
+              mb: 1.5,
+              filter: 'drop-shadow(0 0 8px #FF980060)'
+            }} />
+            <CustomButton
+              variant="contained"
+              size="medium"
+              startIcon={<UpdateIcon />}
+              onClick={handleUpdate}
+              sx={{
+                bgcolor: '#FF9800',
+                color: 'white',
+                fontSize: '0.8rem',
+                py: 1,
+                px: 2,
+                boxShadow: '0 0 15px #FF980040',
+                '&:hover': {
+                  bgcolor: '#F57C00',
+                  transform: 'scale(1.05)',
+                  boxShadow: '0 0 25px #FF980060'
+                }
+              }}
+            >
+              Atualizar
+            </CustomButton>
           </Box>
         )}
 
@@ -215,19 +285,28 @@ const GameCard = ({
               transition: 'opacity 0.3s ease'
             }}
           >
-            <CloudIcon sx={{ fontSize: 36, color: 'white', mb: 1.5 }} />
+            <CloudIcon sx={{
+              fontSize: 36,
+              color: 'white',
+              mb: 1.5,
+              filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.6))'
+            }} />
             <CustomButton
               variant="contained"
               size="medium"
               startIcon={<DownloadIcon />}
               onClick={handleDownload}
               sx={{
-                bgcolor: 'success.main',
+                bgcolor: currentColors.primary,
+                color: 'white',
                 fontSize: '0.8rem',
                 py: 1,
                 px: 2,
+                boxShadow: `0 0 15px ${currentColors.glow}40`,
                 '&:hover': {
-                  bgcolor: 'success.dark'
+                  bgcolor: currentColors.secondary,
+                  transform: 'scale(1.05)',
+                  boxShadow: `0 0 25px ${currentColors.glow}60`
                 }
               }}
             >

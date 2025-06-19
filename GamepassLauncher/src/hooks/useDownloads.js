@@ -127,6 +127,7 @@ export const DownloadsProvider = ({ children }) => {
     let downloadedBytes = 0;
     const totalBytes = downloadItem.totalBytes;
     const baseSpeed = 25 + Math.random() * 45; // 25-70 MB/s base
+    let currentPhase = 'downloading'; // downloading -> installing -> completed
 
     const interval = setInterval(() => {
       // Verificar se o download ainda existe
@@ -142,53 +143,80 @@ export const DownloadsProvider = ({ children }) => {
           return currentDownloads;
         }
 
-        // Simular variação na velocidade
-        const currentSpeed = Math.max(5, baseSpeed + (Math.random() - 0.5) * 25);
-        const bytesThisSecond = currentSpeed * 1024 * 1024; // MB para bytes
+        // Fase de download (0-90%)
+        if (currentPhase === 'downloading' && progress < 90) {
+          const currentSpeed = Math.max(5, baseSpeed + (Math.random() - 0.5) * 25);
+          const bytesThisSecond = currentSpeed * 1024 * 1024;
 
-        downloadedBytes = Math.min(downloadedBytes + bytesThisSecond, totalBytes);
-        progress = (downloadedBytes / totalBytes) * 100;
+          downloadedBytes = Math.min(downloadedBytes + bytesThisSecond, totalBytes * 0.9);
+          progress = (downloadedBytes / totalBytes) * 100;
 
-        // Calcular ETA
-        const remainingBytes = totalBytes - downloadedBytes;
-        const etaSeconds = remainingBytes / (currentSpeed * 1024 * 1024);
-        const etaFormatted = etaSeconds > 60
-          ? `${Math.ceil(etaSeconds / 60)}m ${Math.ceil(etaSeconds % 60)}s`
-          : `${Math.ceil(etaSeconds)}s`;
+          const remainingBytes = (totalBytes * 0.9) - downloadedBytes;
+          const etaSeconds = remainingBytes / (currentSpeed * 1024 * 1024);
+          const etaFormatted = etaSeconds > 60
+            ? `${Math.ceil(etaSeconds / 60)}m ${Math.ceil(etaSeconds % 60)}s`
+            : `${Math.ceil(etaSeconds)}s`;
 
-        const updatedItem = {
-          ...downloadItem,
-          progress: Math.min(progress, 100),
-          speed: `${currentSpeed.toFixed(1)} MB/s`,
-          eta: progress >= 100 ? 'Concluído' : etaFormatted,
-          downloaded: `${(downloadedBytes / (1024 * 1024 * 1024)).toFixed(1)} GB`,
-          downloadedBytes,
-          status: progress >= 100 ? 'completed' : 'downloading'
-        };
+          const updatedItem = {
+            ...downloadItem,
+            progress: Math.min(progress, 90),
+            speed: `${currentSpeed.toFixed(1)} MB/s`,
+            eta: etaFormatted,
+            downloaded: `${(downloadedBytes / (1024 * 1024 * 1024)).toFixed(1)} GB`,
+            downloadedBytes,
+            status: 'downloading'
+          };
 
-        if (progress >= 100) {
-          clearInterval(interval);
-          intervalRefs.current.delete(game.id);
-
-          // Chamar callback para marcar jogo como instalado
-          if (onGameInstalled) {
-            onGameInstalled(game.id);
+          // Quando chegar a 90%, muda para fase de instalação
+          if (progress >= 90) {
+            currentPhase = 'installing';
           }
 
-          // Mover para histórico após 3 segundos
-          setTimeout(() => {
-            setDownloadHistory(prev => [updatedItem, ...prev]);
-            setActiveDownloads(prev => {
-              const newMap = new Map(prev);
-              newMap.delete(game.id);
-              return newMap;
-            });
-          }, 3000);
-
-          console.log(`✅ Download concluído: ${game.title}`);
+          return new Map(currentDownloads.set(game.id, updatedItem));
         }
 
-        return new Map(currentDownloads.set(game.id, updatedItem));
+        // Fase de instalação (90-100%)
+        else if (currentPhase === 'installing') {
+          // Instalação mais lenta (simula processamento)
+          progress += Math.random() * 2; // 0-2% por segundo
+          progress = Math.min(progress, 100);
+
+          const updatedItem = {
+            ...downloadItem,
+            progress: progress,
+            speed: '0 MB/s', // Sem velocidade durante instalação
+            eta: progress >= 100 ? 'Concluído' : 'Instalando...',
+            downloaded: `${downloadItem.size}`, // Download completo
+            downloadedBytes: totalBytes,
+            status: progress >= 100 ? 'completed' : 'installing'
+          };
+
+          if (progress >= 100) {
+            clearInterval(interval);
+            intervalRefs.current.delete(game.id);
+
+            // Chamar callback para marcar jogo como instalado
+            if (onGameInstalled) {
+              onGameInstalled(game.id);
+            }
+
+            // Mover para histórico após 3 segundos
+            setTimeout(() => {
+              setDownloadHistory(prev => [updatedItem, ...prev]);
+              setActiveDownloads(prev => {
+                const newMap = new Map(prev);
+                newMap.delete(game.id);
+                return newMap;
+              });
+            }, 3000);
+
+            console.log(`✅ Jogo instalado: ${game.title}`);
+          }
+
+          return new Map(currentDownloads.set(game.id, updatedItem));
+        }
+
+        return currentDownloads;
       });
     }, 1000);
 

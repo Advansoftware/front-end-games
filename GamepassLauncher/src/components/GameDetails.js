@@ -61,8 +61,11 @@ const GameDetails = ({ gameId, onBack }) => {
   const progressPercent = isDownloading ? Math.round(downloadData.progress || 0) : 0;
   const updateProgressPercent = isUpdating ? Math.round(updatePercent) : 0;
 
-  // Simular atualizações disponíveis para alguns jogos
-  const hasUpdate = [1, 3].includes(gameId);
+  // Determinar status real baseado na fase
+  const isInstalling = downloadData?.status === 'installing';
+
+  // Simular atualizações disponíveis para alguns jogos - MANTÉM durante o processo de atualização
+  const hasUpdate = gameDetails && [1, 3].includes(gameId) && gameDetails.installed && !isDownloading;
 
   // Carregar dados do jogo - Cache primeiro, depois API se necessário
   useEffect(() => {
@@ -483,34 +486,18 @@ const GameDetails = ({ gameId, onBack }) => {
                       </Box>
                     )}
 
-                    {/* Botões de ação principais - TAMANHO REDUZIDO */}
+                    {/* Botões de ação principais - LÓGICA CORRIGIDA */}
                     <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
-                      {/* Botão principal - Jogar/Baixar */}
-                      {gameDetails.installed ? (
+                      {/* LÓGICA CORRETA: Apenas um botão principal por vez */}
+
+                      {/* Se está baixando/instalando/atualizando - APENAS o botão de progresso */}
+                      {(isDownloading || isUpdating) ? (
                         <CustomButton
-                          variant="success"
+                          variant={isUpdating ? "warning" : "info"}
                           size="medium"
-                          startIcon={<PlayIcon />}
-                          onClick={handlePlay}
-                          disabled={isDownloading || isUpdating}
-                          sx={{
-                            px: 4,
-                            py: 1.5,
-                            fontSize: '1.1rem',
-                            fontWeight: 'bold',
-                            minWidth: 160
-                          }}
-                        >
-                          Jogar Agora
-                        </CustomButton>
-                      ) : (
-                        <CustomButton
-                          variant={isDownloading ? "info" : "primary"}
-                          size="medium"
-                          startIcon={isDownloading ? <CloudIcon /> : <DownloadIcon />}
-                          onClick={handleDownload}
-                          disabled={isDownloading || isUpdating}
-                          downloadProgress={isDownloading ? progressPercent : undefined}
+                          startIcon={<CloudIcon />}
+                          disabled={true}
+                          downloadProgress={isDownloading ? progressPercent : updateProgressPercent}
                           sx={{
                             px: 4,
                             py: 1.5,
@@ -519,12 +506,71 @@ const GameDetails = ({ gameId, onBack }) => {
                             minWidth: 180
                           }}
                         >
-                          {isDownloading ? `Baixando` : 'Baixar Jogo'}
+                          {isDownloading ? (isInstalling ? 'Instalando' : 'Baixando') : 'Atualizando'}
                         </CustomButton>
+                      ) : (
+                        /* Se NÃO está baixando/atualizando */
+                        <>
+                          {/* Se está instalado E não tem atualização - JOGAR AGORA */}
+                          {gameDetails.installed && !hasUpdate ? (
+                            <CustomButton
+                              variant="success"
+                              size="medium"
+                              startIcon={<PlayIcon />}
+                              onClick={handlePlay}
+                              sx={{
+                                px: 4,
+                                py: 1.5,
+                                fontSize: '1.1rem',
+                                fontWeight: 'bold',
+                                minWidth: 160
+                              }}
+                            >
+                              Jogar Agora
+                            </CustomButton>
+                          ) : null}
+
+                          {/* Se tem atualização disponível - ATUALIZAR */}
+                          {hasUpdate ? (
+                            <CustomButton
+                              variant="warning"
+                              size="medium"
+                              startIcon={<UpdateIcon />}
+                              onClick={handleUpdate}
+                              sx={{
+                                px: 3,
+                                py: 1.5,
+                                fontSize: '1rem',
+                                fontWeight: 'bold'
+                              }}
+                            >
+                              Atualizar
+                            </CustomButton>
+                          ) : null}
+
+                          {/* Se NÃO está instalado - BAIXAR */}
+                          {!gameDetails.installed ? (
+                            <CustomButton
+                              variant="primary"
+                              size="medium"
+                              startIcon={<DownloadIcon />}
+                              onClick={handleDownload}
+                              sx={{
+                                px: 4,
+                                py: 1.5,
+                                fontSize: '1.1rem',
+                                fontWeight: 'bold',
+                                minWidth: 180
+                              }}
+                            >
+                              Baixar Jogo
+                            </CustomButton>
+                          ) : null}
+                        </>
                       )}
 
-                      {/* Botão de trailer */}
-                      {gameDetails.youtubeVideoId && (
+                      {/* Botão de trailer - sempre disponível quando não está processando */}
+                      {gameDetails.youtubeVideoId && !isDownloading && !isUpdating && (
                         <CustomButton
                           variant="outlined"
                           size="medium"
@@ -538,26 +584,6 @@ const GameDetails = ({ gameId, onBack }) => {
                           }}
                         >
                           {showTrailer ? 'Fechar Trailer' : 'Ver Trailer'}
-                        </CustomButton>
-                      )}
-
-                      {/* Botão de atualização */}
-                      {hasUpdate && gameDetails.installed && (
-                        <CustomButton
-                          variant="warning"
-                          size="medium"
-                          startIcon={isUpdating ? <CloudIcon /> : <UpdateIcon />}
-                          onClick={handleUpdate}
-                          disabled={isDownloading || isUpdating}
-                          downloadProgress={isUpdating ? updateProgressPercent : undefined}
-                          sx={{
-                            px: 3,
-                            py: 1.5,
-                            fontSize: '1rem',
-                            fontWeight: 'bold'
-                          }}
-                        >
-                          {isUpdating ? `Atualizando` : 'Atualizar'}
                         </CustomButton>
                       )}
                     </Stack>
@@ -839,14 +865,14 @@ const GameDetails = ({ gameId, onBack }) => {
                           <CustomButton
                             variant="warning"
                             size="medium"
-                            startIcon={<UpdateIcon />}
+                            startIcon={isUpdating ? <CloudIcon /> : <UpdateIcon />}
                             onClick={handleUpdate}
                             downloadProgress={isUpdating ? updateProgressPercent : undefined}
                             sx={{
                               py: 1.2
                             }}
                           >
-                            {isUpdating ? `Atualizando` : 'Atualizar'}
+                            {isUpdating ? (isInstalling ? 'Instalando' : 'Atualizando') : 'Atualizar'}
                           </CustomButton>
                         )}
                       </Stack>
