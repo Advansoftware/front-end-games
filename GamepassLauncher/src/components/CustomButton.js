@@ -246,31 +246,31 @@ const CustomButton = ({
         zIndex: 1,
         animation: `${currentTheme}BackgroundWave 4s infinite ease-in-out`,
         '@keyframes xboxBackgroundWave': {
-          '0%, 100%': { 
+          '0%, 100%': {
             opacity: 0.1,
             transform: 'scale(1)'
           },
-          '50%': { 
+          '50%': {
             opacity: 0.2,
             transform: 'scale(1.02)'
           }
         },
         '@keyframes ps5BackgroundWave': {
-          '0%, 100%': { 
+          '0%, 100%': {
             opacity: 0.15,
             filter: 'hue-rotate(0deg)'
           },
-          '50%': { 
+          '50%': {
             opacity: 0.25,
             filter: 'hue-rotate(10deg)'
           }
         },
         '@keyframes switchBackgroundWave': {
-          '0%, 100%': { 
+          '0%, 100%': {
             opacity: 0.12,
             transform: 'skewX(0deg)'
           },
-          '50%': { 
+          '50%': {
             opacity: 0.22,
             transform: 'skewX(1deg)'
           }
@@ -312,34 +312,32 @@ const CustomButton = ({
         left: 0,
         right: 0,
         bottom: 0,
-        background: `linear-gradient(45deg, transparent 30%, ${themeExp.particle}15 50%, transparent 70%)`, // Reduzida opacidade
-        opacity: 0.3, // Mais sutil
+        background: `linear-gradient(45deg, transparent 30%, ${themeExp.particle}15 50%, transparent 70%)`,
+        opacity: 0.3,
         zIndex: 1,
-        animation: `${currentTheme}Shimmer 3s infinite`, // Mais lento
+        animation: `${currentTheme}Shimmer 3s infinite`,
         '@keyframes xboxShimmer': {
-          '0%, 100%': {
-            boxShadow: `0 0 30px ${themeExp.glow}60, inset 0 0 20px ${themeExp.primary}20`,
-            filter: 'brightness(1)'
-          },
-          '50%': {
-            boxShadow: `0 0 50px ${themeExp.glow}80, inset 0 0 30px ${themeExp.secondary}30`,
-            filter: 'brightness(1.1)'
-          }
+          '0%': { transform: 'translateX(-100%) skewX(-20deg)' },
+          '100%': { transform: 'translateX(200%) skewX(-20deg)' }
         },
         '@keyframes ps5Shimmer': {
-          '0%, 100%': {
-            boxShadow: `0 0 30px ${themeExp.glow}60, inset 0 0 20px ${themeExp.primary}20`
+          '0%': {
+            transform: 'translateX(-100%) skewX(-15deg)',
+            background: `linear-gradient(45deg, transparent 30%, ${themeExp.accent}50 50%, transparent 70%)`
           },
-          '50%': {
-            boxShadow: `0 0 50px ${themeExp.accent}80, inset 0 0 30px ${themeExp.accent}30`
+          '100%': {
+            transform: 'translateX(200%) skewX(-15deg)',
+            background: `linear-gradient(45deg, transparent 30%, ${themeExp.particle}30 50%, transparent 70%)`
           }
         },
         '@keyframes switchShimmer': {
-          '0%, 100%': {
-            boxShadow: `0 0 30px ${themeExp.glow}60, inset 0 0 20px ${themeExp.primary}20`
+          '0%': {
+            transform: 'translateX(-100%) skewX(-25deg) rotateZ(2deg)',
+            background: `linear-gradient(45deg, transparent 30%, ${themeExp.accent}60 50%, transparent 70%)`
           },
-          '50%': {
-            boxShadow: `0 0 50px ${themeExp.secondary}80, inset 0 0 30px ${themeExp.accent}30`
+          '100%': {
+            transform: 'translateX(200%) skewX(-25deg) rotateZ(2deg)',
+            background: `linear-gradient(45deg, transparent 30%, ${themeExp.secondary}40 50%, transparent 70%)`
           }
         }
       }
@@ -441,11 +439,11 @@ const CustomButton = ({
               boxShadow: `inset 0 0 20px ${themeExp.glow}40, 0 0 15px ${themeExp.primary}60`, // Brilho interno e externo
               animation: `${currentTheme}ProgressFlow 3s infinite linear`,
               '@keyframes xboxProgressFlow': {
-                '0%': { 
+                '0%': {
                   backgroundPosition: '0% 50%',
                   filter: 'brightness(1) saturate(1.2)'
                 },
-                '100%': { 
+                '100%': {
                   backgroundPosition: '200% 50%',
                   filter: 'brightness(1.1) saturate(1.3)'
                 }
