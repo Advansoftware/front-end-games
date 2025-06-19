@@ -20,6 +20,8 @@ export const useHomeConsoleNavigation = ({
   const [currentHeroButton, setCurrentHeroButton] = useState(0); // 0 = Play, 1 = Ver Detalhes
   const [focusMode, setFocusMode] = useState('hero'); // 'hero', 'games', 'sidebar'
   const [lastGameIndex, setLastGameIndex] = useState(0); // Para voltar após sidebar
+  const [lastFocusMode, setLastFocusMode] = useState('hero'); // Para voltar ao modo correto após sidebar
+  const [lastHeroButton, setLastHeroButton] = useState(0); // Para voltar ao botão correto no hero
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [navigationCooldown, setNavigationCooldown] = useState(0); // Cooldown adicional
 
@@ -273,19 +275,55 @@ export const useHomeConsoleNavigation = ({
     }
   }, [focusMode, currentHeroButton, currentGameIndex, featuredGame, gameCards, onGameSelect, gamepad, debounceAction]);
 
-  // Ação de cancelar GRADUAL (botão B - voltar/fechar universal)
+  // Ação de cancelar GRADUAL (botão B - voltar/fechar universal) - RESTAURAR FOCO COMPLETO
   const cancelAction = useCallback(() => {
     const executed = debounceAction(() => {
       console.log('🎮 Botão B pressionado - verificando modais...');
 
       // 1. PRIMEIRO: Verificar se sidebar está aberta
       if (sidebarOpen) {
-        console.log('📱 Fechando sidebar');
+        console.log('📱 Fechando sidebar e restaurando foco completo');
+
+        // FORÇAR ATUALIZAÇÃO IMEDIATA DOS ESTADOS
+        const restoreFocusMode = lastFocusMode;
+        const restoreGameIndex = lastGameIndex;
+        const restoreHeroButton = lastHeroButton;
+
+        // Fechar sidebar PRIMEIRO
         setSidebarOpen(false);
         onSidebarToggle(false);
-        setFocusMode('games');
-        setCurrentGameIndex(lastGameIndex);
-        setTimeout(() => scrollToElement(gameCardRefs.current[lastGameIndex]), 100);
+
+        // USAR setTimeout ZERO para garantir que seja executado no próximo tick
+        setTimeout(() => {
+          console.log('🔄 Restaurando estados:', {
+            focusMode: restoreFocusMode,
+            gameIndex: restoreGameIndex,
+            heroButton: restoreHeroButton
+          });
+
+          // Restaurar todos os estados de uma vez
+          setFocusMode(restoreFocusMode);
+          setCurrentGameIndex(restoreGameIndex);
+          setCurrentHeroButton(restoreHeroButton);
+
+          // FORÇAR SCROLL IMEDIATO
+          if (restoreFocusMode === 'hero') {
+            const heroElement = heroButtonRefs.current[restoreHeroButton];
+            if (heroElement) {
+              heroElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              heroElement.focus();
+            }
+          } else if (restoreFocusMode === 'games') {
+            const gameElement = gameCardRefs.current[restoreGameIndex];
+            if (gameElement) {
+              gameElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              gameElement.focus();
+            }
+          }
+
+          console.log('✅ Estados restaurados com sucesso');
+        }, 0);
+
         gamepad.navigationVibrate('cancel');
         return;
       }
@@ -308,13 +346,18 @@ export const useHomeConsoleNavigation = ({
     if (!executed) {
       console.log('⏱️ Ação B ignorada devido ao debounce');
     }
-  }, [sidebarOpen, lastGameIndex, onSidebarToggle, scrollToElement, gamepad, modalsOpen, debounceAction]);
+  }, [sidebarOpen, lastGameIndex, lastFocusMode, lastHeroButton, onSidebarToggle, scrollToElement, scrollToGameCard, gamepad, modalsOpen, debounceAction]);
 
-  // Abrir sidebar com debounce (botão Start)
+  // Abrir sidebar com debounce (botão Start) - SALVAR ESTADO COMPLETO
   const openSidebar = useCallback(() => {
     const executed = debounceAction(() => {
       if (!sidebarOpen) {
+        // Salvar estado completo antes de abrir sidebar
+        setLastFocusMode(focusMode);
         setLastGameIndex(currentGameIndex);
+        setLastHeroButton(currentHeroButton);
+
+        // Abrir sidebar
         setSidebarOpen(true);
         onSidebarToggle(true);
         setFocusMode('sidebar');
@@ -325,15 +368,26 @@ export const useHomeConsoleNavigation = ({
     if (!executed) {
       console.log('⏱️ Abertura de sidebar ignorada devido ao debounce');
     }
-  }, [sidebarOpen, currentGameIndex, onSidebarToggle, gamepad, debounceAction]);
+  }, [sidebarOpen, focusMode, currentGameIndex, currentHeroButton, onSidebarToggle, gamepad, debounceAction]);
 
   // Efeito principal para escutar inputs do gamepad - APENAS SE ENABLED
   useEffect(() => {
     if (!gamepad.gamepadConnected || !enabled) return;
 
+    // CORREÇÃO CRÍTICA: usar estado local atualizado em vez do estado atual
+    const currentSidebarState = sidebarOpen;
+
     // Se sidebar está aberta, NÃO processar navegação aqui
     // Deixar a sidebar controlar a navegação
-    if (sidebarOpen) return;
+    if (currentSidebarState) return;
+
+    // Garantir que temos um foco válido
+    if (focusMode !== 'hero' && focusMode !== 'games') {
+      console.log('🔧 Corrigindo focusMode inválido:', focusMode);
+      setFocusMode('games');
+      setCurrentGameIndex(0);
+      return;
+    }
 
     // Navegação direcional
     if (navigation.up) {
@@ -384,7 +438,8 @@ export const useHomeConsoleNavigation = ({
   }, [
     navigation,
     gamepad.gamepadConnected,
-    enabled, // ✅ ADICIONAR ENABLED COMO DEPENDÊNCIA
+    enabled,
+    sidebarOpen, // MANTER COMO DEPENDÊNCIA
     focusMode,
     navigateHero,
     navigateGames,
@@ -399,6 +454,104 @@ export const useHomeConsoleNavigation = ({
       setTimeout(() => scrollToElement(heroButtonRefs.current[0]), 100);
     }
   }, [scrollToElement]);
+
+  // FUNÇÃO DE RECUPERAÇÃO FORÇADA - Para casos extremos
+  const forceNavigationRecovery = useCallback(() => {
+    console.log('🚨 RECUPERAÇÃO FORÇADA: Reiniciando navegação completamente');
+
+    // Resetar todos os estados para valores seguros
+    setFocusMode('games');
+    setCurrentGameIndex(0);
+    setCurrentHeroButton(0);
+    setSidebarOpen(false);
+
+    // Forçar scroll para o primeiro game card
+    setTimeout(() => {
+      const firstGameCard = gameCardRefs.current[0] ||
+        document.querySelector('[data-game-card="true"]') ||
+        document.querySelector('.MuiGrid-item .MuiCard-root');
+
+      if (firstGameCard) {
+        firstGameCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        firstGameCard.focus();
+        console.log('✅ Navegação recuperada com sucesso');
+        gamepad.navigationVibrate('success');
+      }
+    }, 100);
+  }, [gamepad]);
+
+  // BOTÃO DE EMERGÊNCIA: Start + B para recuperação forçada - VERSÃO CORRIGIDA PARA ELECTRON
+  useEffect(() => {
+    if (!gamepad.gamepadConnected || !enabled) return;
+
+    let startPressed = false;
+    let bPressed = false;
+
+    // DETECÇÃO DIRETA DOS BOTÕES - Não confiar apenas no mapeamento
+    const gamepads = navigator.getGamepads();
+    const currentGamepad = gamepads[gamepad.gamepadIndex];
+
+    if (!currentGamepad) return;
+
+    if (typeof window !== 'undefined' && window.electronAPI) {
+      // ELECTRON: Verificação direta nos índices onde os botões estão
+      console.log('🔍 ELECTRON: Verificando botões diretamente:', {
+        totalButtons: currentGamepad.buttons.length,
+        buttonsPressed: currentGamepad.buttons.map((btn, idx) => ({ index: idx, pressed: btn.pressed, value: btn.value }))
+          .filter(btn => btn.pressed)
+      });
+
+      // Start: Verificar múltiplos índices
+      const startButtonIndices = [6, 7, 8, 9, 10, 11];
+      for (const index of startButtonIndices) {
+        if (currentGamepad.buttons[index] && currentGamepad.buttons[index].pressed && currentGamepad.buttons[index].value > 0.5) {
+          startPressed = true;
+          console.log('✅ ELECTRON: Start detectado no índice', index);
+          break;
+        }
+      }
+
+      // B: Verificar múltiplos índices (0=A, 1=B, 2=X)
+      const bButtonIndices = [0, 1, 2];
+      for (const index of bButtonIndices) {
+        if (currentGamepad.buttons[index] && currentGamepad.buttons[index].pressed && currentGamepad.buttons[index].value > 0.5) {
+          bPressed = true;
+          console.log('✅ ELECTRON: B detectado no índice', index);
+          break;
+        }
+      }
+    } else {
+      // NAVEGADOR: Usar sistema padrão do gamepad hook
+      startPressed = gamepad.isButtonPressed('Start') || gamepad.isButtonPressed('Options') || gamepad.isButtonPressed('Plus');
+      bPressed = gamepad.isButtonPressed('B') || gamepad.isButtonPressed('Circle') || gamepad.isButtonPressed('A');
+    }
+
+    // Debug detalhado
+    if (startPressed || bPressed) {
+      console.log('🎮 DEBUG Botões de emergência:', {
+        startPressed,
+        bPressed,
+        environment: typeof window !== 'undefined' && window.electronAPI ? 'Electron' : 'Browser',
+        gamepadIndex: gamepad.gamepadIndex,
+        gamepadConnected: gamepad.gamepadConnected
+      });
+    }
+
+    // Combinação Start + B = Recuperação de emergência
+    if (startPressed && bPressed) {
+      console.log('🚨 COMBINAÇÃO DE EMERGÊNCIA: Start + B detectada!', {
+        environment: typeof window !== 'undefined' && window.electronAPI ? 'Electron' : 'Browser'
+      });
+
+      // Executar recuperação imediatamente
+      forceNavigationRecovery();
+
+      // Mostrar toast de recuperação (se disponível)
+      if (typeof window !== 'undefined' && window.electronAPI) {
+        window.electronAPI.showNotification?.('Navegação recuperada!', 'O controle foi reiniciado com sucesso.');
+      }
+    }
+  }, [gamepad.gamepadConnected, gamepad.gamepadIndex, enabled, gamepad, forceNavigationRecovery]);
 
   return {
     // Estados de navegação
