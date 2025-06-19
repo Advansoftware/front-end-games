@@ -24,6 +24,33 @@ export const GamesProvider = ({ children }) => {
   const [apiStatus, setApiStatus] = useState({ online: false, lastCheck: null });
   const [selectedGame, setSelectedGame] = useState(null);
 
+  // Configurações padrão da API
+  const API_CONFIG = {
+    gamesApi: 'https://api.gamepass.com/games',
+    yuzuDownload: 'https://github.com/yuzu-emu/yuzu-mainline/releases/latest/download/yuzu-windows-msvc.zip',
+    firmwareDownload: 'https://archive.org/download/nintendo-switch-global-firmwares',
+    searchApi: 'https://api.gamepass.com/search',
+    detailsApi: 'https://api.gamepass.com/details'
+  };
+
+  // Função para sincronizar com API remota
+  const syncWithRemoteAPI = useCallback(async () => {
+    try {
+      console.log('🔄 Sincronizando com API remota...');
+      setApiStatus({ online: true, lastCheck: new Date().toISOString() });
+
+      // Simular sincronização
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      console.log('✅ Sincronização concluída');
+      return true;
+    } catch (error) {
+      console.error('❌ Erro na sincronização:', error);
+      setApiStatus({ online: false, lastCheck: new Date().toISOString() });
+      return false;
+    }
+  }, []);
+
   // Carregar jogos locais do games.json na inicialização
   useEffect(() => {
     const loadLocalGames = async () => {
@@ -311,6 +338,8 @@ export const GamesProvider = ({ children }) => {
     useLocalData,
     apiStatus,
     apiGames,
+    API_CONFIG, // Adicionando configurações da API
+    syncWithRemoteAPI, // Adicionando função de sincronização
     getGameById: (id) => games.find(game => game.id === id),
     getFeaturedGame: () => {
       if (lastPlayedGame) {

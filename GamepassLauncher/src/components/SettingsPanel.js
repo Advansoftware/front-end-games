@@ -554,7 +554,14 @@ const SettingsPanel = () => {
               Configurações de Cache
             </Typography>
 
-            <Card sx={{ mb: 2 }}>
+            <Card sx={{
+              mb: 2,
+              bgcolor: 'rgba(255,255,255,0.08)',
+              backdropFilter: 'blur(15px)',
+              border: theme => `1px solid ${theme.palette.primary.main}25`,
+              borderRadius: 2,
+              boxShadow: theme => `0 8px 20px ${theme.palette.primary.main}10`
+            }}>
               <CardContent>
                 <Typography variant="subtitle1" gutterBottom>
                   Tamanho do Cache
@@ -570,7 +577,13 @@ const SettingsPanel = () => {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card sx={{
+              bgcolor: 'rgba(255,255,255,0.08)',
+              backdropFilter: 'blur(15px)',
+              border: theme => `1px solid ${theme.palette.primary.main}25`,
+              borderRadius: 2,
+              boxShadow: theme => `0 8px 20px ${theme.palette.primary.main}10`
+            }}>
               <CardContent>
                 <CustomButton
                   variant="contained"
@@ -808,3 +821,20 @@ const SettingsPanel = () => {
                 <Box sx={{ p: 3, height: 'calc(100% - 80px)', overflow: 'auto' }}>
                   <motion.div
                     key={selectedSection}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {renderSectionContent()}
+                  </motion.div>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      </Box>
+    </Box>
+  );
+};
+
+export default SettingsPanel;

@@ -243,14 +243,25 @@ const HomePage = () => {
       <Box
         component={motion.div}
         animate={{
-          marginLeft: selectedGameId ? 0 : (sidebarOpen ? 280 : 0), // Sem margem quando GameDetails ativo
+          marginLeft: selectedGameId ? 0 : (sidebarOpen && currentView === 'settings' ? 0 : (sidebarOpen ? 280 : 0)), // Sem margem para Settings mesmo com sidebar aberto
           transition: { duration: 0.3, ease: 'easeInOut' }
         }}
         sx={{
           height: '100vh',
           paddingTop: selectedGameId ? '0px' : (currentView === 'settings' ? '56px' : '56px'), // Padding correto para Settings
           overflow: selectedGameId ? 'auto' : 'hidden',
-          background: selectedGameId ? 'transparent' : (currentView === 'home' ? 'transparent' : 'background.default')
+          background: selectedGameId ? 'transparent' : (currentView === 'home' ? 'transparent' : 'background.default'),
+          // Para tela de configurações, ocupar toda a largura sem margem
+          ...(currentView === 'settings' && {
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 1200,
+            marginLeft: '0 !important',
+            width: '100vw'
+          })
         }}
       >
         {/* Background com gradiente Xbox - APENAS quando não há GameDetails */}
