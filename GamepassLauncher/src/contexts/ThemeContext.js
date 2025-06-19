@@ -422,18 +422,33 @@ export const useTheme = () => {
 };
 
 export const ThemeContextProvider = ({ children }) => {
+  // Sempre iniciar com Xbox como padrão
   const [currentTheme, setCurrentTheme] = useState('xbox');
   const [soundsEnabled, setSoundsEnabled] = useState(true);
 
-  // Carregar configurações salvas
+  // Carregar configurações salvas - mas sempre priorizar Xbox no Electron
   useEffect(() => {
-    const savedTheme = localStorage.getItem('gamepass-theme');
-    const savedSounds = localStorage.getItem('gamepass-sounds');
+    // Verificar se está no Electron
+    const isElectron = typeof window !== 'undefined' && window.electronAPI;
 
-    if (savedTheme && themes[savedTheme]) {
-      setCurrentTheme(savedTheme);
+    if (isElectron) {
+      // No Electron, sempre usar Xbox como padrão
+      console.log('🎮 Electron detectado - carregando tema Xbox como padrão');
+      setCurrentTheme('xbox');
+      localStorage.setItem('gamepass-theme', 'xbox');
+    } else {
+      // No navegador, carregar configuração salva ou usar Xbox como fallback
+      const savedTheme = localStorage.getItem('gamepass-theme');
+      if (savedTheme && themes[savedTheme]) {
+        setCurrentTheme(savedTheme);
+      } else {
+        setCurrentTheme('xbox');
+        localStorage.setItem('gamepass-theme', 'xbox');
+      }
     }
 
+    // Carregar configuração de sons
+    const savedSounds = localStorage.getItem('gamepass-sounds');
     if (savedSounds !== null) {
       setSoundsEnabled(JSON.parse(savedSounds));
     }

@@ -22,7 +22,7 @@ import {
   YouTube as YouTubeIcon,
   CloudDownload as CloudIcon,
   Minimize as MinimizeIcon,
-  Maximize as MaximizeIcon,
+  CropSquare as MaximizeIcon,
   Close as CloseIcon,
   InfoOutlined as InfoIcon,
   Language as WebIcon
@@ -63,6 +63,23 @@ const GameDetails = ({ gameId, onBack }) => {
   // Determinar status real baseado na fase
   const isInstalling = downloadData?.status === 'installing';
   const isUpdating = gameDetails?.installed && isDownloading; // Se já instalado e baixando = atualizando
+
+  // Função para obter mensagem correta baseada no contexto
+  const getOperationMessage = () => {
+    if (!isDownloading) return '';
+
+    if (isInstalling) {
+      return 'Instalando';
+    }
+
+    if (isUpdating) {
+      return 'Atualizando';
+    }
+
+    return 'Baixando';
+  };
+
+  const operationMessage = getOperationMessage();
 
   // Simular atualizações disponíveis para alguns jogos - MANTÉM durante o processo de atualização
   const hasUpdate = gameDetails && [1, 3].includes(gameId) && gameDetails.installed && !isDownloading;
@@ -257,9 +274,9 @@ const GameDetails = ({ gameId, onBack }) => {
                 right: 20,
                 zIndex: 10,
                 display: 'flex',
-                gap: 1,
+                gap: 0, // Sem gap para ficar igual ao header
                 bgcolor: 'rgba(0,0,0,0.8)',
-                borderRadius: 2,
+                borderRadius: 1, // BorderRadius menor para ficar igual ao header
                 p: 0.5,
                 backdropFilter: 'blur(10px)'
               }}
@@ -267,21 +284,30 @@ const GameDetails = ({ gameId, onBack }) => {
               <IconButton
                 onClick={() => window.electronAPI.minimizeWindow()}
                 size="small"
-                sx={{ color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' } }}
+                sx={{
+                  color: 'text.secondary', // Usar a mesma cor do header
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } // Mesmo hover do header
+                }}
               >
                 <MinimizeIcon fontSize="small" />
               </IconButton>
               <IconButton
                 onClick={() => window.electronAPI.maximizeWindow()}
                 size="small"
-                sx={{ color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' } }}
+                sx={{
+                  color: 'text.secondary', // Usar a mesma cor do header
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } // Mesmo hover do header
+                }}
               >
                 <MaximizeIcon fontSize="small" />
               </IconButton>
               <IconButton
                 onClick={() => window.electronAPI.closeWindow()}
                 size="small"
-                sx={{ color: 'white', '&:hover': { bgcolor: 'rgba(244, 67, 54, 0.8)' } }}
+                sx={{
+                  color: 'text.secondary', // Usar a mesma cor do header
+                  '&:hover': { bgcolor: 'rgba(244, 67, 54, 0.8)', color: 'white' } // Mesmo hover do header
+                }}
               >
                 <CloseIcon fontSize="small" />
               </IconButton>
@@ -506,7 +532,7 @@ const GameDetails = ({ gameId, onBack }) => {
                             minWidth: 180
                           }}
                         >
-                          {isDownloading ? (isUpdating ? (isInstalling ? 'Instalando' : 'Atualizando') : (isInstalling ? 'Instalando' : 'Baixando')) : 'Atualizando'}
+                          {operationMessage}
                         </CustomButton>
                       ) : (
                         /* Se NÃO está baixando/atualizando */
@@ -828,7 +854,7 @@ const GameDetails = ({ gameId, onBack }) => {
                               fontWeight: 'bold'
                             }}
                           >
-                            {isDownloading ? (isUpdating ? (isInstalling ? 'Instalando' : 'Atualizando') : (isInstalling ? 'Instalando' : 'Baixando')) : 'Atualizando'}
+                            {operationMessage}
                           </CustomButton>
                         ) : (
                           /* Se NÃO está processando */
